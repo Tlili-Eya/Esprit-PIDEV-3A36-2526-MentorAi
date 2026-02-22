@@ -1,0 +1,227 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<body class="contact-page">
+<main class="main">
+
+  <!-- Page Title -->
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Feedback sur le système</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li class="current">Feedback</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  <!-- End Page Title -->
+
+  <!-- Hero image -->
+  <div class="container" data-aos="fade-up" data-aos-delay="100">
+    <div class="hero-feedback mb-4 text-center">
+      <img
+        src="{{ asset('assets/img/feedback.jpg') }}"
+        alt="Illustration feedback - Votre avis nous aide à améliorer la plateforme"
+        class="img-fluid rounded-3 shadow-lg mx-auto d-block"
+        style="max-height: 280px; object-fit: cover; width: 100%; max-width: 900px;"
+        loading="lazy"
+      >
+      <div class="hero-overlay d-flex align-items-center justify-content-center text-white text-center">
+        <div>
+          <h2 class="h3 fw-bold mb-2">Votre avis compte vraiment !</h2>
+          <p class="lead fs-5">Aidez-nous à rendre l'assistance plus intelligente</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Section -->
+  <section id="feedback" class="contact section pt-2">
+    <div class="container" data-aos="fade-up" data-aos-delay="150">
+
+      <!-- Les deux cards juste en dessous de l'image -->
+      <div class="row justify-content-center mb-5" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-lg-5 col-md-6 mb-4">
+          <div class="contact-card h-100">
+            <div class="icon-box"><i class="bi bi-chat-dots"></i></div>
+            <div class="contact-text">
+              <h4>Votre avis compte</h4>
+              <p>Exprimez votre expérience afin d'améliorer les services proposés aux utilisateurs.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5 col-md-6 mb-4">
+          <div class="contact-card h-100">
+            <div class="icon-box"><i class="bi bi-shield-lock"></i></div>
+            <div class="contact-text">
+              <h4>Confidentialité</h4>
+              <p>Les feedbacks sont traités de manière confidentielle par l'administration.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire bien large et centré -->
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+          <div class="contact-form-container bg-white p-5 rounded-4 shadow-lg" data-aos="fade-up" data-aos-delay="300">
+            
+            <h3 class="mb-3 text-primary">Donner un feedback</h3>
+            <p class="text-muted mb-5">Aidez-nous à mieux comprendre vos besoins et vos difficultés.</p>
+            
+            {# Affichage des messages flash #}
+            {% for message in app.flashes('success') %}
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+            
+            {% for message in app.flashes('error') %}
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+
+            <form method="post" action="{{ path('front_feedback_add') }}" class="needs-validation" id="feedbackForm" novalidate>
+
+              <!-- Type de feedback -->
+              <div class="mb-4">
+                <label for="type_feedback" class="form-label fw-semibold">Type de feedback <span class="text-danger">*</span></label>
+                <select id="type_feedback" class="form-select form-control-lg" name="type_feedback" required>
+                  <option value="" disabled selected>-- Choisir type de feedback --</option>
+                  <option value="suggestion">Suggestion</option>
+                  <option value="probleme">Problème</option>
+                  <option value="satisfaction">Satisfaction</option>
+                </select>
+                <div class="invalid-feedback">Veuillez sélectionner un type de feedback.</div>
+              </div>
+
+              <!-- Note par étoiles -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold">Votre note <span class="text-danger">*</span></label>
+                <div class="star-rating fs-1" id="starRating">
+                  <span class="star" data-value="1">★</span>
+                  <span class="star" data-value="2">★</span>
+                  <span class="star" data-value="3">★</span>
+                  <span class="star" data-value="4">★</span>
+                  <span class="star" data-value="5">★</span>
+                </div>
+                <input type="hidden" name="rating" id="rating" required>
+                <div class="invalid-feedback d-block" id="ratingError" style="display: none !important;">
+                  Veuillez sélectionner une note.
+                </div>
+              </div>
+
+              <!-- Message -->
+              <div class="mb-4">
+                <label for="contenu" class="form-label fw-semibold">Votre message <span class="text-danger">*</span></label>
+                <textarea
+                  class="form-control form-control-lg"
+                  id="contenu"
+                  name="contenu"
+                  rows="6"
+                  placeholder="Décrivez votre expérience, problème ou suggestion..."
+                  required
+                  minlength="10"
+                ></textarea>
+                <div class="invalid-feedback">Veuillez saisir un message (minimum 10 caractères).</div>
+              </div>
+
+              <!-- Bouton -->
+              <div class="mt-5">
+                <button type="submit" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow">
+                  <i class="bi bi-send me-2"></i>Envoyer le feedback
+                </button>
+                <a href="{{ path('front_feedback_list') }}" class="btn btn-outline-secondary btn-lg px-5 py-3 rounded-pill ms-3">
+                  <i class="bi bi-list-ul me-2"></i>Voir mes feedbacks
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<style>
+  .star-rating {
+    cursor: pointer;
+    user-select: none;
+  }
+  .star {
+    color: #ddd;
+    transition: color 0.2s;
+  }
+  .star.active,
+  .star:hover,
+  .star:hover ~ .star {
+    color: #ffc107;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Gestion des étoiles
+  const stars = document.querySelectorAll('.star');
+  const ratingInput = document.getElementById('rating');
+  const ratingError = document.getElementById('ratingError');
+  
+  stars.forEach(star => {
+    star.addEventListener('click', function() {
+      const value = this.getAttribute('data-value');
+      ratingInput.value = value;
+      
+      // Retirer la classe active de toutes les étoiles
+      stars.forEach(s => s.classList.remove('active'));
+      
+      // Ajouter la classe active aux étoiles sélectionnées
+      for (let i = 0; i < value; i++) {
+        stars[i].classList.add('active');
+      }
+      
+      // Cacher l'erreur si elle était affichée
+      if (ratingError) {
+        ratingError.style.display = 'none';
+      }
+    });
+  });
+  
+  // Validation du formulaire
+  const form = document.getElementById('feedbackForm');
+  
+  form.addEventListener('submit', function(event) {
+    let isValid = true;
+    
+    // Vérifier si une note a été sélectionnée
+    if (!ratingInput.value) {
+      event.preventDefault();
+      event.stopPropagation();
+      isValid = false;
+      if (ratingError) {
+        ratingError.style.display = 'block';
+      }
+    }
+    
+    // Validation HTML5
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+      isValid = false;
+    }
+    
+    form.classList.add('was-validated');
+    
+    return isValid;
+  });
+});
+</script>
+
+</body>
+{% endblock %}

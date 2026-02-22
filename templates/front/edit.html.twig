@@ -1,0 +1,283 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Modifier Feedback #{{ feedback.id }}{% endblock %}
+
+{% block body %}
+<body class="contact-page">
+<main class="main">
+
+  <!-- Page Title -->
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Modifier le feedback #{{ feedback.id }}</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="{{ path('front_home') }}">Home</a></li>
+          <li><a href="{{ path('front_feedback_list') }}">Mes feedbacks</a></li>
+          <li class="current">Modifier</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  <!-- End Page Title -->
+
+  <!-- Edit Feedback Section -->
+  <section id="edit-feedback" class="section pt-4">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+          <div class="bg-white p-5 rounded-4 shadow-lg">
+            
+            <div class="mb-4">
+              <h3 class="text-primary">
+                <i class="bi bi-pencil-square me-2"></i>Modifier votre feedback
+              </h3>
+              <p class="text-muted">
+                Vous pouvez modifier ce feedback car il a été traité par l'administration.
+              </p>
+            </div>
+
+            {# Affichage des messages flash #}
+            {% for message in app.flashes('success') %}
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+
+            {# Formulaire de modification #}
+            <form method="post" action="{{ path('front_feedback_edit', {id: feedback.id}) }}" 
+                  class="needs-validation" id="editFeedbackForm" novalidate>
+
+              <!-- Type de feedback -->
+              <div class="mb-4">
+                <label for="type_feedback" class="form-label fw-semibold">
+                  <i class="bi bi-tag me-2"></i>Type de feedback <span class="text-danger">*</span>
+                </label>
+                <select id="type_feedback" class="form-select form-control-lg" name="type_feedback" required>
+                  <option value="">-- Choisir type de feedback --</option>
+                  <option value="suggestion" {% if feedback.typefeedback == 'suggestion' %}selected{% endif %}>
+                    💡 Suggestion
+                  </option>
+                  <option value="probleme" {% if feedback.typefeedback == 'probleme' %}selected{% endif %}>
+                    ⚠️ Problème
+                  </option>
+                  <option value="satisfaction" {% if feedback.typefeedback == 'satisfaction' %}selected{% endif %}>
+                    😊 Satisfaction
+                  </option>
+                </select>
+                <div class="invalid-feedback">Veuillez sélectionner un type de feedback.</div>
+              </div>
+
+              <!-- Note par étoiles -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-star me-2"></i>Votre note <span class="text-danger">*</span>
+                </label>
+                <div class="star-rating fs-1" id="starRating">
+                  <span class="star" data-value="1">★</span>
+                  <span class="star" data-value="2">★</span>
+                  <span class="star" data-value="3">★</span>
+                  <span class="star" data-value="4">★</span>
+                  <span class="star" data-value="5">★</span>
+                </div>
+                <input type="hidden" name="rating" id="rating" value="{{ feedback.note }}" required>
+                <div class="invalid-feedback d-block" id="ratingError" style="display: none !important;">
+                  Veuillez sélectionner une note.
+                </div>
+              </div>
+
+              <!-- Message -->
+              <div class="mb-4">
+                <label for="contenu" class="form-label fw-semibold">
+                  <i class="bi bi-chat-text me-2"></i>Votre message <span class="text-danger">*</span>
+                </label>
+                <textarea
+                  class="form-control form-control-lg"
+                  id="contenu"
+                  name="contenu"
+                  rows="6"
+                  placeholder="Décrivez votre expérience, problème ou suggestion..."
+                  required
+                  minlength="10"
+                >{{ feedback.contenu }}</textarea>
+                <div class="invalid-feedback">Veuillez saisir un message (minimum 10 caractères).</div>
+                <div class="form-text">
+                  <small class="text-muted">
+                    <span id="charCount">{{ feedback.contenu|length }}</span> / 1000 caractères
+                  </small>
+                </div>
+              </div>
+
+              <!-- Informations sur le feedback -->
+              <div class="alert alert-info mb-4">
+                <h6 class="alert-heading">
+                  <i class="bi bi-info-circle me-2"></i>Informations
+                </h6>
+                <p class="mb-1"><strong>Date de création :</strong> {{ feedback.datefeedback|date('d/m/Y à H:i') }}</p>
+                <p class="mb-1"><strong>État actuel :</strong> 
+                  <span class="badge bg-success">{{ feedback.etatfeedback|capitalize }}</span>
+                </p>
+                <p class="mb-0"><small class="text-muted">Seuls les feedbacks traités peuvent être modifiés.</small></p>
+              </div>
+
+              <!-- Boutons -->
+              <div class="mt-4 d-flex gap-3 flex-wrap">
+                <button type="submit" class="btn btn-success btn-lg px-5 py-3 rounded-pill shadow">
+                  <i class="bi bi-check-circle me-2"></i>Enregistrer les modifications
+                </button>
+                <a href="{{ path('front_feedback_list') }}" class="btn btn-outline-secondary btn-lg px-5 py-3 rounded-pill">
+                  <i class="bi bi-x-circle me-2"></i>Annuler
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<style>
+  .star-rating {
+    cursor: pointer;
+    user-select: none;
+  }
+  .star {
+    color: #ddd;
+    transition: color 0.2s;
+    font-size: 2.5rem;
+    margin: 0 2px;
+  }
+  .star.active {
+    color: #ffc107;
+  }
+  .star:hover {
+    color: #ffc107;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // ========================================
+  // GESTION DES ÉTOILES
+  // ========================================
+  const stars = document.querySelectorAll('.star');
+  const ratingInput = document.getElementById('rating');
+  const ratingError = document.getElementById('ratingError');
+  
+  // Initialiser les étoiles avec la note existante
+  const currentRating = parseInt(ratingInput.value);
+  for (let i = 0; i < currentRating; i++) {
+    stars[i].classList.add('active');
+  }
+  
+  stars.forEach(star => {
+    star.addEventListener('click', function() {
+      const value = this.getAttribute('data-value');
+      ratingInput.value = value;
+      
+      // Retirer la classe active de toutes les étoiles
+      stars.forEach(s => s.classList.remove('active'));
+      
+      // Ajouter la classe active aux étoiles sélectionnées
+      for (let i = 0; i < value; i++) {
+        stars[i].classList.add('active');
+      }
+      
+      // Cacher l'erreur
+      if (ratingError) {
+        ratingError.style.display = 'none';
+      }
+    });
+    
+    // Effet hover
+    star.addEventListener('mouseenter', function() {
+      const value = this.getAttribute('data-value');
+      for (let i = 0; i < value; i++) {
+        stars[i].style.color = '#ffc107';
+      }
+    });
+  });
+  
+  // Reset hover effect
+  document.getElementById('starRating').addEventListener('mouseleave', function() {
+    const currentValue = parseInt(ratingInput.value);
+    stars.forEach((star, index) => {
+      if (index < currentValue) {
+        star.style.color = '#ffc107';
+      } else {
+        star.style.color = '#ddd';
+      }
+    });
+  });
+  
+  // ========================================
+  // COMPTEUR DE CARACTÈRES
+  // ========================================
+  const contenuTextarea = document.getElementById('contenu');
+  const charCount = document.getElementById('charCount');
+  
+  if (contenuTextarea && charCount) {
+    contenuTextarea.addEventListener('input', function() {
+      const length = this.value.length;
+      charCount.textContent = length;
+      
+      if (length > 1000) {
+        charCount.parentElement.classList.add('text-danger');
+        this.value = this.value.substring(0, 1000);
+      } else {
+        charCount.parentElement.classList.remove('text-danger');
+      }
+    });
+  }
+  
+  // ========================================
+  // VALIDATION DU FORMULAIRE
+  // ========================================
+  const form = document.getElementById('editFeedbackForm');
+  
+  form.addEventListener('submit', function(event) {
+    let isValid = true;
+    
+    // Vérifier si une note a été sélectionnée
+    if (!ratingInput.value) {
+      event.preventDefault();
+      event.stopPropagation();
+      isValid = false;
+      if (ratingError) {
+        ratingError.style.display = 'block';
+      }
+    }
+    
+    // Validation HTML5
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+      isValid = false;
+    }
+    
+    form.classList.add('was-validated');
+    
+    // Si tout est valide, afficher un message de chargement
+    if (isValid) {
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enregistrement...';
+      submitBtn.disabled = true;
+    }
+    
+    return isValid;
+  });
+});
+</script>
+
+</body>
+{% endblock %}

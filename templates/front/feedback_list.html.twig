@@ -1,0 +1,1075 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<body class="contact-page">
+<main class="main">
+
+  <!-- Page Title -->
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Mes feedbacks</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="{{ path('front_home') }}">Home</a></li>
+          <li class="current">Mes feedbacks</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  <!-- End Page Title -->
+
+  <!-- Hero image -->
+  <div class="container" data-aos="fade-up" data-aos-delay="100">
+    <div class="hero-feedback mb-4 text-center">
+      <img
+        src="{{ asset('assets/img/feedback.jpg') }}"
+        alt="Liste feedback"
+        class="img-fluid rounded-3 shadow-lg mx-auto d-block"
+        style="max-height: 260px; object-fit: cover; width: 100%; max-width: 900px;"
+      >
+    </div>
+  </div>
+
+  <!-- Feedback List Section -->
+  <section class="section pt-2">
+    <div class="container" data-aos="fade-up" data-aos-delay="200">
+      <div class="row justify-content-center">
+        <div class="col-lg-12 col-xl-11">
+          <div class="bg-white p-5 rounded-4 shadow-lg">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+              <div>
+                <h3 class="mb-2 text-dark-blue">Historique de vos feedbacks</h3>
+                <p class="text-muted mb-0">
+                  Retrouvez ici tous les feedbacks que vous avez envoyés ainsi que leur statut.
+                </p>
+              </div>
+              <a href="{{ path('front_contact') }}" class="btn btn-dark-blue">
+                <i class="bi bi-plus-circle me-2"></i>Nouveau feedback
+              </a>
+            </div>
+
+            {# ✅ SEARCH & SORT BAR #}
+            <div class="search-sort-bar mb-4 p-3 bg-light rounded-3">
+              <form method="get" action="{{ path('front_feedback_list') }}" class="row g-3 align-items-end">
+                <div class="col-md-7">
+                  <label for="searchInput" class="form-label text-dark-blue fw-semibold">
+                    <i class="bi bi-search me-1"></i>Rechercher par message
+                  </label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="searchInput" 
+                    name="search" 
+                    placeholder="Tapez un mot-clé (ex: chat bot, problème, suggestion...)"
+                    value="{{ searchTerm|default('') }}"
+                  >
+                </div>
+                <div class="col-md-3">
+                  <label for="sortSelect" class="form-label text-dark-blue fw-semibold">
+                    <i class="bi bi-sort-down me-1"></i>Trier par date
+                  </label>
+                  <select class="form-select" id="sortSelect" name="sort">
+                    <option value="DESC" {% if sortOrder|default('DESC') == 'DESC' %}selected{% endif %}>
+                      Plus récent d'abord
+                    </option>
+                    <option value="ASC" {% if sortOrder|default('DESC') == 'ASC' %}selected{% endif %}>
+                      Plus ancien d'abord
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <button type="submit" class="btn btn-light-blue w-100">
+                    <i class="bi bi-funnel me-1"></i>Filtrer
+                  </button>
+                </div>
+              </form>
+              
+              {# Show active search/filter info #}
+              {% if searchTerm|default('') != '' %}
+                <div class="mt-3">
+                  <span class="badge bg-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Recherche active : "{{ searchTerm }}"
+                  </span>
+                  <a href="{{ path('front_feedback_list') }}" class="btn btn-sm btn-outline-secondary ms-2">
+                    <i class="bi bi-x-circle me-1"></i>Effacer
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+
+            {# Affichage des messages flash #}
+            {% for message in app.flashes('success') %}
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+
+            {% if feedbacks is empty %}
+              <div class="alert alert-info text-center py-5">
+                <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                <h5>Aucun feedback pour le moment</h5>
+                <p class="mb-3">Vous n'avez encore envoyé aucun feedback.</p>
+                <a href="{{ path('front_contact') }}" class="btn btn-dark-blue">
+                  <i class="bi bi-plus-circle me-2"></i>Envoyer mon premier feedback
+                </a>
+              </div>
+            {% else %}
+              <div class="table-responsive">
+                <table class="table table-hover align-middle feedback-table">
+                  <thead class="table-dark-blue">
+                    <tr>
+                      <th style="width: 150px;">Utilisateur</th>
+                      <th style="width: 120px;">Type</th>
+                      <th style="width: 110px;">Date</th>
+                      <th style="width: 100px;">Note</th>
+                      <th style="width: 250px;">Message</th>
+                      <th style="width: 100px;">État</th>
+                      <th style="width: 280px;">Réponse Admin</th>
+                      <th style="width: 180px;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for feedback in feedbacks %}
+                      <tr class="feedback-row">
+                        {# COLONNE UTILISATEUR (Nom complet) #}
+                        <td class="fw-semibold text-dark-blue">
+                          <i class="bi bi-person-circle me-1"></i>{{ feedback.utilisateur.prenom }} {{ feedback.utilisateur.nom }}
+                        </td>
+
+                        {# COLONNE TYPE #}
+                        <td>
+                          {% if feedback.typefeedback == 'suggestion' %}
+                            <span class="badge badge-light-blue">
+                              <i class="bi bi-lightbulb me-1"></i>Suggestion
+                            </span>
+                          {% elseif feedback.typefeedback == 'probleme' %}
+                            <span class="badge badge-red">
+                              <i class="bi bi-exclamation-triangle me-1"></i>Problème
+                            </span>
+                          {% elseif feedback.typefeedback == 'satisfaction' %}
+                            <span class="badge bg-success">
+                              <i class="bi bi-emoji-smile me-1"></i>Satisfaction
+                            </span>
+                          {% else %}
+                            <span class="badge bg-secondary">{{ feedback.typefeedback|capitalize }}</span>
+                          {% endif %}
+                        </td>
+
+                        {# COLONNE DATE #}
+                        <td>
+                          <small class="text-muted">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            {{ feedback.datefeedback|date('d/m/Y') }}
+                            <br>
+                            <i class="bi bi-clock me-1"></i>
+                            <span style="font-size: 0.85em;">
+                              {{ feedback.datefeedback|date('H:i') }}
+                            </span>
+                          </small>
+                        </td>
+
+                        {# COLONNE NOTE #}
+                        <td>
+                          <div class="stars-display">
+                            {% for i in 1..5 %}
+                              {% if i <= feedback.note %}
+                                <i class="bi bi-star-fill text-warning"></i>
+                              {% else %}
+                                <i class="bi bi-star text-muted"></i>
+                              {% endif %}
+                            {% endfor %}
+                            <br>
+                            <small class="text-muted">({{ feedback.note }}/5)</small>
+                          </div>
+                        </td>
+
+                        {# COLONNE MESSAGE #}
+                        <td>
+                          <div class="feedback-content">
+                            {% if feedback.contenu|length > 60 %}
+                              <span class="text-muted">
+                                {{ feedback.contenu|slice(0, 60) }}...
+                              </span>
+                              <button
+                                class="btn btn-sm btn-link p-0 ms-1 text-light-blue"
+                                type="button"
+                                data-bs-toggle="modal"
+                                data-bs-target="#feedbackModal{{ feedback.id }}">
+                                <i class="bi bi-eye"></i>
+                              </button>
+                            {% else %}
+                              <span class="text-muted">{{ feedback.contenu }}</span>
+                            {% endif %}
+                          </div>
+                        </td>
+
+                        {# COLONNE ÉTAT #}
+                        <td>
+                          {% set etat = feedback.etatfeedback|lower %}
+                          {% if etat == 'en_attente' %}
+                            <span class="badge bg-warning text-dark">
+                              <i class="bi bi-clock me-1"></i>En attente
+                            </span>
+                          {% elseif etat == 'traite' or etat == 'traité' %}
+                            <span class="badge bg-success">
+                              <i class="bi bi-check-circle me-1"></i>Traité
+                            </span>
+                          {% elseif etat == 'rejete' or etat == 'rejeté' %}
+                            <span class="badge badge-red">
+                              <i class="bi bi-x-circle me-1"></i>Rejeté
+                            </span>
+                          {% else %}
+                            <span class="badge bg-secondary">{{ feedback.etatfeedback }}</span>
+                          {% endif %}
+                        </td>
+
+                        {# ✅ NOUVELLE COLONNE : RÉPONSE ADMIN (SUR LA MÊME LIGNE) #}
+                        <td>
+                          {% set etat = feedback.etatfeedback|lower %}
+                          {% if (etat == 'traite' or etat == 'traité') and feedback.traitement %}
+                            <div class="admin-response-inline">
+                              <div class="admin-badge mb-2">
+                                <i class="bi bi-shield-check me-1"></i>
+                                <strong>Admin</strong>
+                              </div>
+                              <div class="response-type mb-1">
+                                <small class="text-muted">
+                                  {% if feedback.traitement.typetraitement == 'remboursement' %}
+                                    <i class="bi bi-cash me-1"></i>Remboursement
+                                  {% elseif feedback.traitement.typetraitement == 'prolongation_abonnement' %}
+                                    <i class="bi bi-calendar-plus me-1"></i>Prolongation
+                                  {% elseif feedback.traitement.typetraitement == 'geste_commercial' %}
+                                    <i class="bi bi-gift me-1"></i>Geste commercial
+                                  {% elseif feedback.traitement.typetraitement == 'aucun_traitement' %}
+                                    <i class="bi bi-info-circle me-1"></i>Aucun traitement
+                                  {% else %}
+                                    {{ feedback.traitement.typetraitement|replace({'_': ' '})|capitalize }}
+                                  {% endif %}
+                                </small>
+                              </div>
+                              <div class="response-text">
+                                <small class="text-muted fst-italic">
+                                  {% if feedback.traitement.description|length > 50 %}
+                                    "{{ feedback.traitement.description|slice(0, 50) }}..."
+                                  {% else %}
+                                    "{{ feedback.traitement.description }}"
+                                  {% endif %}
+                                </small>
+                              </div>
+                              <div class="response-date mt-1 d-flex justify-content-between align-items-center">
+                                <small class="text-muted" style="font-size: 0.7rem;">
+                                  <i class="bi bi-calendar3 me-1"></i>
+                                  {{ feedback.traitement.datetraitement|date('d/m/Y') }}
+                                </small>
+                                {# ✅ EYE ICON - ALWAYS VISIBLE FOR ALL ADMIN RESPONSES #}
+                                <button
+                                  class="btn btn-sm btn-link p-0 text-light-blue"
+                                  type="button"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#feedbackModal{{ feedback.id }}"
+                                  title="Voir la réponse complète">
+                                  <i class="bi bi-eye"></i>
+                                </button>
+                              </div>
+                            </div>
+                          {% else %}
+                            <div class="no-response-badge">
+                              <i class="bi bi-hourglass-split me-1"></i>
+                              <span>En attente de réponse</span>
+                            </div>
+                          {% endif %}
+                        </td>
+
+                        {# COLONNE ACTIONS #}
+                        <td>
+                          {% set etat = feedback.etatfeedback|lower %}
+                          
+                          {# ✅ Modifiable SEULEMENT si "en_attente" #}
+                          {% if etat == 'en_attente' %}
+                            <div class="d-flex gap-2 flex-wrap">
+                              <a href="{{ path('front_feedback_edit', {id: feedback.id}) }}"
+                                 class="btn btn-sm btn-light-blue"
+                                 title="Modifier">
+                                <i class="bi bi-pencil-square"></i>
+                              </a>
+
+                              <form method="post" 
+                                    action="{{ path('front_feedback_delete', {id: feedback.id}) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Voulez-vous vraiment supprimer ce feedback ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ feedback.id) }}">
+                                <button type="submit" class="btn btn-sm btn-red" title="Supprimer">
+                                  <i class="bi bi-trash"></i>
+                                </button>
+                              </form>
+                            </div>
+
+                          {# ❌ Si "traité" ou autre → Non modifiable #}
+                          {% else %}
+                            <span class="badge bg-secondary">
+                              <i class="bi bi-lock me-1"></i>Non modifiable
+                            </span>
+                          {% endif %}
+                        </td>
+
+                      </tr>
+
+                      {# Modal pour afficher le contenu complet #}
+                      <div class="modal fade" id="feedbackModal{{ feedback.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                          <div class="modal-content">
+                            <div class="modal-header bg-dark-blue text-white">
+                              <h5 class="modal-title">
+                                <i class="bi bi-chat-dots me-2"></i>Feedback de {{ feedback.utilisateur.prenom }} {{ feedback.utilisateur.nom }}
+                              </h5>
+                              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                              {# Informations utilisateur #}
+                              <div class="mb-3">
+                                <strong><i class="bi bi-person-circle me-2"></i>Utilisateur :</strong>
+                                {{ feedback.utilisateur.prenom }} {{ feedback.utilisateur.nom }}
+                              </div>
+                              
+                              {# Type de feedback #}
+                              <div class="mb-3">
+                                <strong><i class="bi bi-tag me-2"></i>Type :</strong>
+                                {% if feedback.typefeedback == 'suggestion' %}
+                                  <span class="badge badge-light-blue">
+                                    <i class="bi bi-lightbulb me-1"></i>Suggestion
+                                  </span>
+                                {% elseif feedback.typefeedback == 'probleme' %}
+                                  <span class="badge badge-red">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Problème
+                                  </span>
+                                {% elseif feedback.typefeedback == 'satisfaction' %}
+                                  <span class="badge bg-success">
+                                    <i class="bi bi-emoji-smile me-1"></i>Satisfaction
+                                  </span>
+                                {% else %}
+                                  <span class="badge bg-secondary">{{ feedback.typefeedback|capitalize }}</span>
+                                {% endif %}
+                              </div>
+                              
+                              {# Date #}
+                              <div class="mb-3">
+                                <strong><i class="bi bi-calendar3 me-2"></i>Date :</strong>
+                                {{ feedback.datefeedback|date('d/m/Y à H:i') }}
+                              </div>
+                              
+                              {# Note #}
+                              <div class="mb-3">
+                                <strong><i class="bi bi-star me-2"></i>Note :</strong>
+                                {% for i in 1..5 %}
+                                  {% if i <= feedback.note %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                  {% else %}
+                                    <i class="bi bi-star text-muted"></i>
+                                  {% endif %}
+                                {% endfor %}
+                                ({{ feedback.note }}/5)
+                              </div>
+                              
+                              <hr>
+                              
+                              {# Message du feedback #}
+                              <div class="mb-3">
+                                <strong><i class="bi bi-chat-text me-2"></i>Message :</strong>
+                                <div class="mt-2 p-3 bg-light rounded">
+                                  <p class="mb-0" style="white-space: pre-wrap;">{{ feedback.contenu }}</p>
+                                </div>
+                              </div>
+                              
+                              {# État #}
+                              <div class="mb-3">
+                                <strong><i class="bi bi-info-circle me-2"></i>État :</strong>
+                                {% set etat = feedback.etatfeedback|lower %}
+                                {% if etat == 'en_attente' %}
+                                  <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-clock me-1"></i>En attente
+                                  </span>
+                                  <p class="text-muted small mt-2 mb-0">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Vous pouvez encore modifier ou supprimer ce feedback tant qu'il n'est pas traité.
+                                  </p>
+                                {% elseif etat == 'traite' or etat == 'traité' %}
+                                  <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Traité
+                                  </span>
+                                  <p class="text-muted small mt-2 mb-0">
+                                    <i class="bi bi-lock me-1"></i>
+                                    Ce feedback a été traité et ne peut plus être modifié.
+                                  </p>
+                                  
+                                  {# ✅ RÉPONSE ADMIN - AFFICHAGE AMÉLIORÉ DANS LE MODAL #}
+                                  {% if feedback.traitement %}
+                                    <hr class="my-3">
+                                    <div class="admin-response-modal-enhanced p-4 rounded">
+                                      <h6 class="text-dark-blue mb-3 fw-bold">
+                                        <i class="bi bi-reply-fill me-2"></i>Réponse de l'Administration
+                                      </h6>
+                                      
+                                      {# Date de traitement #}
+                                      <div class="mb-3">
+                                        <small class="text-muted">
+                                          <i class="bi bi-calendar-check me-1"></i>
+                                          Traité le {{ feedback.traitement.datetraitement|date('d/m/Y à H:i') }}
+                                        </small>
+                                      </div>
+                                      
+                                      {# Type de traitement #}
+                                      <div class="mb-3">
+                                        <strong class="text-dark-blue">Type de traitement :</strong>
+                                        <span class="badge badge-dark-blue ms-2">
+                                          {% if feedback.traitement.typetraitement == 'remboursement' %}
+                                            <i class="bi bi-cash me-1"></i>Remboursement
+                                          {% elseif feedback.traitement.typetraitement == 'prolongation_abonnement' %}
+                                            <i class="bi bi-calendar-plus me-1"></i>Prolongation d'abonnement
+                                          {% elseif feedback.traitement.typetraitement == 'geste_commercial' %}
+                                            <i class="bi bi-gift me-1"></i>Geste commercial
+                                          {% elseif feedback.traitement.typetraitement == 'aucun_traitement' %}
+                                            <i class="bi bi-info-circle me-1"></i>Aucun traitement spécifique
+                                          {% else %}
+                                            {{ feedback.traitement.typetraitement|replace({'_': ' '})|capitalize }}
+                                          {% endif %}
+                                        </span>
+                                      </div>
+                                      
+                                      {# Réponse complète #}
+                                      <div class="response-content-box p-3 rounded">
+                                        <strong class="text-dark-blue d-block mb-2">
+                                          <i class="bi bi-chat-quote me-1"></i>Message de l'administrateur :
+                                        </strong>
+                                        <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;">{{ feedback.traitement.description }}</p>
+                                      </div>
+                                    </div>
+                                  {% endif %}
+                                {% elseif etat == 'rejete' or etat == 'rejeté' %}
+                                  <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle me-1"></i>Rejeté
+                                  </span>
+                                {% else %}
+                                  <span class="badge bg-secondary">{{ feedback.etatfeedback }}</span>
+                                {% endif %}
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-2"></i>Fermer
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="mt-4 text-muted">
+                <small><i class="bi bi-info-circle me-1"></i>Total : <strong>{{ feedbacks|length }}</strong> feedback(s)</small>
+              </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<style>
+  /* Color Palette Variables */
+  :root {
+    --color-red: #d52e28;
+    --color-dark-blue: #102c59;
+    --color-light-blue: #9dbbce;
+  }
+
+  /* Text Colors */
+  .text-dark-blue {
+    color: var(--color-dark-blue) !important;
+  }
+
+  .text-light-blue {
+    color: var(--color-light-blue) !important;
+  }
+
+  .text-red {
+    color: var(--color-red) !important;
+  }
+
+  /* Button Styles - Enhanced */
+  .btn-dark-blue {
+    background: linear-gradient(135deg, var(--color-dark-blue) 0%, #1a3d6f 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(16, 44, 89, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-dark-blue::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-dark-blue:hover::before {
+    left: 100%;
+  }
+
+  .btn-dark-blue:hover {
+    background: linear-gradient(135deg, #0d2347 0%, #152f5a 100%);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(16, 44, 89, 0.35);
+  }
+
+  .btn-dark-blue:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(16, 44, 89, 0.3);
+  }
+
+  .btn-light-blue {
+    background: linear-gradient(135deg, var(--color-light-blue) 0%, #b3d1e0 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(157, 187, 206, 0.3);
+  }
+
+  .btn-light-blue:hover {
+    background: linear-gradient(135deg, #7fa5bb 0%, #9dbbce 100%);
+    color: white;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 14px rgba(157, 187, 206, 0.45);
+  }
+
+  .btn-light-blue:active {
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  .btn-red {
+    background: linear-gradient(135deg, var(--color-red) 0%, #e63e38 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(213, 46, 40, 0.3);
+  }
+
+  .btn-red:hover {
+    background: linear-gradient(135deg, #b82621 0%, #d52e28 100%);
+    color: white;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 14px rgba(213, 46, 40, 0.45);
+  }
+
+  .btn-red:active {
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  /* Small Button Variants */
+  .btn-sm.btn-light-blue,
+  .btn-sm.btn-red {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+  }
+
+  /* Badge Styles - Enhanced */
+  .badge {
+    font-size: 0.85rem;
+    padding: 0.45em 0.9em;
+    font-weight: 600;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .badge-red {
+    background: linear-gradient(135deg, var(--color-red) 0%, #e63e38 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(213, 46, 40, 0.3);
+  }
+
+  .badge-light-blue {
+    background: linear-gradient(135deg, var(--color-light-blue) 0%, #b3d1e0 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(157, 187, 206, 0.3);
+  }
+
+  .badge-dark-blue {
+    background: linear-gradient(135deg, var(--color-dark-blue) 0%, #1a3d6f 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(16, 44, 89, 0.3);
+  }
+
+  .badge.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #34ce57 100%) !important;
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+  }
+
+  .badge.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffcd39 100%) !important;
+    box-shadow: 0 2px 6px rgba(255, 193, 7, 0.3);
+  }
+
+  .badge.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #7d8691 100%) !important;
+    box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+  }
+
+  /* Table Styles - Enhanced */
+  .feedback-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .table-dark-blue {
+    background: linear-gradient(135deg, var(--color-dark-blue) 0%, #1a3d6f 100%);
+    color: white;
+  }
+
+  .table-dark-blue th {
+    font-weight: 700;
+    border: none;
+    padding: 1.2rem 0.85rem;
+    vertical-align: middle;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid rgba(157, 187, 206, 0.3);
+  }
+
+  .feedback-table tbody tr.feedback-row {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid #e9ecef;
+    background-color: white;
+  }
+
+  .feedback-table tbody tr.feedback-row:hover {
+    background: linear-gradient(90deg, rgba(157, 187, 206, 0.05) 0%, rgba(16, 44, 89, 0.02) 100%);
+    transform: scale(1.005);
+    box-shadow: 0 4px 12px rgba(16, 44, 89, 0.12);
+    border-left: 4px solid var(--color-light-blue);
+  }
+
+  .feedback-table tbody tr.feedback-row:last-child {
+    border-bottom: none;
+  }
+
+  .feedback-table td {
+    padding: 1.2rem 0.85rem;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+  }
+
+  .feedback-table tbody tr.feedback-row:hover td {
+    padding-left: 1rem;
+  }
+
+  .stars-display i {
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+  }
+
+  .stars-display i.bi-star-fill {
+    color: #ffc107;
+    text-shadow: 0 1px 2px rgba(255, 193, 7, 0.3);
+  }
+
+  .stars-display:hover i.bi-star-fill {
+    transform: scale(1.15);
+  }
+
+  .feedback-content {
+    line-height: 1.6;
+  }
+
+  .feedback-content .btn-link {
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .feedback-content .btn-link:hover {
+    transform: scale(1.2);
+  }
+
+  /* Admin Response Inline Styles - Enhanced */
+  .admin-response-inline {
+    background: linear-gradient(135deg, rgba(157, 187, 206, 0.08) 0%, rgba(16, 44, 89, 0.05) 100%);
+    border-left: 5px solid var(--color-dark-blue);
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(16, 44, 89, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .admin-response-inline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--color-dark-blue) 0%, var(--color-light-blue) 100%);
+  }
+
+  .admin-response-inline:hover {
+    box-shadow: 0 5px 15px rgba(16, 44, 89, 0.15);
+    transform: translateX(3px);
+  }
+
+  .admin-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, var(--color-dark-blue) 0%, #1a3d6f 100%);
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 25px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 6px rgba(16, 44, 89, 0.25);
+    text-transform: uppercase;
+  }
+
+  .admin-badge i {
+    font-size: 0.85rem;
+  }
+
+  .response-type {
+    color: var(--color-dark-blue);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(157, 187, 206, 0.15);
+    border-radius: 6px;
+    display: inline-block;
+  }
+
+  .response-type i {
+    color: var(--color-light-blue);
+  }
+
+  .response-text {
+    line-height: 1.6;
+    margin-top: 0.6rem;
+    color: #495057;
+    font-size: 0.9rem;
+    font-style: italic;
+    padding-left: 0.5rem;
+    border-left: 2px solid rgba(157, 187, 206, 0.3);
+  }
+
+  .response-date {
+    opacity: 0.75;
+    font-size: 0.7rem;
+    color: var(--color-dark-blue);
+    font-weight: 500;
+  }
+
+  .response-date i {
+    color: var(--color-light-blue);
+  }
+
+  /* ✅ Eye icon styling - always visible at bottom-right */
+  .response-date .btn-link {
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 1.1rem;
+  }
+
+  .response-date .btn-link:hover {
+    transform: scale(1.2);
+  }
+
+  .response-date .btn-link i {
+    color: var(--color-light-blue);
+  }
+
+  .response-date .btn-link:hover i {
+    color: var(--color-dark-blue);
+  }
+
+  /* No Response Badge */
+  .no-response-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    background: linear-gradient(135deg, rgba(108, 117, 125, 0.1) 0%, rgba(108, 117, 125, 0.05) 100%);
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    color: #6c757d;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .no-response-badge i {
+    font-size: 1rem;
+    animation: hourglass-spin 2s ease-in-out infinite;
+  }
+
+  .no-response-badge:hover {
+    background: linear-gradient(135deg, rgba(108, 117, 125, 0.15) 0%, rgba(108, 117, 125, 0.08) 100%);
+    border-color: #adb5bd;
+  }
+
+  /* Animations */
+  @keyframes hourglass-spin {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg); }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .feedback-table tbody tr.feedback-row {
+    animation: fadeInUp 0.5s ease-out;
+  }
+
+  .feedback-table tbody tr.feedback-row:nth-child(1) { animation-delay: 0.05s; }
+  .feedback-table tbody tr.feedback-row:nth-child(2) { animation-delay: 0.1s; }
+  .feedback-table tbody tr.feedback-row:nth-child(3) { animation-delay: 0.15s; }
+  .feedback-table tbody tr.feedback-row:nth-child(4) { animation-delay: 0.2s; }
+  .feedback-table tbody tr.feedback-row:nth-child(5) { animation-delay: 0.25s; }
+
+  /* Modal Styles - Enhanced */
+  .modal-header.bg-dark-blue {
+    background: linear-gradient(135deg, var(--color-dark-blue) 0%, #1a3d6f 100%) !important;
+    border-bottom: 3px solid var(--color-light-blue);
+  }
+
+  .modal-content {
+    border: none !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    box-shadow: 0 15px 50px rgba(16, 44, 89, 0.25) !important;
+  }
+
+  .modal-title {
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    font-size: 1.3rem !important;
+  }
+
+  .modal-body {
+    padding: 2rem !important;
+    background: #fafbfc !important;
+  }
+
+  .modal-lg {
+    max-width: 800px !important;
+  }
+
+  @media (min-width: 992px) {
+    .modal-lg {
+      max-width: 800px !important;
+    }
+  }
+
+  .admin-response-modal {
+    border-left: 5px solid var(--color-dark-blue);
+    background: linear-gradient(135deg, rgba(157, 187, 206, 0.1) 0%, rgba(16, 44, 89, 0.05) 100%);
+    box-shadow: 0 3px 10px rgba(16, 44, 89, 0.1);
+  }
+
+  .admin-response-modal h6 {
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  /* Enhanced admin response in modal */
+  .admin-response-modal-enhanced {
+    border-left: 6px solid var(--color-dark-blue) !important;
+    background: linear-gradient(135deg, rgba(157, 187, 206, 0.15) 0%, rgba(16, 44, 89, 0.08) 100%) !important;
+    box-shadow: 0 6px 16px rgba(16, 44, 89, 0.15) !important;
+    border-radius: 12px;
+    margin: 1rem 0 !important;
+    padding: 1.5rem !important;
+  }
+
+  .admin-response-modal-enhanced h6 {
+    color: var(--color-dark-blue) !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .response-content-box {
+    background: white !important;
+    border: 2px solid rgba(157, 187, 206, 0.4) !important;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    padding: 1.2rem !important;
+    border-radius: 8px !important;
+    margin-top: 0.8rem !important;
+  }
+
+  .response-content-box p {
+    color: #333 !important;
+    font-size: 15px !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+    .feedback-table {
+      font-size: 0.9rem;
+    }
+    
+    .feedback-table td,
+    .feedback-table th {
+      padding: 0.75rem 0.5rem;
+    }
+
+    .admin-response-inline {
+      padding: 0.8rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .admin-response-inline {
+      padding: 0.6rem;
+    }
+    
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.3em 0.6em;
+    }
+
+    .btn-dark-blue,
+    .btn-light-blue,
+    .btn-red {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .admin-badge {
+      font-size: 0.7rem;
+      padding: 0.3rem 0.6rem;
+    }
+  }
+
+  /* Additional Polish */
+  .hero-feedback img {
+    transition: all 0.4s ease;
+  }
+
+  .hero-feedback img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(16, 44, 89, 0.2) !important;
+  }
+
+  .bg-white.p-5.rounded-4.shadow-lg {
+    transition: all 0.3s ease;
+  }
+
+  .bg-white.p-5.rounded-4.shadow-lg:hover {
+    box-shadow: 0 12px 32px rgba(16, 44, 89, 0.15) !important;
+  }
+
+  /* Page Title Enhancement */
+  .page-title h1 {
+    color: var(--color-dark-blue);
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(16, 44, 89, 0.1);
+  }
+
+  .breadcrumbs a {
+    color: var(--color-light-blue);
+    transition: all 0.2s ease;
+  }
+
+  .breadcrumbs a:hover {
+    color: var(--color-dark-blue);
+    transform: translateX(3px);
+  }
+
+  /* Search & Sort Bar Styles */
+  .search-sort-bar {
+    background: linear-gradient(135deg, rgba(157, 187, 206, 0.08) 0%, rgba(16, 44, 89, 0.03) 100%);
+    border: 1px solid rgba(157, 187, 206, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .search-sort-bar:hover {
+    border-color: rgba(157, 187, 206, 0.4);
+    box-shadow: 0 4px 12px rgba(16, 44, 89, 0.08);
+  }
+
+  .search-sort-bar .form-control,
+  .search-sort-bar .form-select {
+    border: 2px solid rgba(157, 187, 206, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .search-sort-bar .form-control:focus,
+  .search-sort-bar .form-select:focus {
+    border-color: var(--color-light-blue);
+    box-shadow: 0 0 0 0.2rem rgba(157, 187, 206, 0.25);
+  }
+
+  .search-sort-bar .form-label {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .search-sort-bar .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+</style>
+
+</body>
+{% endblock %}

@@ -40,14 +40,14 @@ class Feedback
         return $this->id;
     }
 
-    public function getContenue(): ?string
+    public function getContenu(): ?string
     {
-        return $this->contenue;
+        return $this->contenu;
     }
 
-    public function setContenue(string $contenue): static
+    public function setContenu(string $contenu): static
     {
-        $this->contenue = $contenue;
+        $this->contenu = $contenu;
 
         return $this;
     }

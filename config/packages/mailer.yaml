@@ -1,6 +1,7 @@
-# config/packages/mailer.yaml
-
 framework:
     mailer:
-        dsn: '%env(MAILER_DSN)%'
-        message_bus: false   # ← cette ligne désactive Messenger pour les emails
+        dsn: '%env(MAILER_DSN_AMAL)%'
+        envelope:
+            sender: 'amal.mokdad07@gmail.com'
+        headers:
+            from: 'Mentor Platform <amal.mokdad07@gmail.com>'

@@ -136,9 +136,31 @@
 							</ul>
 						</li>
 
-						<li>
-							<a href="{{ path('front_contact') }}">Contact</a>
-						</li>
+ <li class="dropdown">
+          <a href="#">
+            <span>contact</span>
+            {% set newTreatedCount = get_new_treated_count() %}
+            {% if newTreatedCount > 0 %}
+              <span class="notification-bell">
+                <i class="bi bi-bell-fill notification-bell-icon"></i>
+                <span class="notification-bell-badge">{{ newTreatedCount }}</span>
+              </span>
+            {% endif %}
+            <i class="bi bi-chevron-down toggle-dropdown"></i>
+          </a>
+          <ul>
+            <li><a href="{{ path('front_contact') }}">form feedback</a></li>
+            <li>
+              <a href="{{ path('front_feedback_list') }}">
+                Liste des feedbacks
+                {% if newTreatedCount > 0 %}
+                  <span class="notification-badge-small">{{ newTreatedCount }}</span>
+                {% endif %}
+              </a>
+            </li>
+          </ul>
+        </li>
+
 						<li>
 							<a href="{{ path('front_pricing') }}">Pricing</a>
 						</li>
