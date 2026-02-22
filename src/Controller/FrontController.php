@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Repository\HumeurRepository;
+use App\Repository\ProfilApprentissageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -40,9 +42,61 @@ final class FrontController extends AbstractController
     }
 
     #[Route('instructor-profile', name: 'instructor_profile')]
-    public function instructorProfile(): Response
-    {
-        return $this->render('front/instructor-profile.html.twig');
+    public function instructorProfile(
+        HumeurRepository $humeurRepository,
+        ProfilApprentissageRepository $profilRepository
+    ): Response {
+        // Mood tracker data
+        $profil = $profilRepository->findOneBy([]);  // TODO: Get actual user profile
+        
+        $todayMood = null;
+        $moods = [];
+        $averageMood = null;
+        $longestStreak = 0;
+        
+        if ($profil) {
+            $todayMood = $humeurRepository->getTodayMood($profil);
+            $moods = $humeurRepository->getLastNDaysMoods($profil, 14);
+            $averageMood = $humeurRepository->getAverageMood($profil, 7);
+            $longestStreak = $humeurRepository->getLongestStreak($profil);
+        }
+
+        $moodLabels = [
+            1 => 'Très Triste',
+            2 => 'Triste',
+            3 => 'Neutre',
+            4 => 'Heureux',
+            5 => 'Très Heureux'
+        ];
+
+        $moodEmojis = [
+            1 => '😢',
+            2 => '😔',
+            3 => '😐',
+            4 => '😊',
+            5 => '😄'
+        ];
+
+        $moodColors = [
+            1 => '#FF6B6B',
+            2 => '#9B59B6',
+            3 => '#3498DB',
+            4 => '#2ECC71',
+            5 => '#F1C40F'
+        ];
+
+        return $this->render('front/instructor-profile.html.twig', [
+            'todayMood' => $todayMood,
+            'moods' => $moods,
+            'averageMood' => $averageMood,
+            'longestStreak' => $longestStreak,
+            'moodLabels' => $moodLabels,
+            'moodEmojis' => $moodEmojis,
+            'moodColors' => $moodColors,
+            'userName' => $profil?->getUtilisateur()?->getPrenom()
+                ?? $profil?->getUtilisateur()?->getNom()
+                ?? 'User',
+        ]);
     }
 
     #[Route('events', name: 'events')]

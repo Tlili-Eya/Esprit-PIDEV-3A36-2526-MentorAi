@@ -1,163 +1,724 @@
 {% extends 'front/base.html.twig' %}
 
-{% block title %}Instructor Profile{% endblock %}
+{% block title %}Suivi de l'Humeur{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #F4F7FF;
+            --text-primary: #1A1F36;
+            --text-secondary: #8F95B2;
+            --primary-blue: #4F6EF7;
+            --card-bg: #FFFFFF;
+            --shadow: 0 4px 20px rgba(79, 110, 247, 0.08);
+            --shadow-hover: 0 8px 30px rgba(79, 110, 247, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        /* Hero Header Section */
+        .hero-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        .greeting {
+            font-size: 0.9rem;
+            color: var(--primary-blue);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-date {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .primary-action-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 110, 247, 0.3);
+        }
+
+        .primary-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 110, 247, 0.4);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 3-Column Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 25% 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        /* Sidebar Cards */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .mood-pill {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .average-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0.5rem 0;
+        }
+
+        .entry-count {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .streak-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .streak-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .streak-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .content-row {
+            display: grid;
+            grid-template-columns: 60% 40%;
+            gap: 1.5rem;
+        }
+
+        /* Today's Mood Card */
+        .todays-mood-card {
+            position: relative;
+            padding: 2rem;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .mood-emoji-large {
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 6rem;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
+        }
+
+        .mood-content {
+            max-width: 60%;
+        }
+
+        .mood-label-large {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .mood-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .mood-tag {
+            background: rgba(79, 110, 247, 0.1);
+            color: var(--primary-blue);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Sleep & Reflection Cards */
+        .info-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .info-card {
+            flex: 1;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0.5rem 0;
+        }
+
+        /* Trend Chart */
+        .trend-chart-card {
+            padding: 2rem;
+        }
+
+        .chart-container {
+            margin-top: 2rem;
+            position: relative;
+            height: 300px;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 100%;
+            gap: 0.5rem;
+        }
+
+        .chart-bar-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-bar {
+            width: 100%;
+            max-width: 40px;
+            background: linear-gradient(180deg, var(--bar-color) 0%, var(--bar-color-light) 100%);
+            border-radius: 8px 8px 0 0;
+            transition: all 0.5s ease;
+            animation: barGrow 0.8s ease forwards;
+        }
+
+        @keyframes barGrow {
+            from {
+                height: 0;
+            }
+            to {
+                height: var(--bar-height);
+            }
+        }
+
+        .chart-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            background: rgba(26, 31, 54, 0.9) !important;
+            backdrop-filter: blur(4px);
+            z-index: 999999 !important;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex !important;
+            opacity: 1 !important;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 10000;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(143, 149, 178, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(79, 110, 247, 0.1);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-blue);
+            transition: width 0.3s ease;
+        }
+
+        .modal-body {
+            padding: 2rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Mood Selection (Step 1) */
+        .mood-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .mood-option {
+            background: var(--card-bg);
+            border: 2px solid rgba(143, 149, 178, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mood-option:hover {
+            border-color: var(--primary-blue);
+            transform: translateX(4px);
+        }
+
+        .mood-option.selected {
+            border-color: var(--primary-blue);
+            background: rgba(79, 110, 247, 0.05);
+            position: relative;
+        }
+
+        .mood-option.selected::after {
+            content: "✓";
+            position: absolute;
+            right: 1.5rem;
+            color: var(--primary-blue);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .mood-emoji {
+            font-size: 2rem;
+        }
+
+        .mood-text {
+            flex: 1;
+        }
+
+        .mood-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Tags Selection (Step 2) */
+        .tags-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .tag-option {
+            background: var(--card-bg);
+            border: 2px solid rgba(143, 149, 178, 0.2);
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .tag-option:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .tag-option.selected {
+            border-color: var(--primary-blue);
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        /* Journal (Step 3) */
+        .journal-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 2px solid rgba(143, 149, 178, 0.2);
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        .journal-textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .journal-textarea.error {
+            border-color: #FF6B6B;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .char-count.error {
+            color: #FF6B6B;
+        }
+
+        .error-message {
+            color: #FF6B6B;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Sleep Selection (Step 4) */
+        .sleep-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .sleep-option {
+            background: var(--card-bg);
+            border: 2px solid rgba(143, 149, 178, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .sleep-option:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .sleep-option.selected {
+            border-color: var(--primary-blue);
+            background: rgba(79, 110, 247, 0.05);
+        }
+
+        /* Modal Footer */
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(143, 149, 178, 0.1);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary {
+            background: rgba(143, 149, 178, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(143, 149, 178, 0.2);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #3d5ce5;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-row {
+                grid-template-columns: 1fr;
+            }
+
+            .mood-content {
+                max-width: 100%;
+                margin-bottom: 4rem;
+            }
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-
-<main class="main instructor-profile-page">
-
-  <!-- Page Title -->
-  <div class="page-title light-background">
-    <div class="container d-lg-flex justify-content-between align-items-center">
-      <h1 class="mb-2 mb-lg-0">Instructor Profile</h1>
-      <nav class="breadcrumbs">
-        <ol>
-          <li><a href="{{ path('front_home') }}">Home</a></li>
-          <li class="current">Instructor Profile</li>
-        </ol>
-      </nav>
+<div class="main-container">
+    <!-- Hero Header -->
+    <div class="hero-header">
+        <div class="greeting">Bonjour {{ userName }}!</div>
+        <h1 class="hero-title">Comment vous sentez-vous aujourd'hui?</h1>
+        <div class="hero-date">{{ "now"|date("l d F Y") }}</div>
+        <button onclick="openMoodModal()" class="primary-action-btn">
+            {{ todayMood ? 'Modifier l\'humeur du jour' : 'Enregistrer l\'humeur du jour' }}
+        </button>
     </div>
-  </div>
-  <!-- End Page Title -->
 
-  <!-- Instructor Profile Section -->
-  <section id="instructor-profile" class="instructor-profile section">
-
-    <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="instructor-hero-banner" data-aos="zoom-out" data-aos-delay="200">
-            <div class="hero-background">
-              <img src="{{ asset('assets/img/education/showcase-4.webp') }}" class="img-fluid" alt="">
-              <div class="hero-overlay"></div>
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Average Mood Card -->
+            <div class="card">
+                <div class="card-title">Humeur Moyenne</div>
+                {% if averageMood %}
+                    <div class="mood-pill" style="background: {{ moodColors[averageMood] }}20; color: {{ moodColors[averageMood] }};">
+                        {{ moodLabels[averageMood] }}
+                    </div>
+                    <div class="entry-count">Basé sur les 7 derniers jours</div>
+                {% else %}
+                    <div class="entry-count">Aucune donnée disponible</div>
+                {% endif %}
             </div>
 
-            <div class="hero-content">
-              <div class="instructor-avatar">
-                <img src="{{ asset('assets/img/education/teacher-7.webp') }}" class="img-fluid" alt="">
-                <div class="status-badge">
-                  <i class="bi bi-patch-check-fill"></i>
-                  <span>Verified</span>
-                </div>
-              </div>
-
-              <div class="instructor-info">
-                <h2>Prof. Alexandra Chen</h2>
-                <p class="title">Machine Learning &amp; AI Specialist</p>
-
-                <div class="credentials">
-                  <span class="credential">Ph.D. MIT</span>
-                  <span class="credential">10+ Years</span>
-                  <span class="credential">15,247 Students</span>
-                </div>
-
-                <div class="rating-overview">
-                  <div class="stars">
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-half"></i>
-                  </div>
-                  <span class="rating-text">4.9 rating from 3,821 reviews</span>
-                </div>
-
-                <div class="contact-actions">
-                  <a href="#" class="btn-contact">
-                    <i class="bi bi-envelope"></i>
-                    Contact Instructor
-                  </a>
-                  <div class="social-media">
-                    <a href="#"><i class="bi bi-linkedin"></i></a>
-                    <a href="#"><i class="bi bi-twitter-x"></i></a>
-                    <a href="#"><i class="bi bi-youtube"></i></a>
-                  </div>
-                </div>
-              </div>
+            <!-- Longest Streak Card -->
+            <div class="card">
+                <div class="card-title">Meilleure Série</div>
+                <div class="streak-icon">🔥</div>
+                <div class="streak-value">{{ longestStreak }}</div>
+                <div class="streak-label">jours consécutifs</div>
             </div>
-
-          </div>
-        </div>
-      </div>
-
-      <div class="row gy-5 mt-4">
-
-        <!-- LEFT CONTENT -->
-        <div class="col-lg-8">
-          <div class="content-tabs" data-aos="fade-right" data-aos-delay="300">
-
-            <ul class="nav nav-tabs custom-tabs" role="tablist">
-              <li class="nav-item">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#about" type="button">
-                  <i class="bi bi-person"></i> About
-                </button>
-              </li>
-              <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#experience" type="button">
-                  <i class="bi bi-briefcase"></i> Experience
-                </button>
-              </li>
-              <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#courses" type="button">
-                  <i class="bi bi-book"></i> Courses
-                </button>
-              </li>
-              <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews" type="button">
-                  <i class="bi bi-star"></i> Reviews
-                </button>
-              </li>
-            </ul>
-
-            <div class="tab-content custom-tab-content">
-
-              <div class="tab-pane fade show active" id="about">
-                <p>
-                  Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.
-                </p>
-              </div>
-
-              <div class="tab-pane fade" id="experience">
-                <p>Professional experience timeline…</p>
-              </div>
-
-              <div class="tab-pane fade" id="courses">
-                <p>Courses taught by the instructor…</p>
-              </div>
-
-              <div class="tab-pane fade" id="reviews">
-                <p>Student reviews…</p>
-              </div>
-
-            </div>
-
-          </div>
         </div>
 
-        <!-- SIDEBAR -->
-        <div class="col-lg-4">
-          <div class="sidebar-widgets" data-aos="fade-left" data-aos-delay="300">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Row: Today's Mood & Sleep -->
+            <div class="content-row">
+                <!-- Today's Mood -->
+                <div class="card todays-mood-card" id="todaysMoodCard">
+                    {% if todayMood %}
+                        <div class="mood-emoji-large">{{ moodEmojis[todayMood.valeurHumeur] }}</div>
+                        <div class="mood-content">
+                            <div class="mood-label-large">Je me sens {{ moodLabels[todayMood.valeurHumeur] }}</div>
+                            {% if todayMood.tendance %}
+                                <div class="mood-tags" id="displayTags">
+                                    {% for tag in todayMood.tendance|split(',') %}
+                                        {% if tag %}
+                                            <span class="mood-tag">{{ tag }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">😊</div>
+                            <p>Enregistrez votre première humeur!</p>
+                        </div>
+                    {% endif %}
+                </div>
 
-            <div class="stats-widget">
-              <h4>Teaching Impact</h4>
-              <ul>
-                <li>15,247 Students</li>
-                <li>18 Active Courses</li>
-                <li>94% Completion Rate</li>
-                <li>10+ Years Teaching</li>
-              </ul>
+                <!-- Info Cards -->
+                <div class="info-cards">
+                    <div class="card info-card">
+                        <div class="card-title">Sommeil</div>
+                        <div class="info-value" id="sleepDisplay">
+                            {% if todayMood %}7-8 heures{% else %}Non enregistré{% endif %}
+                        </div>
+                    </div>
+                    <div class="card info-card">
+                        <div class="card-title">Réflexion du jour</div>
+                        <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);" id="journalDisplay">
+                            {% if todayMood and todayMood.facteurPrincipal %}
+                                {{ todayMood.facteurPrincipal }}
+                            {% else %}
+                                Aucune réflexion
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
 
-          </div>
+            <!-- Trend Chart -->
+            <div class="card trend-chart-card">
+                <div class="card-title">Tendances de l'humeur et du sommeil</div>
+                <div class="chart-container">
+                    {% if moods is not empty %}
+                        <div class="chart-bars" id="chartBars">
+                            {% for mood in moods %}
+                                <div class="chart-bar-wrapper">
+                                    <div class="chart-bar" 
+                                         style="--bar-height: {{ (mood.valeurHumeur / 5 * 100) }}%; 
+                                                --bar-color: {{ moodColors[mood.valeurHumeur] }}; 
+                                                --bar-color-light: {{ moodColors[mood.valeurHumeur] }}80;">
+                                    </div>
+                                    <div class="chart-label">{{ mood.creeLe|date('d M') }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <p>Aucune donnée de tendance disponible. Commencez à enregistrer votre humeur!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-
-      </div>
-
     </div>
-  </section>
-  <!-- /Instructor Profile Section -->
+</div>
 
-</main>
+{% include 'front/partials/_mood_tracker_content.html.twig' %}
 
 {% endblock %}
+

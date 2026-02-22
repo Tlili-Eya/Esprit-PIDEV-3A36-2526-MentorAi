@@ -1,104 +1,300 @@
 {% extends 'front/base.html.twig' %}
 
 {% block body %}
-<body class="course-details-page">
-
-<main class="main">
-
-  <!-- Page Title -->
-  <div class="page-title light-background">
-    <div class="container d-lg-flex justify-content-between align-items-center">
-      <h1 class="mb-2 mb-lg-0">Course Details</h1>
-      <nav class="breadcrumbs">
-        <ol>
-          <li><a href="{{ path('app_home') }}">Home</a></li>
-          <li class="current">Course Details</li>
-        </ol>
-      </nav>
-    </div>
-  </div>
-
-  <!-- Course Details Section -->
-  <section id="course-details" class="course-details section">
-
-    <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-      <div class="row">
+<div class="container-fluid py-4">
+    <div class="row h-100 g-4">
+        <!-- MAIN CHAT AREA -->
         <div class="col-lg-8">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">🎓 Assistant d'étude Personnalisé</h5>
+                        {% if needsPersonalityTest is defined and needsPersonalityTest %}
+                            <small class="text-warning-light">⚠️ Complétez le test de personnalité pour une meilleure expérience</small>
+                        {% endif %}
+                    </div>
+                    {% if profil is defined and profil %}
+                        <span class="badge bg-light text-dark">{{ profil.getTypePers() ?? 'Non défini' }}</span>
+                    {% else %}
+                        <span class="badge bg-light text-dark">Non défini</span>
+                    {% endif %}
+                </div>
 
-          <!-- Course Hero -->
-          <div class="course-hero" data-aos="fade-up" data-aos-delay="200">
-            <div class="hero-content">
-              <div class="course-badge">
-                <span class="category">Web Development</span>
-                <span class="level">Advanced</span>
-              </div>
-              <h1>Full Stack JavaScript Mastery</h1>
-              <p class="course-subtitle">
-                Master modern web development with React, Node.js, and MongoDB
-              </p>
+                <!-- Chat History -->
+                <div id="chat-box" class="card-body flex-grow-1" style="overflow-y: auto; max-height: 60vh; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                    {% for msg in history %}
+                        <div class="mb-3 d-flex {% if msg.role == 'user' %}justify-content-end{% else %}justify-content-start{% endif %}">
+                            <div class="{% if msg.role == 'user' %}bg-primary text-white{% else %}bg-light text-dark{% endif %} rounded-lg p-3" style="max-width: 75%; word-wrap: break-word;">
+                                <small class="d-block fw-bold mb-1">{{ msg.role == 'user' ? '👤 Vous' : '🤖 Assistant' }}</small>
+                                <p class="mb-0">{{ msg.content|nl2br }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Message Input -->
+                <div class="card-footer bg-light border-top">
+                    <form id="chat-form" class="d-flex gap-2">
+                        <input type="text" id="message-input" class="form-control" placeholder="Posez votre question..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary" id="send-btn">
+                            <i class="fas fa-paper-plane"></i> Envoyer
+                        </button>
+                    </form>
+                </div>
             </div>
-
-            <div class="hero-image">
-              <img src="{{ asset('assets/img/education/courses-8.webp') }}" class="img-fluid" alt="">
-            </div>
-          </div>
-
-          <!-- Tabs -->
-          <div class="course-nav-tabs">
-            <ul class="nav nav-tabs">
-              <li class="nav-item">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview">
-                  Overview
-                </button>
-              </li>
-              <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#curriculum">
-                  Curriculum
-                </button>
-              </li>
-              <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews">
-                  Reviews
-                </button>
-              </li>
-            </ul>
-
-            <div class="tab-content">
-
-              <div class="tab-pane fade show active" id="overview">
-                <h3>Course Description</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-              </div>
-
-              <div class="tab-pane fade" id="curriculum">
-                <p>Curriculum content here</p>
-              </div>
-
-              <div class="tab-pane fade" id="reviews">
-                <p>Reviews content here</p>
-              </div>
-
-            </div>
-          </div>
-
         </div>
 
-        <!-- Sidebar -->
+        <!-- SIDEBAR CONTROLS -->
         <div class="col-lg-4">
-          <div class="enrollment-card">
-            <h3>$149</h3>
-            <button class="btn btn-primary w-100">Enroll Now</button>
-          </div>
+            <!-- Document Upload -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">📚 Importer un Document</h6>
+                </div>
+                <div class="card-body">
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="pdf-file" class="form-label fw-bold">📄 PDF, Image ou Lien</label>
+                            <input type="file" class="form-control form-control-sm" id="pdf-file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp">
+                            <small class="text-muted d-block mt-2">Formats: PDF, JPG, PNG, WebP</small>
+                            <small class="text-muted d-block">─ OU ─</small>
+                            <input type="url" class="form-control form-control-sm mt-2" id="youtube-link" name="link" placeholder="Ex: https://youtube.com/watch?v=...">
+                        </div>
+                        <button type="submit" class="btn btn-info w-100 btn-sm">
+                            <i class="fas fa-upload"></i> Charger Document
+                        </button>
+                    </form>
+                    <div id="document-status" class="mt-3 p-2 rounded" style="display:none;">
+                        <!-- Status message will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Format Selection -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">📋 Format Préféré</h6>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group w-100 flex-wrap" role="group">
+                        <input type="radio" class="btn-check format-toggle" name="format" id="format-text" value="text" checked>
+                        <label class="btn btn-outline-success" for="format-text">📝 Texte</label>
+
+                        <input type="radio" class="btn-check format-toggle" name="format" id="format-audio" value="audio">
+                        <label class="btn btn-outline-success" for="format-audio">🎵 Audio</label>
+
+                        <input type="radio" class="btn-check format-toggle" name="format" id="format-mindmap" value="mindmap">
+                        <label class="btn btn-outline-success" for="format-mindmap">🧠 Mindmap</label>
+
+                        <input type="radio" class="btn-check format-toggle" name="format" id="format-quiz" value="quiz">
+                        <label class="btn btn-outline-success" for="format-quiz">❓ Quiz</label>
+                    </div>
+                    {% if profil is defined and profil %}
+                        <p class="text-muted small mt-2" id="format-hint">Votre format préféré : {{ profil.getFormatPréféré() ?? 'Non défini' }}</p>
+                    {% else %}
+                        <p class="text-muted small mt-2" id="format-hint">Votre format préféré : Non défini</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Content Generation -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">⚡ Générer du Contenu</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button id="summarize-btn" class="btn btn-outline-warning btn-sm" disabled>
+                            <i class="fas fa-compress"></i> Résumé
+                        </button>
+                        <button id="flashcard-btn" class="btn btn-outline-warning btn-sm" disabled>
+                            <i class="fas fa-layer-group"></i> Flashcards
+                        </button>
+                        <button id="quiz-btn" class="btn btn-outline-warning btn-sm" disabled>
+                            <i class="fas fa-question-circle"></i> Quiz
+                        </button>
+                    </div>
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="save-to-carnet" checked>
+                        <label class="form-check-label" for="save-to-carnet">
+                            Enregistrer dans mes notes
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mood & Engagement -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">💭 Votre État</h6>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <p><strong>Humeur :</strong> <span id="mood-value">--</span>/10</p>
+                        {% if profil is defined and profil %}
+                            <p><strong>Concentration :</strong> <span id="concentration-value">{{ profil.getNiveauConcentration() ?? '7' }}</span>/10</p>
+                            <p><strong>Vitesse d'apprentissage :</strong> {{ profil.getVitesseApprentissage() ?? 'Normal' }}</p>
+                            <p><strong>Matières fortes :</strong> {{ profil.getMatieresFortes() ?? '?' }}</p>
+                        {% else %}
+                            <p><strong>Concentration :</strong> <span id="concentration-value">7</span>/10</p>
+                            <p><strong>Vitesse d'apprentissage :</strong> Normal</p>
+                            <p><strong>Matières fortes :</strong> ?</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Player (when generated) -->
+            <div id="audio-player-container" class="card shadow-sm mb-3" style="display:none;">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">🎧 Écouter</h6>
+                </div>
+                <div class="card-body">
+                    <audio id="audio-player" controls class="w-100">
+                        <source id="audio-src" type="audio/mpeg">
+                    </audio>
+                </div>
+            </div>
         </div>
-
-      </div>
-
     </div>
+</div>
 
-  </section>
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.rounded-lg {
+    border-radius: 0.75rem;
+}
+#chat-box {
+    scroll-behavior: smooth;
+}
+</style>
 
-</main>
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('message-input');
+    const formatButtons = document.querySelectorAll('.format-toggle');
+    let currentFormat = 'text';
+    let documentLoaded = false;
 
-</body>
+    // Message sending
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = input.value.trim();
+        if (!message) return;
+
+        appendMessage('user', message);
+        input.value = '';
+
+        try {
+            const response = await fetch('{{ path('app_chat_message') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, format: currentFormat })
+            });
+            const data = await response.json();
+            if (data.response) {
+                appendMessage('assistant', data.response);
+            }
+        } catch (error) {
+            appendMessage('assistant', '❌ Erreur de communication. Réessayez.');
+        }
+    });
+
+    // Format selection
+    formatButtons.forEach(btn => {
+        btn.addEventListener('change', (e) => {
+            currentFormat = e.target.value;
+        });
+    });
+
+    // Document upload
+    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const statusEl = document.getElementById('document-status');
+
+        try {
+            const response = await fetch('{{ path('app_chat_upload') }}', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.success) {
+                documentLoaded = true;
+                document.querySelectorAll('#summarize-btn, #flashcard-btn, #quiz-btn').forEach(btn => {
+                    btn.disabled = false;
+                });
+                statusEl.style.display = 'block';
+                statusEl.className = 'p-2 rounded bg-success-light text-success';
+                statusEl.textContent = '✓ Document chargé !';
+                appendMessage('assistant', data.message);
+            }
+        } catch (error) {
+            statusEl.style.display = 'block';
+            statusEl.className = 'p-2 rounded bg-danger-light text-danger';
+            statusEl.textContent = '✗ Erreur lors du chargement';
+        }
+    });
+
+    // Summarize button
+    document.getElementById('summarize-btn').addEventListener('click', async () => {
+        if (!documentLoaded) return;
+        const save = document.getElementById('save-to-carnet').checked;
+        try {
+            const response = await fetch('{{ path('app_chat_summarize') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ format: currentFormat, saveToCarnet: save })
+            });
+            const data = await response.json();
+            if (data.format === 'audio' && data.audio_url) {
+                document.getElementById('audio-src').src = data.audio_url;
+                document.getElementById('audio-player-container').style.display = 'block';
+                appendMessage('assistant', `🎵 Résumé audio généré. Format: ${currentFormat}`);
+            } else if (data.text) {
+                appendMessage('assistant', `📄 **Résumé (${currentFormat}):** \n${data.text}`);
+            }
+        } catch (error) {
+            appendMessage('assistant', '❌ Erreur lors de la génération du résumé.');
+        }
+    });
+
+    // Quiz button
+    document.getElementById('quiz-btn').addEventListener('click', async () => {
+        if (!documentLoaded) return;
+        try {
+            const response = await fetch('{{ path('app_generate_quiz') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const data = await response.json();
+            if (data.quiz && data.quiz.length > 0) {
+                appendMessage('assistant', `📝 ${data.quiz.length} questions générées. Quiz prêt à commencer!`);
+            }
+        } catch (error) {
+            appendMessage('assistant', '❌ Erreur lors de la génération du quiz.');
+        }
+    });
+
+    function appendMessage(role, content) {
+        const div = document.createElement('div');
+        div.className = `mb-3 d-flex ${role === 'user' ? 'justify-content-end' : 'justify-content-start'}`;
+        const msgClass = role === 'user' ? 'bg-primary text-white' : 'bg-light text-dark';
+        div.innerHTML = `
+            <div class="${msgClass} rounded-lg p-3" style="max-width: 75%; word-wrap: break-word;">
+                <small class="d-block fw-bold mb-1">${role === 'user' ? '👤 Vous' : '🤖 Assistant'}</small>
+                <p class="mb-0">${content.replace(/\n/g, '<br>')}</p>
+            </div>
+        `;
+        chatBox.appendChild(div);
+        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+    }
+
+    // Init scroll
+    chatBox.scrollTop = chatBox.scrollHeight;
+</script>
 {% endblock %}
