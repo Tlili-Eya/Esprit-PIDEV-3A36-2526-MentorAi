@@ -1,8 +1,8 @@
 # This file is the entry point to configure your own services.
 # Files in the packages/ subdirectory configure your dependencies.
-
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+
 parameters:
     pdp_directory: '%kernel.project_dir%/public/uploads/pdp'
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
@@ -25,28 +25,33 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    # ✅ Service d'analyse d'émotions Azure
+    App\Service\AzureEmotionAnalysisService:
+        arguments:
+            $azureEndpoint: '%env(AZURE_TEXT_ANALYTICS_ENDPOINT)%'
+            $azureApiKey: '%env(AZURE_TEXT_ANALYTICS_KEY)%'
+
+    # ✅ Service DeepSeek
     App\Service\DeepSeekService:
         arguments:
             $apiKey: '%env(DEEPSEEK_API_KEY)%'
             $httpClient: '@http_client'
-            $requestStack: '@request_stack'  # ← Changé ici
+            $requestStack: '@request_stack'
             $logger: '@logger'
 
+    # ✅ Commande de test DeepSeek
     App\Command\TestDeepSeekCommand:
         arguments:
             $apiKey: '%env(DEEPSEEK_API_KEY)%'
-#security:
-    #firewalls:
-        #main:
-            #form_login:
-                # ... autres configs ...
-                #remember_me: false   # optionnel
 
-    # Ajoute cette ligne (attention : réduit la sécurité)
-    #hide_user_not_found: false
-
+    # ✅ Service Ollama
     App\Service\OllamaService:
         arguments:
-            #$httpClient: '@http_client'
             $logger: '@logger'
-            #$requestStack: '@request_stack'
+
+security:
+    firewalls:
+        main:
+            form_login:
+                remember_me: false
+    hide_user_not_found: false

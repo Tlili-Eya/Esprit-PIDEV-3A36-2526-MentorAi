@@ -1,0 +1,270 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Modifier Traitement{% endblock %}
+
+{% block body %}
+<main class="main">
+
+  <!-- Page Title avec couleurs charte -->
+  <div class="page-title" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);">
+    <div class="container py-4">
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{{ path('back_home') }}" class="text-dark">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{{ path('back_contact') }}" class="text-dark">Feedbacks</a></li>
+          <li class="breadcrumb-item active">Modifier Traitement</li>
+        </ol>
+      </nav>
+      <h1 class="text-dark">
+        <i class="bi bi-pencil-square me-2"></i>
+        Modifier le Traitement
+      </h1>
+    </div>
+  </div>
+
+  <div class="container py-5">
+    <div class="row g-4">
+      
+      <!-- COLONNE GAUCHE : Info feedback (lecture seule) -->
+      <div class="col-lg-5 mb-4">
+        <div class="card shadow-lg border-0 sticky-top" style="border-radius: 20px; overflow: hidden; top: 20px;">
+          <div class="card-header py-3" style="background: linear-gradient(135deg, #6c757d, #adb5bd);">
+            <h5 class="mb-0 text-white">
+              <i class="bi bi-info-circle me-2"></i>
+              Feedback #{{ feedback.id }}
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            
+            <!-- Utilisateur -->
+            <div class="mb-3 p-3 rounded" style="background-color: #f8f9fa;">
+              <div class="d-flex align-items-center">
+                <div class="avatar me-3" style="background: linear-gradient(135deg, #102c59, #9dbbce); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                  {{ feedback.utilisateur.nom|slice(0, 1) }}{{ feedback.utilisateur.prenom|slice(0, 1) }}
+                </div>
+                <div>
+                  <div class="fw-bold" style="color: #102c59;">{{ feedback.utilisateur.nom }} {{ feedback.utilisateur.prenom }}</div>
+                  <small class="text-muted">{{ feedback.utilisateur.email }}</small>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Type -->
+            <div class="mb-3">
+              <strong style="color: #102c59;">Type :</strong>
+              {% if feedback.typefeedback == 'suggestion' %}
+                <span class="badge" style="background-color: #9dbbce;">Suggestion</span>
+              {% elseif feedback.typefeedback == 'probleme' %}
+                <span class="badge" style="background-color: #d52e28;">Problème</span>
+              {% else %}
+                <span class="badge bg-success">Satisfaction</span>
+              {% endif %}
+            </div>
+            
+            <!-- Note -->
+            <div class="mb-3">
+              <strong style="color: #102c59;">Note :</strong>
+              <div class="d-inline-block">
+                {% for i in 1..5 %}
+                  {% if i <= feedback.note %}
+                    <i class="bi bi-star-fill" style="color: #ffc107;"></i>
+                  {% else %}
+                    <i class="bi bi-star text-muted"></i>
+                  {% endif %}
+                {% endfor %}
+                <span class="text-muted">({{ feedback.note }}/5)</span>
+              </div>
+            </div>
+            
+            <!-- Date -->
+            <div class="mb-3">
+              <strong style="color: #102c59;">Date :</strong> {{ feedback.datefeedback|date('d/m/Y à H:i') }}
+            </div>
+            
+            <!-- Message -->
+            <div>
+              <strong style="color: #102c59;">Message :</strong>
+              <div class="p-3 rounded mt-2" style="background-color: #f8f9fa; max-height: 150px; overflow-y: auto;">
+                {{ feedback.contenu }}
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+
+      <!-- COLONNE DROITE : Formulaire de modification -->
+      <div class="col-lg-7 mb-4">
+        <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+          <div class="card-header text-dark py-3" style="background-color: #ffc107;">
+            <h5 class="mb-0">
+              <i class="bi bi-pencil me-2"></i>
+              Formulaire de Modification
+            </h5>
+          </div>
+          <div class="card-body p-4">
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+              <div class="alert alert-success alert-dismissible fade show shadow-sm">
+                <i class="bi bi-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+              <div class="alert alert-danger alert-dismissible fade show shadow-sm">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+
+            <form method="post" 
+                  action="{{ path('back_traitement_edit', {id: traitement.id}) }}" 
+                  class="needs-validation" 
+                  novalidate>
+
+              <!-- Type de traitement -->
+              <div class="mb-4">
+                <label for="type_traitement" class="form-label fw-semibold" style="color: #102c59;">
+                  <i class="bi bi-list-check me-2"></i>
+                  Type de traitement <span class="text-danger">*</span>
+                </label>
+                <select id="type_traitement" name="type_traitement" 
+                        class="form-select form-select-lg shadow-sm" 
+                        style="border-radius: 10px; border: 2px solid #9dbbce;" 
+                        required>
+                  <option value="">-- Sélectionner --</option>
+                  <option value="remboursement" 
+                      {% if traitement.typetraitement == 'remboursement' %}selected{% endif %}>
+                    💰 Remboursement
+                  </option>
+                  <option value="prolongation_abonnement" 
+                      {% if traitement.typetraitement == 'prolongation_abonnement' %}selected{% endif %}>
+                    ⏰ Prolongation d'abonnement
+                  </option>
+                  <option value="geste_commercial" 
+                      {% if traitement.typetraitement == 'geste_commercial' %}selected{% endif %}>
+                    🎁 Geste commercial
+                  </option>
+                  <option value="aucun_traitement" 
+                      {% if traitement.typetraitement == 'aucun_traitement' %}selected{% endif %}>
+                    ✋ Aucun traitement nécessaire
+                  </option>
+                </select>
+                <div class="invalid-feedback">Veuillez sélectionner un type.</div>
+              </div>
+
+              <!-- Décision / Réponse -->
+              <div class="mb-4">
+                <label for="decision" class="form-label fw-semibold" style="color: #102c59;">
+                  <i class="bi bi-chat-right-text me-2"></i>
+                  Réponse à l'utilisateur <span class="text-danger">*</span>
+                </label>
+                <textarea 
+                  id="decision" 
+                  name="decision" 
+                  class="form-control form-control-lg shadow-sm" 
+                  style="border-radius: 10px; border: 2px solid #9dbbce;"
+                  rows="8" 
+                  required
+                  minlength="10"
+                  maxlength="1000">{{ traitement.description }}</textarea>
+                <div class="form-text">Minimum 10 caractères, maximum 1000</div>
+                <div class="invalid-feedback">
+                  Veuillez saisir une réponse (minimum 10 caractères).
+                </div>
+              </div>
+
+              <!-- Info -->
+              <div class="alert shadow-sm" style="background-color: #e7f3ff; border-left: 5px solid #102c59;">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Date de création :</strong> 
+                {{ traitement.datetraitement|date('d/m/Y à H:i') }}
+                <br>
+                <small>La date sera automatiquement mise à jour lors de la modification.</small>
+              </div>
+
+              <!-- Boutons -->
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-lg px-4 shadow-sm" style="background-color: #ffc107; color: #000; border-radius: 10px; font-weight: 600;">
+                  <i class="bi bi-check-circle me-2"></i>
+                  Enregistrer les modifications
+                </button>
+                <a href="{{ path('back_contact') }}" class="btn btn-outline-secondary btn-lg shadow-sm" style="border-radius: 10px;">
+                  <i class="bi bi-x-circle me-2"></i>Annuler
+                </a>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+(function() {
+  'use strict';
+  const forms = document.querySelectorAll('.needs-validation');
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+})();
+</script>
+
+<style>
+/* Couleurs de la charte */
+:root {
+  --color-innovation: #d52e28;
+  --color-connectivity: #102c59;
+  --color-tranquility: #9dbbce;
+}
+
+.card {
+  transition: all 0.3s ease;
+}
+
+.avatar {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Form styles */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--color-connectivity);
+  box-shadow: 0 0 0 0.2rem rgba(16, 44, 89, 0.25);
+}
+
+/* Buttons hover */
+button:hover,
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.6s ease;
+}
+</style>
+{% endblock %}

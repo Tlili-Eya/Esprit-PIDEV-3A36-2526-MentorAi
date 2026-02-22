@@ -1,0 +1,723 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Gestion des Feedbacks{% endblock %}
+
+{% block body %}
+<main class="main">
+
+  <!-- Page Title avec couleurs charte -->
+  <div class="page-title" style="background: linear-gradient(135deg, #102c59 0%, #9dbbce 100%);">
+    <div class="container d-lg-flex justify-content-between align-items-center py-4">
+      <div>
+        <h1 class="mb-2 text-white">
+          <i class="bi bi-chat-dots me-3"></i>Gestion des Feedbacks
+        </h1>
+        <p class="text-white-50 mb-0">Gérez les retours des utilisateurs</p>
+      </div>
+      <div class="d-flex gap-2 mt-3 mt-lg-0">
+        <span class="badge bg-warning text-dark fs-6 px-3 py-2 shadow">
+          <i class="bi bi-clock me-1"></i>
+          {{ feedbacksEnAttente|length }} en attente
+        </span>
+        <span class="badge bg-success fs-6 px-3 py-2 shadow">
+          <i class="bi bi-check-circle me-1"></i>
+          {{ feedbacksTraites|length }} traités
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container py-5">
+
+    <!-- Messages flash -->
+    {% for message in app.flashes('success') %}
+      <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle me-2"></i>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+      <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+
+    <!-- Bouton Export PDF -->
+    <div class="mb-4 text-end">
+      <a href="{{ path('back_feedbacks_export_all_pdf') }}" class="btn shadow-sm" style="background-color: #d52e28; color: white;">
+        <i class="bi bi-file-pdf me-2"></i>Exporter tous les feedbacks en PDF
+      </a>
+    </div>
+
+    <!-- Recherche et filtres -->
+    <div class="card shadow-lg border-0 mb-5" style="border-radius: 20px; overflow: hidden;">
+      <div class="card-header text-white py-3" style="background-color: #102c59;">
+        <h5 class="mb-0">
+          <i class="bi bi-funnel me-2"></i>Recherche et Filtres
+        </h5>
+      </div>
+      <div class="card-body p-4">
+        <form method="get" action="{{ path('back_contact') }}" class="row g-3">
+          <div class="col-md-8">
+            <label for="search_user" class="form-label fw-semibold">
+              <i class="bi bi-search me-2"></i>Rechercher un utilisateur
+            </label>
+            <input 
+              type="text" 
+              id="search_user" 
+              name="search_user" 
+              class="form-control form-control-lg shadow-sm" 
+              placeholder="Nom, prénom ou email..." 
+              value="{{ searchUser }}"
+              style="border-radius: 10px;">
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-lg w-100 shadow" style="background-color: #102c59; color: white; border-radius: 10px;">
+              <i class="bi bi-search me-2"></i>Rechercher
+            </button>
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input 
+                type="checkbox" 
+                id="only_untreated" 
+                name="only_untreated" 
+                value="1" 
+                class="form-check-input" 
+                {% if showOnlyUntreated %}checked{% endif %}>
+              <label for="only_untreated" class="form-check-label">
+                Afficher uniquement les feedbacks non traités
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Mots-clés répétitifs (Alerte) -->
+    {% if motsCles is not empty %}
+    <div class="card shadow-lg border-0 mb-5" style="border-radius: 20px; overflow: hidden; border-left: 5px solid #d52e28;">
+      <div class="card-header py-3" style="background-color: #fff3cd;">
+        <h5 class="mb-0 text-dark">
+          <i class="bi bi-exclamation-triangle me-2" style="color: #d52e28;"></i>
+          Mots-clés les plus fréquents (analyse des retours)
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+          {% for mot, count in motsCles %}
+            <span class="badge px-3 py-2 fs-6 shadow-sm" style="background-color: #d52e28; color: white;">
+              {{ mot }} <span class="badge bg-light text-dark ms-2">{{ count }}x</span>
+            </span>
+          {% endfor %}
+        </div>
+        <p class="text-muted small mt-3 mb-0">
+          <i class="bi bi-info-circle me-1"></i>
+          Si un mot comme "bug", "erreur" ou "problème" apparaît souvent, c'est peut-être un problème récurrent à traiter en priorité !
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- TABLEAU 1 : Feedbacks en attente -->
+    <div class="card shadow-lg border-0 mb-5" style="border-radius: 20px; overflow: hidden; border-left: 5px solid #ffc107;">
+      <div class="card-header text-dark py-3" style="background-color: #fff9e6;">
+        <h5 class="mb-0">
+          <i class="bi bi-hourglass-split me-2 text-warning"></i>
+          Feedbacks en attente de traitement
+        </h5>
+      </div>
+      <div class="card-body p-0">
+        {% if feedbacksEnAttente is empty %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+            <p class="mb-0">Aucun feedback en attente</p>
+          </div>
+        {% else %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 modern-table">
+              <thead style="background-color: #102c59; color: white;">
+                <tr>
+                  <th width="50">#ID</th>
+                  <th>Utilisateur</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Note</th>
+                  <th style="max-width: 300px;">Message</th>
+                  <th width="180">Émotion détectée</th>
+                  <th width="150" class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for feedback in feedbacksEnAttente %}
+                  <tr class="hover-row">
+                    <td class="fw-bold" style="color: #102c59;">#{{ feedback.id }}</td>
+                    
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar me-2" style="background: linear-gradient(135deg, #102c59, #9dbbce); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                          {{ feedback.utilisateur.nom|slice(0, 1) }}{{ feedback.utilisateur.prenom|slice(0, 1) }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ feedback.utilisateur.nom }} {{ feedback.utilisateur.prenom }}</div>
+                          <small class="text-muted">{{ feedback.utilisateur.email }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <td>
+                      {% if feedback.typefeedback == 'suggestion' %}
+                        <span class="badge shadow-sm" style="background-color: #9dbbce; color: white; padding: 8px 12px; border-radius: 10px;">
+                          <i class="bi bi-lightbulb me-1"></i>Suggestion
+                        </span>
+                      {% elseif feedback.typefeedback == 'probleme' %}
+                        <span class="badge shadow-sm" style="background-color: #d52e28; color: white; padding: 8px 12px; border-radius: 10px;">
+                          <i class="bi bi-exclamation-triangle me-1"></i>Problème
+                        </span>
+                      {% else %}
+                        <span class="badge shadow-sm" style="background-color: #28a745; color: white; padding: 8px 12px; border-radius: 10px;">
+                          <i class="bi bi-emoji-smile me-1"></i>Satisfaction
+                        </span>
+                      {% endif %}
+                    </td>
+                    
+                    <td>
+                      <small class="text-muted">
+                        <i class="bi bi-calendar3 me-1"></i>{{ feedback.datefeedback|date('d/m/Y') }}
+                        <br>
+                        <i class="bi bi-clock me-1"></i>{{ feedback.datefeedback|date('H:i') }}
+                      </small>
+                    </td>
+                    
+                    <td>
+                      <div class="stars-display">
+                        {% for i in 1..5 %}
+                          {% if i <= feedback.note %}
+                            <i class="bi bi-star-fill" style="color: #ffc107;"></i>
+                          {% else %}
+                            <i class="bi bi-star text-muted"></i>
+                          {% endif %}
+                        {% endfor %}
+                        <br>
+                        <small class="text-muted">({{ feedback.note }}/5)</small>
+                      </div>
+                    </td>
+                    
+                    <td style="max-width: 300px;">
+                      <div class="feedback-preview">
+                        {% if feedback.contenu|length > 80 %}
+                          {{ feedback.contenu|slice(0, 80) }}...
+                          <button 
+                            class="btn btn-sm btn-link p-0" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#modalFeedback{{ feedback.id }}">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                        {% else %}
+                          {{ feedback.contenu }}
+                        {% endif %}
+                      </div>
+                    </td>
+                    
+                    {# ✅ NOUVELLE COLONNE : ANALYSE D'ÉMOTIONS AZURE #}
+                    <td>
+                      {% if emotionAnalysis[feedback.id] is defined %}
+                        {% set emotion = emotionAnalysis[feedback.id] %}
+                        <div class="emotion-analysis">
+                          {# Badge principal avec émotion #}
+                          <div class="mb-2">
+                            {% if emotion.emotion == 'POSITIVE' %}
+                              <span class="badge bg-success d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                                {{ emotion.emoji }} POSITIVE
+                              </span>
+                            {% elseif emotion.emotion == 'NEGATIVE' %}
+                              <span class="badge bg-danger d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                                {{ emotion.emoji }} NEGATIVE
+                              </span>
+                            {% elseif emotion.emotion == 'MIXED' %}
+                              <span class="badge bg-warning text-dark d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                                {{ emotion.emoji }} MIXED
+                              </span>
+                            {% else %}
+                              <span class="badge bg-secondary d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                                {{ emotion.emoji }} NEUTRAL
+                              </span>
+                            {% endif %}
+                          </div>
+                          
+                          {# Scores avec barres de progression #}
+                          <div class="emotion-scores" style="font-size: 0.75rem;">
+                            <div class="mb-1">
+                              <span class="text-success">😊 {{ (emotion.scores.positive * 100)|round }}%</span>
+                              <div class="progress" style="height: 4px;">
+                                <div class="progress-bar bg-success" style="width: {{ (emotion.scores.positive * 100) }}%"></div>
+                              </div>
+                            </div>
+                            <div class="mb-1">
+                              <span class="text-secondary">😐 {{ (emotion.scores.neutral * 100)|round }}%</span>
+                              <div class="progress" style="height: 4px;">
+                                <div class="progress-bar bg-secondary" style="width: {{ (emotion.scores.neutral * 100) }}%"></div>
+                              </div>
+                            </div>
+                            <div class="mb-1">
+                              <span class="text-danger">😞 {{ (emotion.scores.negative * 100)|round }}%</span>
+                              <div class="progress" style="height: 4px;">
+                                <div class="progress-bar bg-danger" style="width: {{ (emotion.scores.negative * 100) }}%"></div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {# Recommandation #}
+                          <div class="mt-2">
+                            <small class="text-muted fst-italic">
+                              {{ emotion.recommendation }}
+                            </small>
+                          </div>
+                        </div>
+                      {% else %}
+                        <div class="text-center text-muted">
+                          <small>
+                            <i class="bi bi-hourglass-split"></i><br>
+                            Non analysé
+                          </small>
+                        </div>
+                      {% endif %}
+                    </td>
+                    
+                    <td class="text-center">
+                      <a href="{{ path('back_traitement', {id: feedback.id}) }}" 
+                         class="btn btn-sm shadow-sm" 
+                         style="background-color: #102c59; color: white; border-radius: 10px; padding: 8px 16px;">
+                        <i class="bi bi-gear me-1"></i>Traiter
+                      </a>
+                    </td>
+                  </tr>
+
+                  <!-- Modal pour voir le message complet -->
+                  <div class="modal fade" id="modalFeedback{{ feedback.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+                        <div class="modal-header text-white" style="background-color: #102c59;">
+                          <h5 class="modal-title">Feedback #{{ feedback.id }}</h5>
+                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                          <p><strong>Utilisateur :</strong> {{ feedback.utilisateur.nom }} {{ feedback.utilisateur.prenom }}</p>
+                          <p><strong>Email :</strong> {{ feedback.utilisateur.email }}</p>
+                          <p><strong>Type :</strong> {{ feedback.typefeedback|capitalize }}</p>
+                          <p><strong>Note :</strong> {{ feedback.note }}/5</p>
+                          <hr>
+                          <p><strong>Message :</strong></p>
+                          <div class="p-3 rounded" style="background-color: #f8f9fa;">
+                            <p class="mb-0">{{ feedback.contenu }}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- TABLEAU 2 : Historique des feedbacks traités -->
+    <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden; border-left: 5px solid #28a745;">
+      <div class="card-header text-white py-3" style="background-color: #28a745;">
+        <h5 class="mb-0">
+          <i class="bi bi-check-circle me-2"></i>
+          Historique des feedbacks traités
+        </h5>
+      </div>
+      <div class="card-body p-0">
+        {% if feedbacksTraites is empty %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-archive fs-1 d-block mb-3"></i>
+            <p class="mb-0">Aucun feedback traité pour le moment</p>
+          </div>
+        {% else %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 modern-table">
+              <thead style="background-color: #102c59; color: white;">
+                <tr>
+                  <th width="50">#ID</th>
+                  <th>Utilisateur</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Note</th>
+                  <th>Message</th>
+                  <th width="250">Réponse Admin</th>
+                  <th width="200" class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for feedback in feedbacksTraites %}
+                  <tr class="hover-row">
+                    <td class="fw-bold text-success">#{{ feedback.id }}</td>
+                    
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar me-2" style="background: linear-gradient(135deg, #28a745, #9dbbce); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                          {{ feedback.utilisateur.nom|slice(0, 1) }}{{ feedback.utilisateur.prenom|slice(0, 1) }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ feedback.utilisateur.nom }} {{ feedback.utilisateur.prenom }}</div>
+                          <small class="text-muted">{{ feedback.utilisateur.email }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <td>
+                      {% if feedback.typefeedback == 'suggestion' %}
+                        <span class="badge" style="background-color: #9dbbce; padding: 6px 10px; border-radius: 8px;">Suggestion</span>
+                      {% elseif feedback.typefeedback == 'probleme' %}
+                        <span class="badge" style="background-color: #d52e28; padding: 6px 10px; border-radius: 8px;">Problème</span>
+                      {% else %}
+                        <span class="badge bg-success" style="padding: 6px 10px; border-radius: 8px;">Satisfaction</span>
+                      {% endif %}
+                    </td>
+                    
+                    <td><small>{{ feedback.datefeedback|date('d/m/Y H:i') }}</small></td>
+                    <td><small>{{ feedback.note }}/5</small></td>
+                    <td style="max-width: 200px;"><small>{{ feedback.contenu|slice(0, 50) }}...</small></td>
+                    
+                    {# ✅ COLONNE RÉPONSE ADMIN AVEC EYE ICON #}
+                    <td style="max-width: 250px;">
+                      {% if feedback.traitement %}
+                        <div class="admin-response-summary">
+                          {# Badge du type de traitement #}
+                          <div class="mb-2">
+                            <span class="badge shadow-sm" style="background-color: #102c59; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem;">
+                              {% if feedback.traitement.typetraitement == 'remboursement' %}
+                                💰 Remboursement
+                              {% elseif feedback.traitement.typetraitement == 'prolongation_abonnement' %}
+                                📅 Prolongation
+                              {% elseif feedback.traitement.typetraitement == 'geste_commercial' %}
+                                🎁 Geste commercial
+                              {% elseif feedback.traitement.typetraitement == 'aucun_traitement' %}
+                                ℹ️ Aucun traitement
+                              {% else %}
+                                {{ feedback.traitement.typetraitement|replace({'_': ' '})|title }}
+                              {% endif %}
+                            </span>
+                          </div>
+                          
+                          {# Réponse admin avec eye icon si trop longue #}
+                          <div class="admin-response-text">
+                            {% if feedback.traitement.description|length > 60 %}
+                              <small class="text-muted fst-italic">
+                                "{{ feedback.traitement.description|slice(0, 60) }}..."
+                              </small>
+                              <button 
+                                class="btn btn-sm btn-link p-0 ms-1 text-primary" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalTraitement{{ feedback.id }}"
+                                title="Voir la réponse complète">
+                                <i class="bi bi-eye"></i>
+                              </button>
+                            {% else %}
+                              <small class="text-muted fst-italic">
+                                "{{ feedback.traitement.description }}"
+                              </small>
+                            {% endif %}
+                          </div>
+                          
+                          {# Date de traitement #}
+                          <div class="mt-1">
+                            <small class="text-muted" style="font-size: 0.7rem;">
+                              <i class="bi bi-calendar3 me-1"></i>{{ feedback.traitement.datetraitement|date('d/m/Y') }}
+                            </small>
+                          </div>
+                        </div>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    
+                    <td class="text-center">
+                      <div class="d-flex gap-2 justify-content-center">
+                        {% if feedback.traitement %}
+                          <a href="{{ path('back_feedback_export_pdf', {id: feedback.id}) }}" 
+                             class="btn btn-sm shadow-sm" 
+                             style="background-color: #d52e28; color: white; border-radius: 8px;" 
+                             title="Exporter en PDF">
+                            <i class="bi bi-file-pdf"></i>
+                          </a>
+                          
+                          <a href="{{ path('back_traitement_edit', {id: feedback.traitement.id}) }}" 
+                             class="btn btn-warning btn-sm shadow-sm" 
+                             style="border-radius: 8px;" 
+                             title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                          </a>
+                          
+                          <form method="post" 
+                                action="{{ path('back_traitement_delete', {id: feedback.traitement.id}) }}" 
+                                class="d-inline"
+                                onsubmit="return confirm('Supprimer ce traitement ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ feedback.traitement.id) }}">
+                            <button type="submit" class="btn btn-sm shadow-sm" style="background-color: #d52e28; color: white; border-radius: 8px;" title="Supprimer">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </form>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                  
+                  {# Modal pour voir la réponse admin complète #}
+                  {% if feedback.traitement and feedback.traitement.description|length > 60 %}
+                  <div class="modal fade" id="modalTraitement{{ feedback.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                      <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+                        <div class="modal-header text-white" style="background-color: #28a745;">
+                          <h5 class="modal-title">
+                            <i class="bi bi-chat-quote me-2"></i>Réponse Admin - Feedback #{{ feedback.id }}
+                          </h5>
+                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                          
+                          {# Informations du feedback original #}
+                          <div class="mb-4 p-3 rounded" style="background-color: #f8f9fa;">
+                            <h6 class="text-muted mb-2">
+                              <i class="bi bi-chat-text me-2"></i>Feedback original
+                            </h6>
+                            <p class="mb-2"><strong>Utilisateur :</strong> {{ feedback.utilisateur.nom }} {{ feedback.utilisateur.prenom }}</p>
+                            <p class="mb-2"><strong>Type :</strong> {{ feedback.typefeedback|capitalize }}</p>
+                            <p class="mb-2"><strong>Note :</strong> {{ feedback.note }}/5</p>
+                            <p class="mb-0"><strong>Message :</strong> {{ feedback.contenu }}</p>
+                          </div>
+                          
+                          <hr>
+                          
+                          {# Réponse admin complète #}
+                          <div class="admin-response-full">
+                            <h6 class="text-success mb-3">
+                              <i class="bi bi-shield-check me-2"></i>Réponse de l'Administration
+                            </h6>
+                            
+                            <div class="mb-3">
+                              <strong>Type de traitement :</strong>
+                              <span class="badge bg-success ms-2">
+                                {% if feedback.traitement.typetraitement == 'remboursement' %}
+                                  💰 Remboursement
+                                {% elseif feedback.traitement.typetraitement == 'prolongation_abonnement' %}
+                                  📅 Prolongation d'abonnement
+                                {% elseif feedback.traitement.typetraitement == 'geste_commercial' %}
+                                  🎁 Geste commercial
+                                {% elseif feedback.traitement.typetraitement == 'aucun_traitement' %}
+                                  ℹ️ Aucun traitement spécifique
+                                {% else %}
+                                  {{ feedback.traitement.typetraitement|replace({'_': ' '})|title }}
+                                {% endif %}
+                              </span>
+                            </div>
+                            
+                            <div class="mb-3">
+                              <strong>Date de traitement :</strong>
+                              {{ feedback.traitement.datetraitement|date('d/m/Y') }}
+                            </div>
+                            
+                            <div class="p-3 rounded" style="background-color: #e8f5e8; border-left: 4px solid #28a745;">
+                              <strong class="text-success d-block mb-2">Message complet :</strong>
+                              <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;">{{ feedback.traitement.description }}</p>
+                            </div>
+                          </div>
+                          
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-2"></i>Fermer
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<style>
+/* Couleurs de la charte */
+:root {
+  --color-innovation: #d52e28;
+  --color-connectivity: #102c59;
+  --color-tranquility: #9dbbce;
+}
+
+/* Tables modernes */
+.modern-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.modern-table thead th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  border: none;
+  padding: 15px;
+}
+
+.modern-table tbody tr {
+  transition: all 0.3s ease;
+}
+
+.modern-table tbody tr.hover-row:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.modern-table tbody td {
+  padding: 15px;
+  border-top: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+/* Cards modernes */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+}
+
+/* Badges arrondis */
+.badge {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.6s ease;
+}
+
+/* Stars */
+.stars-display i {
+  font-size: 0.9rem;
+}
+
+/* Avatars */
+.avatar {
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ✅ STYLES POUR L'ANALYSE D'ÉMOTIONS AZURE */
+.emotion-analysis {
+  min-width: 160px;
+}
+
+.emotion-analysis .badge {
+  font-size: 0.8rem !important;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.emotion-scores .progress {
+  height: 4px !important;
+  border-radius: 2px;
+  background-color: #e9ecef;
+}
+
+.emotion-scores .progress-bar {
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.emotion-analysis small {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  display: block;
+  max-width: 150px;
+}
+
+/* ✅ STYLES POUR LA RÉPONSE ADMIN AVEC EYE ICON */
+.admin-response-summary {
+  min-width: 200px;
+}
+
+.admin-response-text {
+  line-height: 1.4;
+}
+
+.admin-response-text .btn-link {
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.admin-response-text .btn-link:hover {
+  transform: scale(1.2);
+}
+
+.admin-response-text .btn-link i {
+  color: #0d6efd;
+  font-size: 1.1rem;
+}
+
+.admin-response-full .badge {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+}
+
+/* Animation pour les barres de progression */
+@keyframes progressFill {
+  from { width: 0%; }
+  to { width: var(--progress-width); }
+}
+
+.emotion-scores .progress-bar {
+  animation: progressFill 1s ease-out;
+}
+
+/* Couleurs spécifiques pour les émotions */
+.badge.bg-success {
+  background: linear-gradient(135deg, #28a745 0%, #34ce57 100%) !important;
+}
+
+.badge.bg-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%) !important;
+}
+
+.badge.bg-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #ffcd39 100%) !important;
+}
+
+.badge.bg-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #7d8691 100%) !important;
+}
+</style>
+{% endblock %}

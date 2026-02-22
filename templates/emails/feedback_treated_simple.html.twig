@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your feedback has been answered</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <!-- Main Container -->
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header with gradient -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #102c59 0%, #9dbbce 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">
+                                ✅ Your Feedback Has Been Answered!
+                            </h1>
+                            <p style="margin: 10px 0 0; color: #ffffff; font-size: 16px; opacity: 0.9;">
+                                We have a response for you
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Message Body -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            
+                            <!-- Greeting -->
+                            <p style="margin: 0 0 20px; font-size: 16px; color: #333;">
+                                Hello <strong>{{ user.prenom }} {{ user.nom }}</strong>,
+                            </p>
+                            
+                            <p style="margin: 0 0 25px; font-size: 16px; color: #333; line-height: 1.6;">
+                                We have processed your feedback submitted on <strong>{{ feedback.datefeedback|date('m/d/Y') }}</strong>. Here are the details of our response:
+                            </p>
+                            
+                            <!-- Feedback Information Box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; border-left: 4px solid #102c59; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0 0 10px; font-size: 14px; color: #666;">
+                                            <strong style="color: #333;">Your feedback (ID: #{{ feedback.id }}):</strong>
+                                        </p>
+                                        <p style="margin: 0 0 15px; font-size: 14px; color: #555; line-height: 1.6; font-style: italic;">
+                                            "{{ feedback.contenu }}"
+                                        </p>
+                                        <p style="margin: 0; font-size: 13px; color: #888;">
+                                            Type: {{ feedback.typefeedback|capitalize }} | Rating: {{ feedback.note }}/5 ⭐
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            {% if traitement %}
+                            <!-- Admin Response -->
+                            <div style="background-color: #e8f5e8; border-left: 4px solid #28a745; padding: 20px; margin-bottom: 25px; border-radius: 4px;">
+                                <h3 style="margin: 0 0 15px; color: #28a745; font-size: 18px;">
+                                    💬 Our Response
+                                </h3>
+                                
+                                <p style="margin: 0 0 10px; font-size: 14px; color: #666;">
+                                    <strong>Treatment Type:</strong> 
+                                    {% if traitement.typetraitement == 'remboursement' %}
+                                        💰 Refund
+                                    {% elseif traitement.typetraitement == 'prolongation_abonnement' %}
+                                        📅 Subscription Extension
+                                    {% elseif traitement.typetraitement == 'geste_commercial' %}
+                                        🎁 Commercial Gesture
+                                    {% elseif traitement.typetraitement == 'aucun_traitement' %}
+                                        ℹ️ No Specific Treatment
+                                    {% else %}
+                                        {{ traitement.typetraitement|replace({'_': ' '})|title }}
+                                    {% endif %}
+                                </p>
+                                
+                                <p style="margin: 0 0 15px; font-size: 16px; color: #333; line-height: 1.6;">
+                                    {{ traitement.description }}
+                                </p>
+                                
+                                <p style="margin: 0; font-size: 13px; color: #888;">
+                                    Processed on: {{ traitement.datetraitement|date('m/d/Y') }}
+                                </p>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Call to Action -->
+                            <div style="text-align: center; margin: 30px 0;">
+                                <p style="margin: 0 0 20px; font-size: 16px; color: #333;">
+                                    Thank you for helping us improve our platform!
+                                </p>
+                                <a href="#" style="display: inline-block; background: linear-gradient(135deg, #102c59 0%, #9dbbce 100%); color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 25px; font-weight: bold; font-size: 16px;">
+                                    Visit Our Platform
+                                </a>
+                            </div>
+                            
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;">
+                            <p style="margin: 0 0 10px; font-size: 14px; color: #666;">
+                                Best regards,<br>
+                                <strong style="color: #102c59;">The MentorAI Team</strong>
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #999;">
+                                This is an automated message. Please do not reply to this email.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
