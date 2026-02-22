@@ -1,620 +1,684 @@
 {% extends 'front/admin/basem.html.twig' %}
 
-{% block title %}Console Admin - IA{% endblock %}
+{% block title %}Console Admin - IA
+{% endblock %}
 
 {% block body %}
 <div class="container-fluid py-4" style="background-color: #f8fafc; min-height: 100vh;">
-    <div class="row g-4 justify-content-center">
-        <!-- Sidebar : Dashboard & Stats -->
-        <div class="col-lg-3 d-none d-lg-block">
-            <!-- Stats Card -->
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4 glass-card" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2) !important;">
-                <div class="card-header border-0 py-3" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-cpu fs-4 me-2 text-info"></i>
-                            <h6 class="mb-0 fw-bold text-white">Live Monitor</h6>
-                        </div>
-                        <span class="badge pulsing-dot">SYSTEM OK</span>
-                    </div>
-                </div>
-                <div class="card-body bg-white">
-                    <div class="row g-2 text-center">
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded-3 border">
-                                <h3 class="mb-0 fw-bold" style="color: #102c59;" id="session-count">-</h3>
-                                <small class="text-secondary" style="font-size: 0.7rem;">Messages Session</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded-3 border">
-                                <h3 class="mb-0 fw-bold" style="color: #102c59;" id="total-convs">-</h3>
-                                <small class="text-secondary" style="font-size: 0.7rem;">Conversations Totales</small>
-                            </div>
-                        </div>
-                    </div>
-                     <div class="mt-3">
-                        <button id="refresh-stats" class="btn btn-sm w-100 rounded-pill" style="border-color: #9dbbce; color: #102c59;">
-                            <i class="bi bi-arrow-clockwise me-1"></i> Actualiser
-                        </button>
-                    </div>
-                </div>
-            </div>
+	<div
+		class="row g-4 justify-content-center">
+		<!-- Sidebar : Dashboard & Stats -->
+		<div
+			class="col-lg-3 d-none d-lg-block">
+			<!-- Stats Card -->
+			<div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4 glass-card" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2) !important;">
+				<div class="card-header border-0 py-3" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+					<div class="d-flex align-items-center justify-content-between">
+						<div class="d-flex align-items-center">
+							<i class="bi bi-cpu fs-4 me-2 text-info"></i>
+							<h6 class="mb-0 fw-bold text-white">Live Monitor</h6>
+						</div>
+						<span class="badge pulsing-dot">SYSTEM OK</span>
+					</div>
+				</div>
+				<div class="card-body bg-white">
+					<div class="row g-2 text-center">
+						<div class="col-6">
+							<div class="p-3 bg-light rounded-3 border">
+								<h3 class="mb-0 fw-bold" style="color: #102c59;" id="session-count">-</h3>
+								<small class="text-secondary" style="font-size: 0.7rem;">Messages Session</small>
+							</div>
+						</div>
+						<div class="col-6">
+							<div class="p-3 bg-light rounded-3 border">
+								<h3 class="mb-0 fw-bold" style="color: #102c59;" id="total-convs">-</h3>
+								<small class="text-secondary" style="font-size: 0.7rem;">Conversations Totales</small>
+							</div>
+						</div>
+					</div>
+					<div class="mt-3">
+						<button id="refresh-stats" class="btn btn-sm w-100 rounded-pill" style="border-color: #9dbbce; color: #102c59;">
+							<i class="bi bi-arrow-clockwise me-1"></i>
+							Actualiser
+						</button>
+					</div>
+				</div>
+			</div>
 
-            <!-- History Card -->
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3 text-dark border-bottom pb-2"><i class="bi bi-clock-history me-2" style="color: #102c59;"></i>Historique</h6>
-                    <div id="conversations-list" class="overflow-auto custom-scrollbar" style="max-height: 250px;">
-                        <div class="text-center py-3 text-muted small">Chargement...</div>
-                    </div>
-                </div>
-            </div>
+			<!-- History Card -->
+			<div class="card border-0 shadow-sm rounded-4 mb-4">
+				<div class="card-body">
+					<h6 class="fw-bold mb-3 text-dark border-bottom pb-2">
+						<i class="bi bi-clock-history me-2" style="color: #102c59;"></i>Historique</h6>
+					<div id="conversations-list" class="overflow-auto custom-scrollbar" style="max-height: 250px;">
+						<div class="text-center py-3 text-muted small">Chargement...</div>
+					</div>
+				</div>
+			</div>
 
-            <!-- Quick Actions -->
-            <div class="card border-0 shadow-sm rounded-4 bg-dark text-white p-2">
-                <div class="card-body p-2">
-                    <h6 class="fw-bold mb-3 border-bottom border-secondary pb-2 small text-uppercase tracking-wider text-info">Requêtes Stratégiques</h6>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-outline-info suggestion-btn text-start p-2 rounded-3 border-0 bg-opacity-10 bg-info mb-1 transition-all" data-prompt="Génère un rapport de performance global pour toutes les classes 3A. Identifie les modules où le taux de réussite est inférieur à 65%.">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-file-earmark-bar-graph-fill me-2"></i>
-                                <span class="small fw-bold">Rapport Global Académique</span>
-                            </div>
-                        </button>
-                        <button class="btn btn-outline-warning suggestion-btn text-start p-2 rounded-3 border-0 bg-opacity-10 bg-warning mb-1 transition-all" data-prompt="Quelles sont les alertes critiques actives ? Détaille les classes 3A les plus à risque et l'efficacité des interventions des professeurs.">
-                             <div class="d-flex align-items-center">
-                                <i class="bi bi-shield-fill-exclamation me-2"></i>
-                                <span class="small fw-bold">Audit des Risques 3A</span>
-                            </div>
-                        </button>
-                        <button class="btn btn-outline-danger suggestion-btn text-start p-2 rounded-3 border-0 bg-opacity-10 bg-danger mb-1 transition-all" data-prompt="Analyse les derniers feedbacks utilisateurs. Quels sont les points d'amélioration prioritaires pour l'IA et le système ?">
-                             <div class="d-flex align-items-center">
-                                <i class="bi bi-chat-heart-fill me-2"></i>
-                                <span class="small fw-bold">Analyse Feedback</span>
-                            </div>
-                        </button>
-                        <button class="btn btn-outline-primary suggestion-btn text-start p-2 rounded-3 border-0 bg-opacity-10 bg-primary transition-all" data-prompt="Propose une planification stratégique pour le module Machine Learning Fundamentals basé sur les prédictions de réussite actuelles.">
-                             <div class="d-flex align-items-center">
-                                <i class="bi bi-calendar-check-fill me-2"></i>
-                                <span class="small fw-bold">Plan stratégique IA</span>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+			<!-- Quick Actions -->
+			<div class="card border-0 shadow-sm rounded-4 bg-dark text-white p-2">
+				<div class="card-body p-2">
+					<h6 class="fw-bold mb-3 border-bottom border-secondary pb-2 small text-uppercase tracking-wider text-info">Requêtes Stratégiques</h6>
+					<div class="d-grid gap-2">
+						<button class="btn btn-outline-info suggestion-btn text-start p-2 rounded-3 border-0 bg-opacity-10 bg-info mb-1 transition-all" data-prompt="Génère un rapport de performance global pour toutes les classes 3A. Identifie les modules où le taux de réussite est inférieur à 65%.">
+							<div class="d-flex align-items-center">
+								<i class="bi bi-file-earmark-bar-graph-fill me-2"></i>
+								<span class="small fw-bold">Rapport Global Académique</span>
+							</div>
+						</button>
+						<button class="btn btn-outline-warning suggestion-btn text-start p-2 rounded-3 border-0 bg-opacity-10 bg-warning mb-1 transition-all" data-prompt="Quelles sont les alertes critiques actives ? Détaille les classes 3A les plus à risque et l'efficacité des interventions des professeurs.">
+							<div class="d-flex align-items-center">
+								<i class="bi bi-shield-fill-exclamation me-2"></i>
+								<span class="small fw-bold">Audit des Risques 3A</span>
+							</div>
+						</button>
+						<button class="btn btn-outline-danger suggestion-btn text-start p-2 rounded-3 border-0 bg-opacity-10 bg-danger mb-1 transition-all" data-prompt="Analyse les derniers feedbacks utilisateurs. Quels sont les points d'amélioration prioritaires pour l'IA et le système ?">
+							<div class="d-flex align-items-center">
+								<i class="bi bi-chat-heart-fill me-2"></i>
+								<span class="small fw-bold">Analyse Feedback</span>
+							</div>
+						</button>
+						<button class="btn btn-outline-primary suggestion-btn text-start p-2 rounded-3 border-0 bg-opacity-10 bg-primary transition-all" data-prompt="Propose une planification stratégique pour le module Machine Learning Fundamentals basé sur les prédictions de réussite actuelles.">
+							<div class="d-flex align-items-center">
+								<i class="bi bi-calendar-check-fill me-2"></i>
+								<span class="small fw-bold">Plan stratégique IA</span>
+							</div>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        <!-- Zone de Chat Principale -->
-        <div class="col-lg-8 col-xl-8">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden d-flex flex-column" style="height: 85vh;">
-                <!-- Header du Chat -->
-                <div class="card-header border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); z-index: 10;">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-circle d-flex align-items-center justify-content-center rounded-circle shadow-lg pulse-dark" style="width: 50px; height: 50px; background-color: #0f172a; color: #38bdf8; border: 2px solid #334155;">
-                            <i class="bi bi-terminal-fill fs-4"></i>
-                        </div>
-                        <div class="ms-3">
-                            <h5 class="mb-0 fw-bold" style="color: #1e293b; letter-spacing: -0.5px;">MentorAI <span class="text-info">CORE</span></h5>
-                            <div class="d-flex align-items-center mt-1">
-                                <span class="badge bg-info text-white me-2 px-2" style="font-size: 0.6rem;">PRIVILEGED ACCESS</span>
-                                <small class="text-muted fw-mono" style="font-size: 0.7rem;">Sess ID: #{{ app.user.id }} • Root Mode</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                         <button id="clear-history" class="btn btn-sm rounded-pill px-3 border-0 transition-all font-monospace" style="background: rgba(213, 46, 40, 0.1); color: #d52e28;">
-                            <i class="bi bi-trash3 me-1"></i> Nouvelle
-                        </button>
-                    </div>
-                </div>
+		<!-- Zone de Chat Principale -->
+		<div class="col-lg-8 col-xl-8">
+			<div
+				class="card border-0 shadow-lg rounded-4 overflow-hidden d-flex flex-column" style="height: 85vh;">
+				<!-- Header du Chat -->
+				<div class="card-header border-bottom py-3 px-4 d-flex justify-content-between align-items-center shadow-sm" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); z-index: 10;">
+					<div class="d-flex align-items-center">
+						<div class="avatar-circle d-flex align-items-center justify-content-center rounded-circle shadow-lg pulse-dark" style="width: 50px; height: 50px; background-color: #0f172a; color: #38bdf8; border: 2px solid #334155;">
+							<i class="bi bi-terminal-fill fs-4"></i>
+						</div>
+						<div class="ms-3">
+							<h5 class="mb-0 fw-bold" style="color: #1e293b; letter-spacing: -0.5px;">MentorAI
+								<span class="text-info">CORE</span>
+							</h5>
+							<div class="d-flex align-items-center mt-1">
+								<span class="badge bg-info text-white me-2 px-2" style="font-size: 0.6rem;">PRIVILEGED ACCESS</span>
+								<small class="text-muted fw-mono" style="font-size: 0.7rem;">Sess ID: #{{ app.user.id }}
+									• Root Mode</small>
+							</div>
+						</div>
+					</div>
+					<div class="d-flex gap-2">
+						<button id="clear-history" class="btn btn-sm rounded-pill px-3 border-0 transition-all font-monospace" style="background: rgba(213, 46, 40, 0.1); color: #d52e28;">
+							<i class="bi bi-trash3 me-1"></i>
+							Nouvelle
+						</button>
+					</div>
+				</div>
 
-                <!-- Corps du Chat (Messages) -->
-                <div class="card-body p-0 d-flex flex-column bg-light-chat" style="background-color: #f1f5f9; overflow: hidden;">
-                    <div id="chat-messages" class="flex-grow-1 p-4 overflow-auto custom-scrollbar" style="scroll-behavior: smooth;">
-                        <!-- Message de bienvenue -->
-                        <div class="text-center py-5 fade-in-up" id="welcome-state">
-                            <div class="mb-4">
-                                <div class="mx-auto rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background-color: #102c59; color: white;">
-                                    <i class="bi bi-terminal fs-1"></i>
-                                </div>
-                            </div>
-                            <h4 class="fw-bold mb-2" style="color: #102c59;">Console d'Administration</h4>
-                            <p class="text-muted mx-auto" style="max-width: 500px;">
-                                Assistant de gestion et d'analyse stratégique. Expert: <strong>{{ app.user.prenom|default('Admin') }}</strong>.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+				<!-- Corps du Chat (Messages) -->
+				<div class="card-body p-0 d-flex flex-column bg-light-chat" style="background-color: #f1f5f9; overflow: hidden;">
+					<div
+						id="chat-messages" class="flex-grow-1 p-4 overflow-auto custom-scrollbar" style="scroll-behavior: smooth;">
+						<!-- Message de bienvenue -->
+						<div class="text-center py-5 fade-in-up" id="welcome-state">
+							<div class="mb-4">
+								<div class="mx-auto rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background-color: #102c59; color: white;">
+									<i class="bi bi-terminal fs-1"></i>
+								</div>
+							</div>
+							<h4 class="fw-bold mb-2" style="color: #102c59;">Console d'Administration</h4>
+							<p class="text-muted mx-auto" style="max-width: 500px;">
+								Assistant de gestion et d'analyse stratégique. Expert:
+								<strong>{{ app.user.prenom|default('Admin') }}</strong>.
+							</p>
+						</div>
+					</div>
+				</div>
 
-                <!-- Footer (Input) -->
-                <div class="card-footer bg-white border-top p-4">
-                    <div class="position-relative">
-                        <textarea id="message-input" 
-                                  class="form-control form-control-lg border-2 bg-light rounded-4 ps-4 pe-5 py-3 shadow-inner" 
-                                  placeholder="Entrez une commande ou une question..." 
-                                  rows="1" 
-                                  style="resize: none; min-height: 60px; font-family: 'Consolas', monospace; font-size: 0.95rem; border-color: #e2e8f0 !important;"></textarea>
-                        
-                        <button id="send-button" class="btn rounded-circle shadow position-absolute end-0 top-50 translate-middle-y me-2" 
-                                style="width: 45px; height: 45px; transition: all 0.3s ease; background-color: #102c59; color: white;">
-                            <i class="bi bi-send-fill fs-5"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+				<!-- Footer (Input) -->
+				<div class="card-footer bg-white border-top p-4">
+					<div class="position-relative">
+						<textarea id="message-input" class="form-control form-control-lg border-2 bg-light rounded-4 ps-4 pe-5 py-3 shadow-inner" placeholder="Entrez une commande ou une question..." rows="1" style="resize: none; min-height: 60px; font-family: 'Consolas', monospace; font-size: 0.95rem; border-color: #e2e8f0 !important;"></textarea>
+
+						<button id="send-button" class="btn rounded-circle shadow position-absolute end-0 top-50 translate-middle-y me-2" style="width: 45px; height: 45px; transition: all 0.3s ease; background-color: #102c59; color: white;">
+							<i class="bi bi-send-fill fs-5"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <style>
-    /* Admin Specific Styles */
-    .pulsing-dot {
-        animation: pulse-green 2s infinite;
-        background-color: #198754 !important;
-        color: white !important;
-        font-size: 0.65rem;
-        padding: 0.2rem 0.6rem;
-        border-radius: 10px;
-    }
-    
-    .pulse-dark {
-        animation: pulse-dark 3s infinite;
-    }
+	/* Admin Specific Styles */
+	.pulsing-dot {
+		animation: pulse-green 2s infinite;
+		background-color: #198754 !important;
+		color: white !important;
+		font-size: 0.65rem;
+		padding: 0.2rem 0.6rem;
+		border-radius: 10px;
+	}
 
-    @keyframes pulse-dark {
-        0% { box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.4); }
-        70% { box-shadow: 0 0 0 15px rgba(15, 23, 42, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(15, 23, 42, 0); }
-    }
+	.pulse-dark {
+		animation: pulse-dark 3s infinite;
+	}
 
-    .glass-card {
-        transition: all 0.3s ease;
-    }
-    .glass-card:hover { transform: translateY(-3px); }
+	@keyframes pulse-dark {
+		0% {
+			box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.4);
+		}
+		70% {
+			box-shadow: 0 0 0 15px rgba(15, 23, 42, 0);
+		}
+		100% {
+			box-shadow: 0 0 0 0 rgba(15, 23, 42, 0);
+		}
+	}
 
-    .tracking-wider { letter-spacing: 0.1em; }
-    .fw-mono { font-family: 'Consolas', monospace; }
+	.glass-card {
+		transition: all 0.3s ease;
+	}
+	.glass-card:hover {
+		transform: translateY(-3px);
+	}
 
-    .shadow-inner {
-        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.04);
-    }
+	.tracking-wider {
+		letter-spacing: 0.1em;
+	}
+	.fw-mono {
+		font-family: 'Consolas', monospace;
+	}
 
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: #9dbbce;
-        border-radius: 10px;
-    }
+	.shadow-inner {
+		box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.04);
+	}
 
-    /* Message Bubbles */
-    .message-bubble {
-        max-width: 85%;
-        padding: 1rem 1.25rem;
-        border-radius: 1.25rem;
-        position: relative;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 6px;
+	}
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background-color: #9dbbce;
+		border-radius: 10px;
+	}
 
-    .message-user {
-        background-color: #102c59;
-        color: white;
-        border-bottom-right-radius: 0.25rem;
-        margin-left: auto;
-        box-shadow: 0 4px 12px rgba(16, 44, 89, 0.15);
-    }
+	/* Message Bubbles */
+	.message-bubble {
+		max-width: 85%;
+		padding: 1rem 1.25rem;
+		border-radius: 1.25rem;
+		position: relative;
+		font-size: 0.95rem;
+		line-height: 1.6;
+		animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+	}
 
-    .message-assistant {
-        background-color: white;
-        color: #1e293b;
-        border: 1px solid #e2e8f0;
-        border-left: 4px solid #d52e28; /* Using Red for AI accent */
-        border-bottom-left-radius: 0.25rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    }
+	.message-user {
+		background-color: #102c59;
+		color: white;
+		border-bottom-right-radius: 0.25rem;
+		margin-left: auto;
+		box-shadow: 0 4px 12px rgba(16, 44, 89, 0.15);
+	}
 
-    .suggestion-btn:hover {
-        background-color: #102c59 !important;
-        color: white !important;
-        transform: translateX(5px);
-    }
-    
-    .transition-all { transition: all 0.2s ease; }
+	.message-assistant {
+		background-color: white;
+		color: #1e293b;
+		border: 1px solid #e2e8f0;
+		border-left: 4px solid #d52e28; /* Using Red for AI accent */
+		border-bottom-left-radius: 0.25rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+	}
 
-    .markdown-content pre {
-        background-color: #1e293b;
-        color: #f8fafc;
-        padding: 1.25rem;
-        border-radius: 0.75rem;
-        margin: 1rem 0;
-        border: 1px solid #334155;
-    }
+	.suggestion-btn:hover {
+		background-color: #102c59 !important;
+		color: white !important;
+		transform: translateX(5px);
+	}
+
+	.transition-all {
+		transition: all 0.2s ease;
+	}
+
+	.markdown-content pre {
+		background-color: #1e293b;
+		color: #f8fafc;
+		padding: 1.25rem;
+		border-radius: 0.75rem;
+		margin: 1rem 0;
+		border: 1px solid #334155;
+	}
 
 
-    .typing-indicator span {
-        display: inline-block;
-        width: 5px;
-        height: 5px;
-        background-color: #64748b;
-        border-radius: 50%;
-        animation: typing 1.4s infinite ease-in-out both;
-        margin: 0 2px;
-    }
-    
-    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+	.typing-indicator span {
+		display: inline-block;
+		width: 5px;
+		height: 5px;
+		background-color: #64748b;
+		border-radius: 50%;
+		animation: typing 1.4s infinite ease-in-out both;
+		margin: 0 2px;
+	}
 
-    @keyframes typing {
-        0%, 80%, 100% { transform: scale(0); }
-        40% { transform: scale(1); }
-    }
+	.typing-indicator span:nth-child(1) {
+		animation-delay: -0.32s;
+	}
+	.typing-indicator span:nth-child(2) {
+		animation-delay: -0.16s;
+	}
 
-    @keyframes slideIn {
-        from { opacity: 0; transform: translateY(5px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+	@keyframes typing {
+		0,
+		80%,
+		100% {
+			transform: scale(0);
+		}
+		40% {
+			transform: scale(1);
+		}
+	}
 
-    .fade-in-up {
-        animation: fadeInUp 0.4s ease-out;
-    }
+	@keyframes slideIn {
+		from {
+			opacity: 0;
+			transform: translateY(5px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
 
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .markdown-content pre {
-        background-color: #1e293b;
-        color: #f8fafc;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        overflow-x: auto;
-        margin-top: 0.5rem;
-    }
-    .markdown-content code {
-        font-family: 'Consolas', 'Monaco', monospace;
-        font-size: 0.85em;
-    }
+	.fade-in-up {
+		animation: fadeInUp 0.4s ease-out;
+	}
 
-    .pulse-danger {
-        animation: pulse-red-glow 2s infinite;
-    }
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
 
-    @keyframes pulse-red-glow {
-        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(220, 53, 69, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-    }
+	.markdown-content pre {
+		background-color: #1e293b;
+		color: #f8fafc;
+		padding: 1rem;
+		border-radius: 0.5rem;
+		overflow-x: auto;
+		margin-top: 0.5rem;
+	}
+	.markdown-content code {
+		font-family: 'Consolas', 'Monaco', monospace;
+		font-size: 0.85em;
+	}
 
-    .tracking-widest { letter-spacing: 0.2em; }
+	.pulse-danger {
+		animation: pulse-red-glow 2s infinite;
+	}
+
+	@keyframes pulse-red-glow {
+		0% {
+			box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+		}
+		70% {
+			box-shadow: 0 0 0 15px rgba(220, 53, 69, 0);
+		}
+		100% {
+			box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+		}
+	}
+
+	.tracking-widest {
+		letter-spacing: 0.2em;
+	}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const messagesDiv = document.getElementById('chat-messages');
-    const input = document.getElementById('message-input');
-    const sendButton = document.getElementById('send-button');
-    const welcomeState = document.getElementById('welcome-state');
-    const clearButton = document.getElementById('clear-history');
-    
-    // Stats elements
-    const sessionCountEl = document.getElementById('session-count');
-    const totalConvsEl = document.getElementById('total-convs');
-    const refreshStatsBtn = document.getElementById('refresh-stats');
-    
-    let isLoading = false;
-
-    // Auto-resize textarea
-    input.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-        if (this.value === '') this.style.height = '60px';
-    });
-
-    // Initial load
-    loadStats();
-    loadConversations();
-    loadHistory();
-
-    function loadConversations() {
-        const list = document.getElementById('conversations-list');
-        fetch('{{ path('app_chat_conversations') }}')
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    if (data.conversations.length === 0) {
-                        list.innerHTML = '<div class="text-center py-3 text-muted small">Aucun journal</div>';
-                        return;
-                    }
-                    list.innerHTML = '';
-                    data.conversations.forEach(conv => {
-                        const div = document.createElement('div');
-                        div.className = 'p-2 mb-1 rounded hover-bg-dark hover-text-white cursor-pointer transition-all border-start border-3 border-transparent';
-                        div.style.cursor = 'pointer';
-                        div.innerHTML = `
-                            <div class="fw-bold small text-truncate">${conv.titre}</div>
-                            <div class="text-muted" style="font-size: 0.65rem;">${conv.date}</div>
-                        `;
-                        div.onclick = () => loadSpecificConversation(conv.id);
-                        list.appendChild(div);
-                    });
-                }
-            });
-    }
-
-    function loadSpecificConversation(id) {
-        messagesDiv.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>RECOVERY IN PROGRESS...</div>';
-        fetch(`/chat/load/${id}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    messagesDiv.innerHTML = '';
-                    welcomeState.style.display = 'none';
-                    data.history.forEach(msg => {
-                        addMessage(msg.content, msg.role === 'user', false);
-                    });
-                    scrollToBottom();
-                    loadStats();
-                }
-            });
-    }
-
-    function loadStats() {
-        fetch('{{ path('app_chat_stats') }}')
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    document.getElementById('session-count').textContent = data.stats.messages_in_session || 0;
-                    document.getElementById('total-convs').textContent = data.stats.conversations_count || 0;
-                }
-            })
-            .catch(console.error);
-    }
-
-    function loadHistory() {
-        fetch('{{ path('app_chat_history') }}')
-            .then(res => res.json())
-            .then(data => {
-                if (data.success && data.history.length > 0) {
-                    welcomeState.style.display = 'none';
-                    messagesDiv.innerHTML = '';
-                    data.history.forEach(msg => {
-                        addMessage(msg.content, msg.role === 'user', false);
-                    });
-                    scrollToBottom();
-                }
-            });
-    }
-
-    function scrollToBottom() {
-        messagesDiv.scrollTo({ top: messagesDiv.scrollHeight, behavior: 'smooth' });
-    }
-
-    function addMessage(content, isUser, animate = true) {
-        const wrapperDiv = document.createElement('div');
-        wrapperDiv.className = `d-flex mb-4 ${isUser ? 'justify-content-end' : 'justify-content-start'}`;
-        
-         // --- JSON Parsing Logic ---
-        let jsonContent = null;
-        let textContent = content;
-
-        // Try extract JSON block
-        const jsonMatch = content.match(/```json\s*(\{[\s\S]*?\})\s*```/);
-        if (jsonMatch) {
-            try {
-                jsonContent = JSON.parse(jsonMatch[1]);
-                textContent = content.replace(jsonMatch[0], '').trim();
-            } catch (e) {
-                console.error("Failed to parse JSON", e);
-            }
-        }
-
-        // Parse Markdown for assistant
-        const formattedContent = isUser ? textContent : marked.parse(textContent);
-        
-        // --- Widget Construction ---
-        let widgetsHTML = '';
-        if (jsonContent) {
-            widgetsHTML = '<div class="mt-3 d-flex flex-column gap-3">';
-
-            // 1. Metrics (Admin Style)
-            if (jsonContent.metrics && jsonContent.metrics.length > 0) {
-                widgetsHTML += `<div class="d-flex flex-wrap gap-2">`;
-                jsonContent.metrics.forEach(m => {
-                    const icon = m.trend === 'up' ? '<i class="bi bi-graph-up-arrow text-success"></i>' : 
-                                 (m.trend === 'down' ? '<i class="bi bi-graph-down-arrow text-danger"></i>' : '<i class="bi bi-dash text-secondary"></i>');
-                    widgetsHTML += `
-                        <div class="card bg-light border flex-grow-1" style="min-width: 140px;">
-                            <div class="card-body p-2 text-center">
-                                <small class="text-uppercase fw-bold text-muted" style="font-size: 0.65rem;">${m.label}</small>
-                                <div class="d-flex align-items-center justify-content-center mt-1">
-                                    <span class="fs-4 fw-bold text-dark me-2">${m.value}<small class="fs-6 text-muted ms-1">${m.unit || ''}</small></span>
-                                    ${icon}
-                                </div>
-                            </div>
-                        </div>`;
-                });
-                widgetsHTML += `</div>`;
-            }
-
-            // 2. Alerts (Admin Style - Console look)
-            if (jsonContent.alerts && jsonContent.alerts.length > 0) {
-                jsonContent.alerts.forEach(a => {
-                   let borderColor = a.level === 'high' ? 'border-danger' : (a.level === 'medium' ? 'border-warning' : 'border-info');
-                   let iconColor = a.level === 'high' ? 'text-danger' : (a.level === 'medium' ? 'text-warning' : 'text-info');
-                   
-                    widgetsHTML += `
-                        <div class="card border-start border-4 ${borderColor} shadow-sm">
-                            <div class="card-body p-2 d-flex align-items-center">
-                                <i class="bi bi-shield-exclamation ${iconColor} fs-4 me-3"></i>
-                                <div>
-                                    <span class="badge bg-dark text-white mb-1">SYSTEM ALERT: ${a.level.toUpperCase()}</span>
-                                    <p class="mb-0 small fw-medium text-dark">${a.message}</p>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-            }
-
-            // 3. Predictions (Admin Style)
-            if (jsonContent.predictions && jsonContent.predictions.length > 0) {
-                 jsonContent.predictions.forEach(p => {
-                    widgetsHTML += `
-                        <div class="card border bg-white p-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-bold small text-dark"><i class="bi bi-bar-chart-line-fill me-1"></i> ${p.label}</span>
-                                <span class="fw-bold small text-dark">${p.probability}</span>
-                            </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-dark" role="progressbar" style="width: ${p.probability}" aria-valuenow="${parseInt(p.probability)}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <small class="text-muted mt-2 d-block fst-italic" style="font-size: 0.75rem;">Analysis: ${p.details}</small>
-                        </div>`;
-                });
-            }
-
-            // 4. Decisions (Admin Style)
-             if (jsonContent.decisions && jsonContent.decisions.length > 0) {
-                widgetsHTML += `<div class="card border-secondary">`;
-                widgetsHTML += `<div class="card-header bg-secondary text-white py-1 px-2"><small class="fw-bold"><i class="bi bi-gear-fill me-1"></i> DECISION MATRIX</small></div>`;
-                widgetsHTML += `<ul class="list-group list-group-flush">`;
-                jsonContent.decisions.forEach(d => {
-                     let priorityBadge = d.priority === 'high' ? '<span class="badge bg-danger">HIGH</span>' : (d.priority === 'medium' ? '<span class="badge bg-warning text-dark">MED</span>' : '<span class="badge bg-success">LOW</span>');
-                     widgetsHTML += `
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span class="small fw-medium">${d.action}</span>
-                            ${priorityBadge}
-                        </li>`;
-                });
-                widgetsHTML += `</ul></div>`;
-            }
-
-            widgetsHTML += '</div>'; // End widgets container
-        }
-
-        wrapperDiv.innerHTML = `
-            <div class="message-bubble ${isUser ? 'message-user' : 'message-assistant'}">
-                 ${!isUser ? '<div class="fw-bold mb-1 small text-dark"><i class="bi bi-cpu me-1"></i>Mentor System</div>' : ''}
-                <div class="markdown-content">
-                    ${formattedContent}
-                </div>
-                ${widgetsHTML}
-                <small class="d-block mt-2 opacity-50 small text-end" style="font-size: 0.65rem;">
-                    ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                </small>
-            </div>
-        `;
-        
-        messagesDiv.appendChild(wrapperDiv);
-        if(animate) scrollToBottom();
-    }
-
-    function showTypingIndicator() {
-        const id = 'typing-' + Date.now();
-        const wrapperDiv = document.createElement('div');
-        wrapperDiv.id = id;
-        wrapperDiv.className = 'd-flex mb-4 justify-content-start';
-        wrapperDiv.innerHTML = `
-            <div class="message-bubble message-assistant py-3 px-4">
-                <div class="typing-indicator">
-                    <span></span><span></span><span></span>
-                </div>
-            </div>
-        `;
-        messagesDiv.appendChild(wrapperDiv);
-        scrollToBottom();
-        return id;
-    }
-
-    async function sendMessage() {
-        const message = input.value.trim();
-        if (!message || isLoading) return;
-        
-        isLoading = true;
-        sendButton.disabled = true;
-        input.disabled = true;
-        
-        welcomeState.style.display = 'none';
-        addMessage(message, true);
-        
-        input.value = '';
-        input.style.height = '60px'; // Reset height
-        
-        const loadingId = showTypingIndicator();
-        
-        try {
-            const formData = new FormData();
-            formData.append('message', message);
-            
-            const response = await fetch('{{ path('app_chat_send') }}', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const data = await response.json();
-            
-            document.getElementById(loadingId)?.remove();
-            
-            if (data.success && data.response) {
-                addMessage(data.response, false);
-                loadStats(); // Update stats after message
-            } else {
-                MentorUI.toast('danger', 'Execution Error', 'System failed to process the request.');
-            }
-        } catch (error) {
-            document.getElementById(loadingId)?.remove();
-            MentorUI.toast('danger', 'Network Failure', 'Critical connection error detected.');
-        } finally {
-            isLoading = false;
-            sendButton.disabled = false;
-            input.disabled = false;
-            input.focus();
-        }
-    }
-
-    // Event Listeners
-    sendButton.addEventListener('click', sendMessage);
-    refreshStatsBtn?.addEventListener('click', loadStats);
-    
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    clearButton?.addEventListener('click', () => {
-        MentorUI.confirm({
-            type: 'danger',
-            title: 'Purger le journal',
-            message: 'Vous êtes sur le point d\'effacer les logs de session active. Cette opération est irréversible.',
-            confirmText: 'Confirmer la Purge',
-            onConfirm: () => {
-                fetch('{{ path('app_chat_reset') }}', { method: 'POST' })
-                .then(res => {
-                    if(res.ok) location.reload();
-                    else MentorUI.toast('danger', 'System Error', 'Failed to reset journal.');
-                })
-                .catch(() => MentorUI.toast('danger', 'Critical Error', 'Connection lost during operation.'));
-            }
-        });
-    });
-
-    // Suggestion buttons
-    document.querySelectorAll('.suggestion-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            input.value = btn.dataset.prompt;
-            sendMessage();
-        });
-    });
-});
-</script>
-
-{% endblock %}
+	document.addEventListener('DOMContentLoaded', function() {
+	    const messagesDiv = document.getElementById('chat-messages');
+	    const input = document.getElementById('message-input');
+	    const sendButton = document.getElementById('send-button');
+	    const welcomeState = document.getElementById('welcome-state');
+	    const clearButton = document.getElementById('clear-history');
+	    
+	    // Stats elements
+	    const sessionCountEl = document.getElementById('session-count');
+	    const totalConvsEl = document.getElementById('total-convs');
+	    const refreshStatsBtn = document.getElementById('refresh-stats');
+	    
+	    let isLoading = false;
+	
+	    // Auto-resize textarea
+	    input.addEventListener('input', function() {
+	        this.style.height = 'auto';
+	        this.style.height = (this.scrollHeight) + 'px';
+	        if (this.value === '') this.style.height = '60px';
+	    });
+	
+	    // Initial load
+	    loadStats();
+	    loadConversations();
+	    loadHistory();
+	
+	    function loadConversations() {
+	        const list = document.getElementById('conversations-list');
+	        fetch('{{ path('app_chat_conversations') }}')
+	            .then(res => res.json())
+	            .then(data => {
+	                if (data.success) {
+	                    if (data.conversations.length === 0) {
+	                        list.innerHTML = '<div class="text-center py-3 text-muted small">Aucun journal</div>';
+	                        return;
+	                    }
+	                    list.innerHTML = '';
+	                    data.conversations.forEach(conv => {
+	                        const div = document.createElement('div');
+	                        div.className = 'p-2 mb-1 rounded hover-bg-dark hover-text-white cursor-pointer transition-all border-start border-3 border-transparent';
+	                        div.style.cursor = 'pointer';
+	                        div.innerHTML = `
+	                            <div class="fw-bold small text-truncate">${conv.titre}</div>
+	                            <div class="text-muted" style="font-size: 0.65rem;">${conv.date}</div>
+	                        `;
+	                        div.onclick = () => loadSpecificConversation(conv.id);
+	                        list.appendChild(div);
+	                    });
+	                }
+	            });
+	    }
+	
+	    function loadSpecificConversation(id) {
+	        messagesDiv.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>RECOVERY IN PROGRESS...</div>';
+	        fetch(`/chat/load/${id}`)
+	            .then(res => res.json())
+	            .then(data => {
+	                if (data.success) {
+	                    messagesDiv.innerHTML = '';
+	                    welcomeState.style.display = 'none';
+	                    data.history.forEach(msg => {
+	                        addMessage(msg.content, msg.role === 'user', false);
+	                    });
+	                    scrollToBottom();
+	                    loadStats();
+	                }
+	            });
+	    }
+	
+	    function loadStats() {
+	        fetch('{{ path('app_chat_stats') }}')
+	            .then(res => res.json())
+	            .then(data => {
+	                if(data.success) {
+	                    document.getElementById('session-count').textContent = data.stats.messages_in_session || 0;
+	                    document.getElementById('total-convs').textContent = data.stats.conversations_count || 0;
+	                }
+	            })
+	            .catch(console.error);
+	    }
+	
+	    function loadHistory() {
+	        fetch('{{ path('app_chat_history') }}')
+	            .then(res => res.json())
+	            .then(data => {
+	                if (data.success && data.history.length > 0) {
+	                    welcomeState.style.display = 'none';
+	                    messagesDiv.innerHTML = '';
+	                    data.history.forEach(msg => {
+	                        addMessage(msg.content, msg.role === 'user', false);
+	                    });
+	                    scrollToBottom();
+	                }
+	            });
+	    }
+	
+	    function scrollToBottom() {
+	        messagesDiv.scrollTo({ top: messagesDiv.scrollHeight, behavior: 'smooth' });
+	    }
+	
+	    function addMessage(content, isUser, animate = true) {
+	        const wrapperDiv = document.createElement('div');
+	        wrapperDiv.className = `d-flex mb-4 ${isUser ? 'justify-content-end' : 'justify-content-start'}`;
+	        
+	         // --- JSON Parsing Logic ---
+	        let allJsonData = [];
+	        let textContent = content;
+	
+	        // Extraction de TOUS les blocs JSON (cas où l'IA en envoie plusieurs)
+	        const jsonRegex = /```json\s*(\{[\s\S]*?\})\s*```/gi;
+	        let match;
+	        while ((match = jsonRegex.exec(content)) !== null) {
+	            try {
+	                const parsed = JSON.parse(match[1]);
+	                allJsonData.push(parsed);
+	                textContent = textContent.replace(match[0], '');
+	            } catch (e) {
+	                console.error("Erreur de parsing JSON block", e);
+	            }
+	        }
+	        
+	        // Nettoyage final du texte
+	        textContent = textContent.trim();
+	        
+	        // Parse Markdown for assistant
+	        const formattedContent = isUser ? textContent : marked.parse(textContent);
+	        
+	        // --- Widget Construction ---
+	        let widgetsHTML = '';
+	        if (allJsonData.length > 0) {
+	            widgetsHTML = '<div class="mt-3 d-flex flex-column gap-3 w-100">';
+	
+	            allJsonData.forEach((jsonContent, idx) => {
+	                // 1. Metrics (Admin Style)
+	                if (jsonContent.metrics && jsonContent.metrics.length > 0) {
+	                    widgetsHTML += `<div class="d-flex flex-wrap gap-2">`;
+	                    jsonContent.metrics.forEach(m => {
+	                        const icon = m.trend === 'up' ? '<i class="bi bi-graph-up-arrow text-success"></i>' : 
+	                                     (m.trend === 'down' ? '<i class="bi bi-graph-down-arrow text-danger"></i>' : '<i class="bi bi-dash text-secondary"></i>');
+	                        widgetsHTML += `
+	                            <div class="card bg-light border flex-grow-1" style="min-width: 140px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+	                                <div class="card-body p-2 text-center">
+	                                    <small class="text-uppercase fw-bold text-muted" style="font-size: 0.65rem;">${m.label}</small>
+	                                    <div class="d-flex align-items-center justify-content-center mt-1">
+	                                        <span class="fs-4 fw-bold text-dark me-2">${m.value}<small class="fs-6 text-muted ms-1">${m.unit || ''}</small></span>
+	                                        ${icon}
+	                                    </div>
+	                                </div>
+	                            </div>`;
+	                    });
+	                    widgetsHTML += `</div>`;
+	                }
+	
+	                // 2. Alerts (Admin Style - Console look)
+	                if (jsonContent.alerts && jsonContent.alerts.length > 0) {
+	                    jsonContent.alerts.forEach(a => {
+	                       let borderColor = a.level === 'high' ? 'border-danger' : (a.level === 'medium' ? 'border-warning' : 'border-info');
+	                       let iconColor = a.level === 'high' ? 'text-danger' : (a.level === 'medium' ? 'text-warning' : 'text-info');
+	                       
+	                        widgetsHTML += `
+	                            <div class="card border-start border-4 ${borderColor} shadow-sm">
+	                                <div class="card-body p-2 d-flex align-items-start">
+	                                    <i class="bi bi-shield-exclamation ${iconColor} fs-4 me-3"></i>
+	                                    <div>
+	                                        <span class="badge bg-dark text-white mb-1" style="font-size: 0.6rem;">SYSTEM ALERT: ${a.level.toUpperCase()}</span>
+	                                        <p class="mb-0 small fw-bold text-dark">${a.message}</p>
+	                                    </div>
+	                                </div>
+	                            </div>`;
+	                    });
+	                }
+	
+	                // 3. Predictions (Admin Style)
+	                if (jsonContent.predictions && jsonContent.predictions.length > 0) {
+	                     jsonContent.predictions.forEach(p => {
+	                        widgetsHTML += `
+	                            <div class="card border bg-white p-3 shadow-sm rounded-3">
+	                                <div class="d-flex justify-content-between mb-1">
+	                                    <span class="fw-bold small text-dark"><i class="bi bi-bar-chart-line-fill me-1"></i> ${p.label}</span>
+	                                    <span class="fw-bold small text-dark">${p.probability}</span>
+	                                </div>
+	                                <div class="progress" style="height: 8px; border-radius: 10px;">
+	                                    <div class="progress-bar bg-dark" role="progressbar" style="width: ${p.probability}" aria-valuenow="${parseInt(p.probability)}" aria-valuemin="0" aria-valuemax="100"></div>
+	                                </div>
+	                                <small class="text-muted mt-2 d-block fst-italic" style="font-size: 0.75rem;">Analyse: ${p.details}</small>
+	                            </div>`;
+	                    });
+	                }
+	
+	                // 4. Decisions (Admin Style)
+	                 if (jsonContent.decisions && jsonContent.decisions.length > 0) {
+	                    widgetsHTML += `<div class="card border-secondary shadow-sm overflow-hidden">`;
+	                    widgetsHTML += `<div class="card-header bg-secondary text-white py-1 px-3 d-flex justify-content-between align-items-center">
+	                        <small class="fw-bold mb-0"><i class="bi bi-gear-fill me-1"></i> MATRICE DE DÉCISION</small>
+	                    </div>`;
+	                    widgetsHTML += `<ul class="list-group list-group-flush">`;
+	                    jsonContent.decisions.forEach(d => {
+	                         let priorityColor = d.priority.toLowerCase() === 'eleve' || d.priority.toLowerCase() === 'high' ? 'bg-danger' : 
+	                                             (d.priority.toLowerCase() === 'moyen' || d.priority.toLowerCase() === 'medium' ? 'bg-warning text-dark' : 'bg-success');
+	                         widgetsHTML += `
+	                            <li class="list-group-item d-flex justify-content-between align-items-center bg-white">
+	                                <div>
+	                                    <p class="mb-0 small fw-bold text-dark">${d.action}</p>
+	                                    ${d.category ? `<small class="text-muted" style="font-size: 0.65rem;">${d.category}</small>` : ''}
+	                                </div>
+	                                <span class="badge ${priorityColor} rounded-pill" style="font-size: 0.6rem;">${d.priority.toUpperCase()}</span>
+	                            </li>`;
+	                    });
+	                    widgetsHTML += `</ul></div>`;
+	                }
+	            });
+	
+	            widgetsHTML += '</div>'; // End widgets container
+	        }
+	
+	        wrapperDiv.innerHTML = `
+	            <div class="message-bubble ${isUser ? 'message-user' : 'message-assistant'}">
+	                 ${!isUser ? '<div class="fw-bold mb-1 small text-dark"><i class="bi bi-cpu me-1"></i>Mentor System</div>' : ''}
+	                <div class="markdown-content">
+	                    ${formattedContent}
+	                </div>
+	                ${widgetsHTML}
+	                <small class="d-block mt-2 opacity-50 small text-end" style="font-size: 0.65rem;">
+	                    ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+	                </small>
+	            </div>
+	        `;
+	        
+	        messagesDiv.appendChild(wrapperDiv);
+	        if(animate) scrollToBottom();
+	    }
+	
+	    function showTypingIndicator() {
+	        const id = 'typing-' + Date.now();
+	        const wrapperDiv = document.createElement('div');
+	        wrapperDiv.id = id;
+	        wrapperDiv.className = 'd-flex mb-4 justify-content-start';
+	        wrapperDiv.innerHTML = `
+	            <div class="message-bubble message-assistant py-3 px-4">
+	                <div class="typing-indicator">
+	                    <span></span><span></span><span></span>
+	                </div>
+	            </div>
+	        `;
+	        messagesDiv.appendChild(wrapperDiv);
+	        scrollToBottom();
+	        return id;
+	    }
+	
+	    async function sendMessage() {
+	        const message = input.value.trim();
+	        if (!message || isLoading) return;
+	        
+	        isLoading = true;
+	        sendButton.disabled = true;
+	        input.disabled = true;
+	        
+	        welcomeState.style.display = 'none';
+	        addMessage(message, true);
+	        
+	        input.value = '';
+	        input.style.height = '60px'; // Reset height
+	        
+	        const loadingId = showTypingIndicator();
+	        
+	        try {
+	            const formData = new FormData();
+	            formData.append('message', message);
+	            
+	            const response = await fetch('{{ path('app_chat_send') }}', {
+	                method: 'POST',
+	                body: formData
+	            });
+	            
+	            const data = await response.json();
+	            
+	            document.getElementById(loadingId)?.remove();
+	            
+	            if (data.success && data.response) {
+	                addMessage(data.response, false);
+	                loadStats(); // Update stats after message
+	            } else {
+	                MentorUI.toast('danger', 'Execution Error', 'System failed to process the request.');
+	            }
+	        } catch (error) {
+	            document.getElementById(loadingId)?.remove();
+	            MentorUI.toast('danger', 'Network Failure', 'Critical connection error detected.');
+	        } finally {
+	            isLoading = false;
+	            sendButton.disabled = false;
+	            input.disabled = false;
+	            input.focus();
+	        }
+	    }
+	
+	    // Event Listeners
+	    sendButton.addEventListener('click', sendMessage);
+	    refreshStatsBtn?.addEventListener('click', loadStats);
+	    
+	    input.addEventListener('keydown', (e) => {
+	        if (e.key === 'Enter' && !e.shiftKey) {
+	            e.preventDefault();
+	            sendMessage();
+	        }
+	    });
+	
+	    clearButton?.addEventListener('click', () => {
+	        MentorUI.confirm({
+	            type: 'danger',
+	            title: 'Purger le journal',
+	            message: 'Vous êtes sur le point d\'effacer les logs de session active. Cette opération est irréversible.',
+	            confirmText: 'Confirmer la Purge',
+	            onConfirm: () => {
+	                fetch('{{ path('app_chat_reset') }}', { method: 'POST' })
+	                .then(res => {
+	                    if(res.ok) location.reload();
+	                    else MentorUI.toast('danger', 'System Error', 'Failed to reset journal.');
+	                })
+	                .catch(() => MentorUI.toast('danger', 'Critical Error', 'Connection lost during operation.'));
+	            }
+	        });
+	    });
+	
+	    // Suggestion buttons
+	    document.querySelectorAll('.suggestion-btn').forEach(btn => {
+	        btn.addEventListener('click', () => {
+	            input.value = btn.dataset.prompt;
+	            sendMessage();
+	        });
+	    });
+	});
+	</script>
+	
+	{% endblock %}

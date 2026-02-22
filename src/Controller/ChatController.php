@@ -120,8 +120,8 @@ class ChatController extends AbstractController
                 
                 // Analyse et persistance automatisée
                 try {
-                    $jsonContent = $this->extractJson($result['response']);
-                    if ($jsonContent) {
+                    $allJsonContent = $this->extractAllJson($result['response']);
+                    foreach ($allJsonContent as $jsonContent) {
                         $data = json_decode($jsonContent, true);
                         if ($data && isset($data['decisions'])) {
                             foreach ($data['decisions'] as $decisionData) {
@@ -306,20 +306,27 @@ class ChatController extends AbstractController
         ]);
     }
 
-    private function extractJson(string $text): ?string
+    private function extractAllJson(string $text): array
     {
-        if (preg_match('/```json\s*(\{.*?\})\s*```/s', $text, $matches)) {
-            return $matches[1];
+        $contents = [];
+        
+        // Extraction avec balises ```json
+        if (preg_match_all('/```json\s*(\{.*?\})\s*```/s', $text, $matches)) {
+            $contents = array_merge($contents, $matches[1]);
         }
         
-        if (preg_match('/\{.*\}/s', $text, $matches)) {
-            $candidate = $matches[0];
-            json_decode($candidate);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                return $candidate;
+        // Si aucun match avec balises, tenter de trouver des structures JSON brutes
+        if (empty($contents)) {
+            if (preg_match_all('/\{[^{}]*(?:(?R)[^{}]*)*\}/s', $text, $matches)) {
+                foreach ($matches[0] as $candidate) {
+                    json_decode($candidate);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $contents[] = $candidate;
+                    }
+                }
             }
         }
         
-        return null;
+        return array_unique($contents);
     }
 }
