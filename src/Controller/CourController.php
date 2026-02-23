@@ -78,7 +78,7 @@ class CourController extends AbstractController
 
         $history = $session->get('chat_history', []);
         if (empty($history)) {
-            $welcome = $this->generateWelcomeMessage($profil);
+            $welcome = $this->generateWelcomeMessage($profil, false);
             $history[] = ['role' => 'assistant', 'content' => $welcome];
             $session->set('chat_history', $history);
         }
