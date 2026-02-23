@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\HumeurRepository;
 use App\Repository\ProfilApprentissageRepository;
+use Stripe\Stripe;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
