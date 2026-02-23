@@ -47,6 +47,9 @@ class PlanningEtude
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $etat = null;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $couleur_activite = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateCreation = null;
 
@@ -189,6 +192,18 @@ class PlanningEtude
     public function setEtat(?string $etat): static
     {
         $this->etat = $etat;
+
+        return $this;
+    }
+
+    public function getCouleurActivite(): ?string
+    {
+        return $this->couleur_activite;
+    }
+
+    public function setCouleurActivite(?string $couleur_activite): static
+    {
+        $this->couleur_activite = $couleur_activite;
 
         return $this;
     }

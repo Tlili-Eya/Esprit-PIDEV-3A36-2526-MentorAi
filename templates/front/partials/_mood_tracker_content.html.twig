@@ -1,0 +1,861 @@
+<style>
+    :root {
+        --bg-primary: #F4F7FF;
+        --text-primary: #1A1F36;
+        --text-secondary: #8F95B2;
+        --primary-blue: #4F6EF7;
+        --card-bg: #FFFFFF;
+        --shadow: 0 4px 20px rgba(79, 110, 247, 0.08);
+        --shadow-hover: 0 8px 30px rgba(79, 110, 247, 0.15);
+    }
+
+    .mood-tracker-container {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        padding: 2rem 0;
+    }
+
+    /* Hero Header Section */
+    .mood-hero-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+    }
+
+    .mood-greeting {
+        font-size: 0.9rem;
+        color: var(--primary-blue);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .mood-hero-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .mood-hero-date {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    .mood-primary-action-btn {
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(79, 110, 247, 0.3);
+    }
+
+    .mood-primary-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 110, 247, 0.4);
+    }
+
+    /* 3-Column Grid */
+    .mood-dashboard-grid {
+        display: grid;
+        grid-template-columns: 25% 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Card Styles */
+    .mood-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+    }
+
+    .mood-card:hover {
+        box-shadow: var(--shadow-hover);
+    }
+
+    .mood-card-title {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    /* Sidebar Cards */
+    .mood-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .mood-pill {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0.5rem 0;
+    }
+
+    .mood-entry-count {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .mood-streak-icon {
+        font-size: 3rem;
+        text-align: center;
+        margin: 1rem 0;
+    }
+
+    .mood-streak-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: center;
+    }
+
+    .mood-streak-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-align: center;
+    }
+
+    /* Main Content Area */
+    .mood-main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .mood-content-row {
+        display: grid;
+        grid-template-columns: 60% 40%;
+        gap: 1.5rem;
+    }
+
+    /* Today's Mood Card */
+    .mood-todays-card {
+        position: relative;
+        padding: 2rem;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .mood-emoji-large {
+        position: absolute;
+        right: 2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 6rem;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
+    }
+
+    .mood-content {
+        max-width: 60%;
+    }
+
+    .mood-label-large {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .mood-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .mood-tag {
+        background: rgba(79, 110, 247, 0.1);
+        color: var(--primary-blue);
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* Sleep & Reflection Cards */
+    .mood-info-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .mood-info-card {
+        flex: 1;
+    }
+
+    .mood-info-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0.5rem 0;
+    }
+
+    /* Trend Chart */
+    .mood-trend-chart-card {
+        padding: 2rem;
+    }
+
+    .mood-chart-container {
+        margin-top: 2rem;
+        position: relative;
+        height: 300px;
+    }
+
+    .mood-chart-bars {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-around;
+        height: 100%;
+        gap: 0.5rem;
+    }
+
+    .mood-chart-bar-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .mood-chart-bar {
+        width: 100%;
+        max-width: 40px;
+        background: linear-gradient(180deg, var(--bar-color) 0%, var(--bar-color-light) 100%);
+        border-radius: 8px 8px 0 0;
+        transition: all 0.5s ease;
+        animation: barGrow 0.8s ease forwards;
+    }
+
+    @keyframes barGrow {
+        from {
+            height: 0;
+        }
+        to {
+            height: var(--bar-height);
+        }
+    }
+
+    .mood-chart-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-align: center;
+    }
+
+    .mood-empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+    }
+
+    .mood-empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    /* Modal Styles */
+    .mood-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(26, 31, 54, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .mood-modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .mood-modal {
+        background: var(--card-bg);
+        width: 90%;
+        max-width: 500px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+
+    .mood-modal-overlay.active .mood-modal {
+        transform: scale(1);
+    }
+
+    .mood-modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(143, 149, 178, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .mood-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .mood-modal-close:hover {
+        color: var(--text-primary);
+    }
+
+    .mood-progress-bar {
+        height: 4px;
+        background: rgba(79, 110, 247, 0.1);
+        overflow: hidden;
+    }
+
+    .mood-progress-fill {
+        height: 100%;
+        background: var(--primary-blue);
+        transition: width 0.3s ease;
+    }
+
+    .mood-modal-body {
+        padding: 2rem;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .mood-step {
+        display: none;
+    }
+
+    .mood-step.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .mood-step-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+    }
+
+    /* Mood Selection (Step 1) */
+    .mood-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .mood-option {
+        background: var(--card-bg);
+        border: 2px solid rgba(143, 149, 178, 0.2);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .mood-option:hover {
+        border-color: var(--primary-blue);
+        transform: translateX(4px);
+    }
+
+    .mood-option.selected {
+        border-color: var(--primary-blue);
+        background: rgba(79, 110, 247, 0.05);
+        position: relative;
+    }
+
+    .mood-option.selected::after {
+        content: "✓";
+        position: absolute;
+        right: 1.5rem;
+        color: var(--primary-blue);
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .mood-emoji {
+        font-size: 2rem;
+    }
+
+    .mood-text {
+        flex: 1;
+    }
+
+    .mood-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    /* Tags Selection (Step 2) */
+    .mood-tags-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .mood-tag-option {
+        background: var(--card-bg);
+        border: 2px solid rgba(143, 149, 178, 0.2);
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+    .mood-tag-option:hover {
+        border-color: var(--primary-blue);
+    }
+
+    .mood-tag-option.selected {
+        border-color: var(--primary-blue);
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    /* Journal (Step 3) */
+    .mood-journal-textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 1rem;
+        border: 2px solid rgba(143, 149, 178, 0.2);
+        border-radius: 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        resize: vertical;
+        transition: border-color 0.2s;
+    }
+
+    .mood-journal-textarea:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+    }
+
+    .mood-journal-textarea.error {
+        border-color: #FF6B6B;
+    }
+
+    .mood-char-count {
+        text-align: right;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+    }
+
+    .mood-char-count.error {
+        color: #FF6B6B;
+    }
+
+    .mood-error-message {
+        color: #FF6B6B;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Sleep Selection (Step 4) */
+    .mood-sleep-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .mood-sleep-option {
+        background: var(--card-bg);
+        border: 2px solid rgba(143, 149, 178, 0.2);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .mood-sleep-option:hover {
+        border-color: var(--primary-blue);
+    }
+
+    .mood-sleep-option.selected {
+        border-color: var(--primary-blue);
+        background: rgba(79, 110, 247, 0.05);
+    }
+
+    /* Modal Footer */
+    .mood-modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid rgba(143, 149, 178, 0.1);
+        display: flex;
+        gap: 1rem;
+    }
+
+    .mood-btn {
+        flex: 1;
+        padding: 0.875rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .mood-btn-secondary {
+        background: rgba(143, 149, 178, 0.1);
+        color: var(--text-primary);
+    }
+
+    .mood-btn-secondary:hover {
+        background: rgba(143, 149, 178, 0.2);
+    }
+
+    .mood-btn-primary {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .mood-btn-primary:hover:not(:disabled) {
+        background: #3d5ce5;
+        transform: translateY(-1px);
+    }
+
+    .mood-btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Responsive */
+    @media (max-width: 968px) {
+        .mood-dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .mood-content-row {
+            grid-template-columns: 1fr;
+        }
+
+        .mood-content {
+            max-width: 100%;
+            margin-bottom: 4rem;
+        }
+    }
+</style>
+
+<!-- Modal -->
+<div class="mood-modal-overlay" id="moodModalOverlay" onclick="handleMoodOverlayClick(event)">
+    <div class="mood-modal" onclick="event.stopPropagation()">
+        <div class="mood-modal-header">
+            <h3 id="moodModalTitle">Enregistrer votre humeur</h3>
+            <button class="mood-modal-close" onclick="closeMoodModal()">&times;</button>
+        </div>
+        <div class="mood-progress-bar">
+            <div class="mood-progress-fill" id="moodProgressFill" style="width: 25%;"></div>
+        </div>
+        <div class="mood-modal-body">
+            <!-- Step 1: Mood Selection -->
+            <div class="mood-step active" id="moodStep1">
+                <div class="mood-step-title">Comment vous sentez-vous?</div>
+                <div class="mood-options">
+                    {% for value, label in moodLabels %}
+                        <div class="mood-option" data-mood="{{ value }}" onclick="selectMoodValue({{ value }})">
+                            <span class="mood-emoji">{{ moodEmojis[value] }}</span>
+                            <div class="mood-text">
+                                <div class="mood-name">{{ label }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Step 2: Tags -->
+            <div class="mood-step" id="moodStep2">
+                <div class="mood-step-title">Comment vous êtes-vous senti(e)?</div>
+                <div class="mood-tags-grid">
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Joyeux</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Anxieux</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Frustré</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Fatigué</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Énergique</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Reconnaissant</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Stressé</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Calme</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Motivé</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Débordé</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Optimiste</div>
+                    <div class="mood-tag-option" onclick="toggleMoodTag(this)">Agité</div>
+                </div>
+            </div>
+
+            <!-- Step 3: Journal -->
+            <div class="mood-step" id="moodStep3">
+                <div class="mood-step-title">Écrivez sur votre journée...</div>
+                <textarea class="mood-journal-textarea" id="moodJournalInput" placeholder="Qu'est-ce qui vous a fait ressentir cela?" maxlength="150" oninput="updateMoodCharCount()"></textarea>
+                <div class="mood-char-count" id="moodCharCount">0/150</div>
+                <div class="mood-error-message" id="moodJournalError" style="display: none;"></div>
+            </div>
+
+            <!-- Step 4: Sleep -->
+            <div class="mood-step" id="moodStep4">
+                <div class="mood-step-title">Combien avez-vous dormi?</div>
+                <div class="mood-sleep-options">
+                    <div class="mood-sleep-option" data-sleep="9+" onclick="selectMoodSleep(this)">9+ heures</div>
+                    <div class="mood-sleep-option" data-sleep="7-8" onclick="selectMoodSleep(this)">7-8 heures</div>
+                    <div class="mood-sleep-option" data-sleep="5-6" onclick="selectMoodSleep(this)">5-6 heures</div>
+                    <div class="mood-sleep-option" data-sleep="3-4" onclick="selectMoodSleep(this)">3-4 heures</div>
+                    <div class="mood-sleep-option" data-sleep="<3" onclick="selectMoodSleep(this)">Moins de 3 heures</div>
+                </div>
+            </div>
+        </div>
+        <div class="mood-modal-footer">
+            <button class="mood-btn mood-btn-secondary" id="moodBackBtn" onclick="previousMoodStep()" style="display: none;">Retour</button>
+            <button class="mood-btn mood-btn-primary" id="moodContinueBtn" onclick="nextMoodStep()" disabled>Continuer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentMoodStep = 1;
+    const totalMoodSteps = 4;
+    let moodFormData = {
+        mood: null,
+        tags: [],
+        journal: '',
+        sleep: null
+    };
+    let isMoodEditMode = {{ todayMood ? 'true' : 'false' }};
+    let currentMoodEntryId = {{ todayMood ? todayMood.id : 'null' }};
+
+    function openMoodModal() {
+        const overlay = document.getElementById('moodModalOverlay');
+        overlay.classList.add('active');
+        
+        // If editing, pre-fill data
+        if (isMoodEditMode) {
+            {% if todayMood %}
+                moodFormData.mood = {{ todayMood.valeurHumeur }};
+                moodFormData.journal = {{ todayMood.facteurPrincipal|json_encode|raw }};
+                {% if todayMood.tendance %}
+                    moodFormData.tags = {{ todayMood.tendance|split(',')|json_encode|raw }};
+                {% endif %}
+                
+                // Pre-select mood
+                const moodOption = document.querySelector(`[data-mood="${moodFormData.mood}"]`);
+                if (moodOption) {
+                    moodOption.classList.add('selected');
+                    document.getElementById('moodContinueBtn').disabled = false;
+                }
+                
+                // Pre-select tags
+                document.querySelectorAll('.mood-tag-option').forEach(tag => {
+                    if (moodFormData.tags.includes(tag.textContent)) {
+                        tag.classList.add('selected');
+                    }
+                });
+                
+                // Pre-fill journal
+                document.getElementById('moodJournalInput').value = moodFormData.journal;
+                updateMoodCharCount();
+            {% endif %}
+        }
+    }
+
+    function closeMoodModal() {
+        document.getElementById('moodModalOverlay').classList.remove('active');
+        setTimeout(() => {
+            resetMoodModal();
+        }, 300);
+    }
+
+    function handleMoodOverlayClick(event) {
+        if (event.target.id === 'moodModalOverlay') {
+            closeMoodModal();
+        }
+    }
+
+    function resetMoodModal() {
+        currentMoodStep = 1;
+        moodFormData = { mood: null, tags: [], journal: '', sleep: null };
+        updateMoodStepDisplay();
+        document.querySelectorAll('.mood-option, .mood-tag-option, .mood-sleep-option').forEach(el => {
+            el.classList.remove('selected');
+        });
+        document.getElementById('moodJournalInput').value = '';
+        updateMoodCharCount();
+    }
+
+    function selectMoodValue(value) {
+        moodFormData.mood = value;
+        document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+        document.querySelector(`[data-mood="${value}"]`).classList.add('selected');
+        document.getElementById('moodContinueBtn').disabled = false;
+    }
+
+    function toggleMoodTag(element) {
+        const tag = element.textContent;
+        const selectedTags = document.querySelectorAll('.mood-tag-option.selected');
+        
+        if (element.classList.contains('selected')) {
+            element.classList.remove('selected');
+            moodFormData.tags = moodFormData.tags.filter(t => t !== tag);
+        } else {
+            if (selectedTags.length >= 3) {
+                alert('Vous pouvez sélectionner maximum 3 étiquettes');
+                return;
+            }
+            element.classList.add('selected');
+            moodFormData.tags.push(tag);
+        }
+    }
+
+    function updateMoodCharCount() {
+        const input = document.getElementById('moodJournalInput');
+        const count = document.getElementById('moodCharCount');
+        const currentLength = input.value.length;
+        
+        count.textContent = `${currentLength}/150`;
+        
+        if (currentLength > 150) {
+            count.classList.add('error');
+            input.classList.add('error');
+            document.getElementById('moodJournalError').textContent = 'Maximum 150 characters allowed';
+            document.getElementById('moodJournalError').style.display = 'block';
+            document.getElementById('moodContinueBtn').disabled = true;
+        } else {
+            count.classList.remove('error');
+            input.classList.remove('error');
+            document.getElementById('moodJournalError').style.display = 'none';
+            document.getElementById('moodContinueBtn').disabled = false;
+        }
+        
+        moodFormData.journal = input.value;
+    }
+
+    function selectMoodSleep(element) {
+        moodFormData.sleep = element.dataset.sleep;
+        document.querySelectorAll('.mood-sleep-option').forEach(opt => opt.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('moodContinueBtn').disabled = false;
+    }
+
+    function nextMoodStep() {
+        if (currentMoodStep < totalMoodSteps) {
+            currentMoodStep++;
+            updateMoodStepDisplay();
+        } else {
+            submitMoodEntry();
+        }
+    }
+
+    function previousMoodStep() {
+        if (currentMoodStep > 1) {
+            currentMoodStep--;
+            updateMoodStepDisplay();
+        }
+    }
+
+    function updateMoodStepDisplay() {
+        // Update steps
+        document.querySelectorAll('.mood-step').forEach((step, index) => {
+            step.classList.remove('active');
+            if (index + 1 === currentMoodStep) {
+                step.classList.add('active');
+            }
+        });
+
+        // Update progress bar
+        const progress = (currentMoodStep / totalMoodSteps) * 100;
+        document.getElementById('moodProgressFill').style.width = progress + '%';
+
+        // Update buttons
+        const backBtn = document.getElementById('moodBackBtn');
+        const continueBtn = document.getElementById('moodContinueBtn');
+        
+        backBtn.style.display = currentMoodStep > 1 ? 'block' : 'none';
+        
+        if (currentMoodStep === totalMoodSteps) {
+            continueBtn.textContent = 'Terminer';
+        } else {
+            continueBtn.textContent = 'Continuer';
+        }
+
+        // Check if current step has selection
+        updateMoodContinueButton();
+    }
+
+    function updateMoodContinueButton() {
+        const continueBtn = document.getElementById('moodContinueBtn');
+        
+        switch(currentMoodStep) {
+            case 1:
+                continueBtn.disabled = !moodFormData.mood;
+                break;
+            case 2:
+                continueBtn.disabled = false; // Tags are optional
+                break;
+            case 3:
+                continueBtn.disabled = moodFormData.journal.length > 150;
+                break;
+            case 4:
+                continueBtn.disabled = !moodFormData.sleep;
+                break;
+        }
+    }
+
+    async function submitMoodEntry() {
+        try {
+            const url = isMoodEditMode 
+                ? `/mood-tracker/update/${currentMoodEntryId}`
+                : '/mood-tracker/log';
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(moodFormData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                closeMoodModal();
+                // Reload page to show updated data
+                window.location.reload();
+            } else {
+                alert('Erreur: ' + (result.error || 'Échec de l\'enregistrement de l\'humeur'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Une erreur s\'est produite. Veuillez réessayer.');
+        }
+    }
+</script>

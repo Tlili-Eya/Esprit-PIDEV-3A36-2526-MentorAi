@@ -1,0 +1,141 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Test de Personnalité{% endblock %}
+
+{% block body %}
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Test de Personnalité Myers-Briggs (MBTI)</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li class="current">Test de Personnalité</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      {% if result %}
+        <div class="alert alert-success">
+          <h4>Résultat de votre test</h4>
+          <p>Votre type de personnalité est : <strong>{{ result }}</strong></p>
+          <p class="mb-0">
+            <a href="{{ path('front_planning') }}" class="btn btn-primary">Retour au Planning</a>
+            <a href="{{ path('personality_test') }}" class="btn btn-outline-secondary">Refaire le test</a>
+          </p>
+        </div>
+      {% else %}
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                <p class="lead mb-4">Répondez aux questions suivantes pour découvrir votre type de personnalité.</p>
+                
+                {% for message in app.flashes('error') %}
+                  <div class="alert alert-danger">{{ message }}</div>
+                {% endfor %}
+
+                <form method="post" action="{{ path('personality_test') }}">
+                  {% for idx, question in questions %}
+                    <div class="mb-4 pb-3 border-bottom">
+                      <h5 class="mb-3">{{ loop.index }}. {{ question.text }}</h5>
+                      <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="answers[{{ idx }}]" id="q{{ idx }}_a" value="a" required>
+                        <label class="form-check-label" for="q{{ idx }}_a">
+                          {{ question.option_a }}
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="answers[{{ idx }}]" id="q{{ idx }}_b" value="b" required>
+                        <label class="form-check-label" for="q{{ idx }}_b">
+                          {{ question.option_b }}
+                        </label>
+                      </div>
+                    </div>
+                  {% endfor %}
+
+                  <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Obtenir mon résultat</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
+    public function index(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        // Récupérer un utilisateur fixe (par exemple celui avec l'ID 1)
+        $user = $entityManager->getRepository(Utilisateur::class)->find(1);
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur avec ID 1 introuvable');
+        }
+
+        // Récupérer le profil existant de cet utilisateur (s'il existe)
+        $profile = $entityManager->getRepository(ProfilApprentissage::class)
+            ->findOneBy(['Utilisateur' => $user]);
+
+        // Si aucun profil n'existe, en créer un nouveau
+        if (!$profile) {
+            $profile = new ProfilApprentissage();
+            $profile->setUtilisateur($user);
+        }
+
+        // Tableau des questions (12 questions)
+        $questions = [
+            ['text' => 'À une fête, préférez-vous :', 'axis' => 'EI', 'option_a' => 'Interagir avec beaucoup de personnes, y compris des inconnus', 'option_b' => 'Interagir avec quelques personnes que vous connaissez', 'value_a' => 'E', 'value_b' => 'I'],
+            ['text' => 'Aux fêtes, avez-vous tendance à :', 'axis' => 'EI', 'option_a' => 'Rester tard, avec de l’énergie croissante', 'option_b' => 'Partir tôt, avec une énergie diminuée', 'value_a' => 'E', 'value_b' => 'I'],
+            ['text' => 'En société, êtes-vous plutôt :', 'axis' => 'EI', 'option_a' => 'Celui qui initie la conversation', 'option_b' => 'Celui qui attend qu’on l’aborde', 'value_a' => 'E', 'value_b' => 'I'],
+            ['text' => 'Êtes-vous plutôt :', 'axis' => 'SN', 'option_a' => 'Réaliste que spéculatif', 'option_b' => 'Spéculatif que réaliste', 'value_a' => 'S', 'value_b' => 'N'],
+            ['text' => 'Êtes-vous plus attiré par :', 'axis' => 'SN', 'option_a' => 'Les gens sensés', 'option_b' => 'Les gens imaginatifs', 'value_a' => 'S', 'value_b' => 'N'],
+            ['text' => 'Pour faire les choses ordinaires, êtes-vous plus enclin à :', 'axis' => 'SN', 'option_a' => 'Les faire de la manière habituelle', 'option_b' => 'Les faire à votre façon', 'value_a' => 'S', 'value_b' => 'N'],
+            ['text' => 'Êtes-vous plus impressionné par :', 'axis' => 'TF', 'option_a' => 'Les principes', 'option_b' => 'Les émotions', 'value_a' => 'T', 'value_b' => 'F'],
+            ['text' => 'En abordant les autres, votre inclination est-elle d’être plutôt :', 'axis' => 'TF', 'option_a' => 'Objectif', 'option_b' => 'Personnel', 'value_a' => 'T', 'value_b' => 'F'],
+            ['text' => 'Êtes-vous plus à l’aise pour prendre des décisions :', 'axis' => 'TF', 'option_a' => 'Logiques', 'option_b' => 'Basées sur les valeurs', 'value_a' => 'T', 'value_b' => 'F'],
+            ['text' => 'Préférez-vous travailler :', 'axis' => 'JP', 'option_a' => 'Avec des délais', 'option_b' => '« Quand cela vient »', 'value_a' => 'J', 'value_b' => 'P'],
+            ['text' => 'Qu’est-ce qui vous dérange le plus :', 'axis' => 'JP', 'option_a' => 'Les choses incomplètes', 'option_b' => 'Les choses terminées', 'value_a' => 'J', 'value_b' => 'P'],
+            ['text' => 'Préférez-vous que les choses soient :', 'axis' => 'JP', 'option_a' => 'Réglées et décidées', 'option_b' => 'Non réglées et indécises', 'value_a' => 'J', 'value_b' => 'P'],
+        ];
+
+        $result = null;
+
+        if ($request->isMethod('POST')) {
+            $answers = $request->request->all('answers');
+
+            if (count($answers) !== count($questions)) {
+                $this->addFlash('error', 'Veuillez répondre à toutes les questions.');
+            } else {
+                $counters = ['E' => 0, 'I' => 0, 'S' => 0, 'N' => 0, 'T' => 0, 'F' => 0, 'J' => 0, 'P' => 0];
+
+                foreach ($answers as $idx => $answer) {
+                    $question = $questions[$idx];
+                    $value = $answer === 'a' ? $question['value_a'] : $question['value_b'];
+                    $counters[$value]++;
+                }
+
+                $type = '';
+                $type .= ($counters['E'] >= $counters['I']) ? 'E' : 'I';
+                $type .= ($counters['S'] >= $counters['N']) ? 'S' : 'N';
+                $type .= ($counters['T'] >= $counters['F']) ? 'T' : 'F';
+                $type .= ($counters['J'] >= $counters['P']) ? 'J' : 'P';
+
+                // Enregistrer (ou mettre à jour) le type dans le profil
+                $profile->setTypePers($type);
+                $entityManager->persist($profile);
+                $entityManager->flush();
+
+                $result = $type;
+            }
+        }
+
+        return $this->render('front/personality.html.twig', [
+            'questions' => $questions,
+            'result' => $result,
+        ]);
+    }
+}

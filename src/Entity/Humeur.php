@@ -35,7 +35,7 @@ class Humeur
     private ?\DateTime $creeLe = null;
 
     #[ORM\ManyToOne]
-    private ?profilApprentissage $profilApprentissage = null;
+    private ?ProfilApprentissage $profilApprentissage = null;
 
     public function getId(): ?int
     {
@@ -126,12 +126,12 @@ class Humeur
         return $this;
     }
 
-    public function getProfilApprentissage(): ?profilApprentissage
+    public function getProfilApprentissage(): ?ProfilApprentissage
     {
         return $this->profilApprentissage;
     }
 
-    public function setProfilApprentissage(?profilApprentissage $profilApprentissage): static
+    public function setProfilApprentissage(?ProfilApprentissage $profilApprentissage): static
     {
         $this->profilApprentissage = $profilApprentissage;
 

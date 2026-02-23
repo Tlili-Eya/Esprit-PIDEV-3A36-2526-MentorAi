@@ -6,7 +6,13 @@
 parameters:
     pdp_directory: '%kernel.project_dir%/public/uploads/pdp'
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
-
+    groq_api_key: '%env(GROQ_API_KEY)%'
+    groq_model: '%env(GROQ_MODEL)%'
+    elevenlabs_api_key: '%env(ELEVENLABS_API_KEY)%'
+    elevenlabs_voice_id: '%env(ELEVENLABS_VOICE_ID)%'
+    cloudinary_cloud_name: '%env(CLOUDINARY_CLOUD_NAME)%'
+    cloudinary_api_key: '%env(CLOUDINARY_API_KEY)%'
+    cloudinary_api_secret: '%env(CLOUDINARY_API_SECRET)%'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -21,6 +27,13 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Controller\CourController:
+        arguments:
+            $groqApiKey: '%groq_api_key%'
+            $elevenLabsApiKey: '%elevenlabs_api_key%'
+            $cloudName: '%cloudinary_cloud_name%'
+            $cloudApiKey: '%cloudinary_api_key%'
+            $cloudApiSecret: '%cloudinary_api_secret%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

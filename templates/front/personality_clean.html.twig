@@ -1,0 +1,70 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Test de Personnalité{% endblock %}
+
+{% block body %}
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Test de Personnalité Myers-Briggs (MBTI)</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li class="current">Test de Personnalité</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      {% if result %}
+        <div class="alert alert-success">
+          <h4>Résultat de votre test</h4>
+          <p>Votre type de personnalité est : <strong>{{ result }}</strong></p>
+          <p class="mb-0">
+            <a href="{{ path('front_blog_details') }}" class="btn btn-primary">Retour au Planning</a>
+            <a href="{{ path('personality_test') }}" class="btn btn-outline-secondary">Refaire le test</a>
+          </p>
+        </div>
+      {% else %}
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                <p class="lead mb-4">Répondez aux questions suivantes pour découvrir votre type de personnalité.</p>
+                
+                {% for message in app.flashes('error') %}
+                  <div class="alert alert-danger">{{ message }}</div>
+                {% endfor %}
+
+                <form method="post" action="{{ path('personality_test') }}">
+                  {% for idx, question in questions %}
+                    <div class="mb-4 pb-3 border-bottom">
+                      <h5 class="mb-3">{{ loop.index }}. {{ question.text }}</h5>
+                      <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="answers[{{ idx }}]" id="q{{ idx }}_a" value="a" required>
+                        <label class="form-check-label" for="q{{ idx }}_a">
+                          {{ question.option_a }}
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="answers[{{ idx }}]" id="q{{ idx }}_b" value="b" required>
+                        <label class="form-check-label" for="q{{ idx }}_b">
+                          {{ question.option_b }}
+                        </label>
+                      </div>
+                    </div>
+                  {% endfor %}
+
+                  <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Obtenir mon résultat</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

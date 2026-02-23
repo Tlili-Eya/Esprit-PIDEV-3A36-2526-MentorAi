@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Repository\HumeurRepository;
+use App\Repository\ProfilApprentissageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,9 +40,61 @@ class FrontController extends AbstractController
     }
 
     #[Route('instructor-profile', name: 'instructor_profile')]
-    public function instructorProfile(): Response
-    {
-        return $this->render('front/instructor-profile.html.twig');
+    public function instructorProfile(
+        HumeurRepository $humeurRepository,
+        ProfilApprentissageRepository $profilRepository
+    ): Response {
+        // Mood tracker data
+        $profil = $profilRepository->findOneBy([]);  // TODO: Get actual user profile
+        
+        $todayMood = null;
+        $moods = [];
+        $averageMood = null;
+        $longestStreak = 0;
+        
+        if ($profil) {
+            $todayMood = $humeurRepository->getTodayMood($profil);
+            $moods = $humeurRepository->getLastNDaysMoods($profil, 14);
+            $averageMood = $humeurRepository->getAverageMood($profil, 7);
+            $longestStreak = $humeurRepository->getLongestStreak($profil);
+        }
+
+        $moodLabels = [
+            1 => 'Très Triste',
+            2 => 'Triste',
+            3 => 'Neutre',
+            4 => 'Heureux',
+            5 => 'Très Heureux'
+        ];
+
+        $moodEmojis = [
+            1 => '😢',
+            2 => '😔',
+            3 => '😐',
+            4 => '😊',
+            5 => '😄'
+        ];
+
+        $moodColors = [
+            1 => '#FF6B6B',
+            2 => '#9B59B6',
+            3 => '#3498DB',
+            4 => '#2ECC71',
+            5 => '#F1C40F'
+        ];
+
+        return $this->render('front/instructor-profile.html.twig', [
+            'todayMood' => $todayMood,
+            'moods' => $moods,
+            'averageMood' => $averageMood,
+            'longestStreak' => $longestStreak,
+            'moodLabels' => $moodLabels,
+            'moodEmojis' => $moodEmojis,
+            'moodColors' => $moodColors,
+            'userName' => $profil?->getUtilisateur()?->getPrenom()
+                ?? $profil?->getUtilisateur()?->getNom()
+                ?? 'User',
+        ]);
     }
 
     
@@ -124,18 +178,8 @@ class FrontController extends AbstractController
         return $this->render('front/terms.html.twig');
     }
 
-    #[Route('blog', name: 'blog')]
-    public function blog(): Response
-    {
-        return $this->render('front/blog.html.twig');
-    }
-
-    #[Route('blog-details', name: 'blog_details')]
-    public function blogDetails(): Response
-    {
-        return $this->render('front/blog-details.html.twig');
-    }
-
+// ⚠️ blog is now handled by CarnetController
+// ⚠️ blog-details is now handled by PlanningEtudeController
     #[Route('contact', name: 'contact')]
     public function contact(): Response
     {

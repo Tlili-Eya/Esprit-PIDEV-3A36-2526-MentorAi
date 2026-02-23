@@ -1,0 +1,1598 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Planning{% endblock %}
+
+{% block stylesheets %}
+  <style>
+    .planning-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 320px) 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .planning-panel {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      padding: 20px;
+    }
+
+    .planning-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+
+    .planning-header h2,
+    .planning-header h3 {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .calendar-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .calendar-cell {
+      text-align: center;
+      padding: 8px 0;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+
+    .calendar-cell.is-muted {
+      color: #94a3b8;
+    }
+
+    .calendar-cell.is-selected {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    .calendar-cell.is-today {
+      border-color: #334155;
+      font-weight: 600;
+    }
+
+.week-grid-wrapper {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: visible;
+}
+
+
+    .week-header {
+      display: grid;
+      grid-template-columns: 80px repeat(7, minmax(140px, 1fr));
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .week-header div {
+      padding: 8px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-right: 1px solid #e2e8f0;
+    }
+
+    .week-header div:last-child {
+      border-right: none;
+    }
+
+    .week-header .is-selected {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+.week-grid {
+  display: grid;
+  grid-template-columns: 80px repeat(7, minmax(140px, 1fr));
+  height: auto;
+  overflow: visible;
+}
+
+
+    .week-axis {
+      border-right: 1px solid #e2e8f0;
+      height: calc(var(--hour-row) * 24);
+      box-sizing: border-box;
+      display: grid;
+      grid-template-rows: repeat(24, var(--hour-row));
+    }
+
+    .week-axis .hour-label {
+      height: var(--hour-row);
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      color: #64748b;
+      box-sizing: border-box;
+      border-bottom: 1px solid #e2e8f0;
+      background: #ffffff;
+    }
+
+    .week-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(140px, 1fr));
+      height: calc(var(--hour-row) * 24);
+    }
+
+    .week-day-column {
+      position: relative;
+      border-right: 1px solid #e2e8f0;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-rows: repeat(24, var(--hour-row));
+    }
+
+    .hour-cell {
+      border-bottom: 1px solid #e2e8f0;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+
+    .week-day-column:last-child {
+      border-right: none;
+    }
+
+    .activity-card {
+      position: absolute;
+      left: 6px;
+      width: calc(100% - 12px);
+      border-radius: 8px;
+      padding: 6px 8px;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      box-sizing: border-box;
+    }
+
+    .activity-card.is-done {
+      border-color: #16a34a;
+      box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.2);
+    }
+
+    .activity-card.is-done .activity-title {
+      text-decoration: line-through;
+    }
+
+    .activity-card.is-selected {
+      border-color: #0f172a;
+    }
+
+    .activity-card.is-skipped {
+      border-color: #f97316;
+      box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.25);
+      opacity: 0.7;
+    }
+
+    .activity-meta {
+      font-size: 0.7rem;
+      text-transform: lowercase;
+    }
+
+    .type-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .type-filter button {
+      border: 1px solid #cbd5f5;
+      background: #ffffff;
+      color: #0f172a;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .type-filter button.is-active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    .planning-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1055;
+    }
+
+    .planning-modal.is-open {
+      display: flex;
+    }
+
+    .planning-modal-content {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      width: min(520px, 100%);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+    }
+
+    .planning-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .planning-meta {
+      font-size: 0.9rem;
+      color: #475569;
+    }
+
+    .planning-errors {
+      display: none;
+      margin-bottom: 12px;
+    }
+
+    .planning-errors.is-visible {
+      display: block;
+    }
+
+    .planning-reminders {
+      display: none;
+      margin-bottom: 12px;
+    }
+
+    .planning-reminders.is-visible {
+      display: block;
+    }
+
+    .planning-layout.is-focus .planning-panel {
+      opacity: 0.4;
+      transition: opacity 0.2s ease;
+    }
+
+    .planning-layout.is-focus #week-panel {
+      opacity: 1;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .duration-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .duration-group input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .duration-separator {
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .is-hidden {
+      display: none;
+    }
+
+    @media (max-width: 992px) {
+      .planning-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block body %}
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Planning</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li class="current">Planning</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+{# Bloc test de personnalité #}
+<div class="container mt-3">
+    {% if profile and profile.typePers %}
+        <div class="alert alert-info d-flex justify-content-between align-items-center">
+            <span>Votre type de personnalité : <strong>{{ profile.typePers }}</strong></span>
+            <a href="{{ path('personality_test') }}" class="btn btn-sm btn-outline-primary">Refaire le test</a>
+        </div>
+    {% else %}
+        <div class="text-end mb-3">
+            <a href="{{ path('personality_test') }}" class="btn btn-primary">Test de personnalité</a>
+        </div>
+    {% endif %}
+</div>
+  <section class="section">
+    <div class="container">
+      <div id="planning-app"
+           class="planning-layout"
+           data-initial-date="{{ selectedDate|date('Y-m-d') }}"
+           data-week-url="{{ path('front_planning_week') }}"
+           data-create-url="{{ path('front_planning_create') }}"
+           data-update-url-template="{{ path('front_planning_update', { id: '__ID__' }) }}"
+           data-delete-url-template="{{ path('front_planning_delete', { id: '__ID__' }) }}"
+           data-toggle-url-template="{{ path('front_planning_toggle', { id: '__ID__' }) }}"
+           data-move-url-template="{{ path('front_planning_move', { id: '__ID__' }) }}"
+           data-suggest-url="{{ path('front_planning_suggest') }}"
+           data-reminders-url="{{ path('front_planning_reminders') }}">
+
+        <div class="planning-panel" id="calendar-panel">
+          <div class="planning-header">
+            <h2 id="calendar-title">Calendrier</h2>
+            <div class="calendar-controls">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="calendar-prev">‹</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="calendar-next">›</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="calendar-prev-year">-1 an</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="calendar-next-year">+1 an</button>
+            </div>
+          </div>
+
+          <div class="planning-meta" id="selected-date-label"></div>
+
+          <div class="calendar-grid mt-3" id="calendar-grid"></div>
+
+          <div class="planning-meta mt-3">Filtrer par type</div>
+          <div class="type-filter" id="type-filter"></div>
+        </div>
+
+        <div class="planning-panel" id="week-panel">
+          <div class="planning-header">
+            <h3>Planning hebdomadaire</h3>
+            <span class="planning-meta" id="week-range"></span>
+          </div>
+
+          <div id="planning-errors" class="alert alert-danger planning-errors"></div>
+          <div id="planning-reminders" class="alert alert-info planning-reminders"></div>
+          <p class="planning-meta">Double-clique sur une case pour ajouter une activite.</p>
+
+          <div class="week-grid-wrapper" id="week-grid-wrapper">
+            <div class="week-header" id="week-header"></div>
+            <div class="week-grid" id="week-grid">
+              <div class="week-axis" id="week-axis"></div>
+              <div class="week-days" id="week-days"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="planning-modal" id="planning-modal" aria-hidden="true">
+    <div class="planning-modal-content">
+      <div class="planning-modal-header">
+        <h4 class="mb-0" id="modal-title">Ajouter une activite</h4>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="close-modal">Fermer</button>
+      </div>
+
+      <div class="planning-meta" id="modal-date"></div>
+
+      <div id="modal-errors" class="alert alert-danger planning-errors"></div>
+
+      <div id="modal-actions" class="modal-actions">
+        <button type="button" class="btn btn-outline-secondary" id="focus-btn">Focus mode</button>
+        <button type="button" class="btn btn-outline-secondary" id="notes-btn">Add notes</button>
+        <button type="button" id="update-btn" class="btn btn-primary">Update</button>
+        <button type="button" id="delete-btn" class="btn btn-outline-danger">Delete</button>
+      </div>
+
+      <div id="modal-form" class="is-hidden">
+        <form id="activity-form" class="row g-3" autocomplete="off">
+          <div class="col-12">
+            <input name="titre_p" class="form-control" placeholder="Titre">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Heure de debut</label>
+            <input type="time" name="heure_debut" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Duree prevue</label>
+            <div class="duration-group">
+              <input type="number" name="duree_heures" class="form-control" min="0" placeholder="HH" inputmode="numeric">
+              <span class="duration-separator">:</span>
+              <input type="number" name="duree_minutes" class="form-control" min="0" max="59" placeholder="MM" inputmode="numeric">
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <select class="form-select" id="type-select">
+              <option value="">Choisir un type existant</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <input name="type_activite" id="type-input" class="form-control" placeholder="Ou nouveau type">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Couleur</label>
+            <input type="color" name="couleur_activite" id="color-input" class="form-control form-control-color" value="#fcd34d">
+          </div>
+
+          <div class="col-12 is-hidden" id="notes-group">
+            <label class="form-label">Notes</label>
+            <textarea name="notes_pers" id="notes-input" class="form-control" rows="3" placeholder="Ajouter des notes..."></textarea>
+          </div>
+
+          <div class="col-12 d-grid">
+            <button id="create-btn" class="btn btn-primary">Ajouter</button>
+            <button type="button" id="save-btn" class="btn btn-primary is-hidden">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="modal-delete" class="is-hidden">
+        <p class="mb-3">Êtes-vous sûr de vouloir supprimer cet élément ?</p>
+        <div class="modal-actions">
+          <button type="button" id="confirm-delete" class="btn btn-outline-danger">Supprimer</button>
+          <button type="button" id="cancel-delete" class="btn btn-outline-secondary">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script>
+    const app = document.getElementById('planning-app');
+    const calendarGrid = document.getElementById('calendar-grid');
+    const calendarTitle = document.getElementById('calendar-title');
+    const selectedDateLabel = document.getElementById('selected-date-label');
+    const typeFilter = document.getElementById('type-filter');
+    const weekRange = document.getElementById('week-range');
+    const weekHeader = document.getElementById('week-header');
+    const weekGrid = document.getElementById('week-grid');
+    const weekAxis = document.getElementById('week-axis');
+    const weekDays = document.getElementById('week-days');
+    const weekGridWrapper = document.getElementById('week-grid-wrapper');
+    const planningErrors = document.getElementById('planning-errors');
+
+    const modal = document.getElementById('planning-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDate = document.getElementById('modal-date');
+    const modalErrors = document.getElementById('modal-errors');
+    const form = document.getElementById('activity-form');
+    const closeModalBtn = document.getElementById('close-modal');
+    const titleInput = document.querySelector('#activity-form [name="titre_p"]');
+    const typeSelect = document.getElementById('type-select');
+    const durationHoursInput = document.querySelector('#activity-form [name="duree_heures"]');
+    const durationMinutesInput = document.querySelector('#activity-form [name="duree_minutes"]');
+    const typeInput = document.getElementById('type-input');
+    const colorInput = document.getElementById('color-input');
+    const notesGroup = document.getElementById('notes-group');
+    const notesInput = document.getElementById('notes-input');
+    const createBtn = document.getElementById('create-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const updateBtn = document.getElementById('update-btn');
+    const deleteBtn = document.getElementById('delete-btn');
+    const modalActions = document.getElementById('modal-actions');
+    const modalForm = document.getElementById('modal-form');
+    const modalDelete = document.getElementById('modal-delete');
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+    const cancelDeleteBtn = document.getElementById('cancel-delete');
+    const focusBtn = document.getElementById('focus-btn');
+    const notesBtn = document.getElementById('notes-btn');
+    const remindersEl = document.getElementById('planning-reminders');
+
+    const weekUrl = app.dataset.weekUrl;
+    const createUrl = app.dataset.createUrl;
+    const updateUrlTemplate = app.dataset.updateUrlTemplate;
+    const deleteUrlTemplate = app.dataset.deleteUrlTemplate;
+    const toggleUrlTemplate = app.dataset.toggleUrlTemplate;
+    const moveUrlTemplate = app.dataset.moveUrlTemplate;
+    const suggestUrl = app.dataset.suggestUrl;
+    const remindersUrl = app.dataset.remindersUrl;
+    const rowHeight = getRowHeight();
+
+    let selectedDate = parseDate(app.dataset.initialDate);
+    let activeActivityId = null;
+    let cachedActivities = [];
+    let currentActivity = null;
+    let suggestTimeout = null;
+    let activeTypeFilter = 'all';
+    const reminderCache = new Set();
+
+    document.getElementById('calendar-prev').addEventListener('click', () => {
+      selectedDate = addMonths(selectedDate, -1);
+      updateAll();
+    });
+
+    document.getElementById('calendar-next').addEventListener('click', () => {
+      selectedDate = addMonths(selectedDate, 1);
+      updateAll();
+    });
+
+    document.getElementById('calendar-prev-year').addEventListener('click', () => {
+      selectedDate = addYears(selectedDate, -1);
+      updateAll();
+    });
+
+    document.getElementById('calendar-next-year').addEventListener('click', () => {
+      selectedDate = addYears(selectedDate, 1);
+      updateAll();
+    });
+
+    calendarGrid.addEventListener('click', (event) => {
+      const cell = event.target.closest('[data-date]');
+      if (!cell) {
+        return;
+      }
+      selectedDate = parseDate(cell.dataset.date);
+      updateAll();
+    });
+
+    typeFilter.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-type]');
+      if (!button) {
+        return;
+      }
+      activeTypeFilter = button.dataset.type;
+      typeFilter.querySelectorAll('button').forEach((item) => {
+        item.classList.toggle('is-active', item.dataset.type === activeTypeFilter);
+      });
+      paintActivities(cachedActivities);
+    });
+
+    weekHeader.addEventListener('click', (event) => {
+      const cell = event.target.closest('[data-date]');
+      if (!cell) {
+        return;
+      }
+      selectedDate = parseDate(cell.dataset.date);
+      updateAll();
+    });
+
+    typeSelect.addEventListener('change', () => {
+      const option = typeSelect.selectedOptions[0];
+      if (option && option.dataset.color) {
+        colorInput.value = option.dataset.color;
+      }
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      toggleModal(false);
+    });
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        toggleModal(false);
+      }
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (form.dataset.mode !== 'create') {
+        return;
+      }
+      await submitCreate();
+    });
+
+    updateBtn.addEventListener('click', () => {
+      if (!form.dataset.activityId) {
+        return;
+      }
+      showFormView('edit');
+    });
+
+    saveBtn.addEventListener('click', async () => {
+      if (form.dataset.mode !== 'edit') {
+        return;
+      }
+      await submitUpdate();
+    });
+
+    deleteBtn.addEventListener('click', () => {
+      if (!form.dataset.activityId) {
+        return;
+      }
+      showDeleteView();
+    });
+
+    confirmDeleteBtn.addEventListener('click', async () => {
+      if (!form.dataset.activityId) {
+        return;
+      }
+      await submitDelete();
+    });
+
+    cancelDeleteBtn.addEventListener('click', () => {
+      showActionsView();
+    });
+
+    notesBtn.addEventListener('click', () => {
+      if (!form.dataset.activityId) {
+        return;
+      }
+      showFormView('edit', { showNotes: true });
+      notesInput.focus();
+    });
+
+    focusBtn.addEventListener('click', () => {
+      if (!form.dataset.activityId) {
+        return;
+      }
+      toggleModal(false);
+      enableFocusMode(form.dataset.activityId);
+    });
+
+    titleInput.addEventListener('input', () => {
+      if (suggestTimeout) {
+        clearTimeout(suggestTimeout);
+      }
+      suggestTimeout = setTimeout(() => {
+        fetchSuggestions(titleInput.value);
+      }, 300);
+    });
+
+    function getRowHeight() {
+      const value = getComputedStyle(weekGridWrapper).getPropertyValue('--hour-row');
+      const parsed = parseInt(value, 10);
+      return Number.isFinite(parsed) ? parsed : 56;
+    }
+
+    function updateAll() {
+      renderCalendar();
+      renderWeekSkeleton();
+      fetchWeekData();
+    }
+
+    function renderCalendar() {
+      const today = new Date();
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth();
+      const monthLabel = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' })
+        .format(new Date(year, month, 1));
+
+      calendarTitle.textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+      selectedDateLabel.textContent = `Date selectionnee : ${formatDateDisplay(selectedDate)}`;
+
+      calendarGrid.innerHTML = '';
+      const weekDayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+      weekDayLabels.forEach((label) => {
+        const header = document.createElement('div');
+        header.className = 'calendar-cell is-muted';
+        header.textContent = label;
+        calendarGrid.appendChild(header);
+      });
+
+      const firstOfMonth = new Date(year, month, 1);
+      const startDay = (firstOfMonth.getDay() + 6) % 7;
+      const gridStart = new Date(year, month, 1 - startDay);
+
+      for (let i = 0; i < 42; i += 1) {
+        const cellDate = new Date(gridStart);
+        cellDate.setDate(gridStart.getDate() + i);
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell';
+        if (cellDate.getMonth() !== month) {
+          cell.classList.add('is-muted');
+        }
+        if (isSameDay(cellDate, selectedDate)) {
+          cell.classList.add('is-selected');
+        }
+        if (isSameDay(cellDate, today)) {
+          cell.classList.add('is-today');
+        }
+        cell.dataset.date = formatDate(cellDate);
+        cell.textContent = String(cellDate.getDate());
+        calendarGrid.appendChild(cell);
+      }
+    }
+
+    function renderWeekSkeleton() {
+      const weekStartDate = getWeekStart(selectedDate);
+      const weekDates = Array.from({ length: 7 }, (_, index) => addDays(weekStartDate, index));
+
+      weekHeader.innerHTML = '';
+      weekHeader.appendChild(document.createElement('div'));
+      weekDates.forEach((date) => {
+        const header = document.createElement('div');
+        header.dataset.date = formatDate(date);
+        header.textContent = new Intl.DateTimeFormat('fr-FR', {
+          weekday: 'short',
+          day: '2-digit',
+          month: '2-digit',
+        }).format(date);
+        if (isSameDay(date, selectedDate)) {
+          header.classList.add('is-selected');
+        }
+        weekHeader.appendChild(header);
+      });
+
+      weekAxis.innerHTML = '';
+      for (let hour = 0; hour < 24; hour += 1) {
+        const label = document.createElement('div');
+        label.className = 'hour-label';
+        label.textContent = `${pad(hour)}h`;
+        weekAxis.appendChild(label);
+      }
+
+      weekDays.innerHTML = '';
+      weekDates.forEach((date) => {
+        const column = document.createElement('div');
+        column.className = 'week-day-column';
+        column.dataset.date = formatDate(date);
+        column.style.height = `${rowHeight * 24}px`;
+        for (let hour = 0; hour < 24; hour += 1) {
+          const hourCell = document.createElement('div');
+          hourCell.className = 'hour-cell';
+          column.appendChild(hourCell);
+        }
+        column.addEventListener('dblclick', (event) => onGridDoubleClick(event, column));
+        column.addEventListener('click', (event) => onGridClick(event));
+        column.addEventListener('dragover', (event) => onColumnDragOver(event));
+        column.addEventListener('drop', (event) => onColumnDrop(event, column));
+        weekDays.appendChild(column);
+      });
+
+      const weekLabel = `${formatDateDisplay(weekDates[0])} → ${formatDateDisplay(weekDates[6])}`;
+      weekRange.textContent = weekLabel;
+    }
+
+    async function fetchWeekData() {
+      clearErrors(planningErrors);
+      try {
+        const response = await fetch(`${weekUrl}?date=${formatDate(selectedDate)}`);
+        if (!response.ok) {
+          showErrors(planningErrors, ['Impossible de charger le planning.']);
+          return;
+        }
+
+        const payload = await response.json();
+        cachedActivities = payload.activities || [];
+        populateTypes(payload.types || []);
+        paintActivities(cachedActivities);
+      } catch (error) {
+        showErrors(planningErrors, ['Erreur reseau.']);
+      }
+    }
+
+    function populateTypes(types) {
+      const currentValue = typeSelect.value;
+      typeSelect.innerHTML = '<option value="">Choisir un type existant</option>';
+      types.forEach((type) => {
+        const option = document.createElement('option');
+        option.value = type.type;
+        option.textContent = type.type;
+        if (type.color) {
+          option.dataset.color = type.color;
+        }
+        typeSelect.appendChild(option);
+      });
+      if (currentValue) {
+        typeSelect.value = currentValue;
+      }
+
+      renderTypeFilter(types);
+    }
+
+    function paintActivities(activities) {
+      weekDays.querySelectorAll('.activity-card').forEach((card) => card.remove());
+      activeActivityId = null;
+
+      const renderActivities = splitActivitiesForRender(activities);
+      const grouped = groupActivitiesByDay(renderActivities);
+      grouped.forEach((activity) => {
+        if (activeTypeFilter !== 'all' && activity.type_activite !== activeTypeFilter) {
+          return;
+        }
+        if (!activity.renderDate || !activity.renderStart) {
+          return;
+        }
+        const column = weekDays.querySelector(`.week-day-column[data-date="${activity.renderDate}"]`);
+        if (!column) {
+          return;
+        }
+
+        const startMinutes = timeToMinutes(activity.renderStart);
+        const duration = Number(activity.renderDuration || 0);
+        if (duration <= 0) {
+          return;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'activity-card';
+        if (activity.etat === 'done') {
+          card.classList.add('is-done');
+        }
+        if (activity.etat === 'skipped') {
+          card.classList.add('is-skipped');
+        }
+        card.dataset.id = activity.id;
+        card.dataset.titre = activity.titre || '';
+        card.dataset.heure = activity.originalStart || activity.renderStart;
+        card.dataset.duree = activity.originalDuration || activity.renderDuration || '';
+        card.dataset.type = activity.type_activite || '';
+        card.dataset.color = activity.couleur_activite || '#dfe6e9';
+        card.dataset.date = activity.originalDate || activity.renderDate;
+        card.dataset.notes = activity.notes_pers || '';
+        card.dataset.originalColor = activity.couleur_activite || '#dfe6e9';
+        card.style.backgroundColor = activity.couleur_activite || '#dfe6e9';
+        card.style.top = `${(startMinutes / 60) * rowHeight}px`;
+        card.style.height = `${(duration / 60) * rowHeight}px`;
+        if (activity._laneCount && activity._laneCount > 1) {
+          const laneWidth = 100 / activity._laneCount;
+          const gap = 8;
+          card.style.left = `calc(${laneWidth * activity._lane}% + ${gap / 2}px)`;
+          card.style.width = `calc(${laneWidth}% - ${gap}px)`;
+        } else {
+          card.style.left = '6px';
+          card.style.width = 'calc(100% - 12px)';
+        }
+        card.draggable = true;
+        card.addEventListener('dragstart', (event) => onCardDragStart(event, card));
+        card.addEventListener('dragend', onCardDragEnd);
+        const durationLabel = formatDuration(duration);
+        card.innerHTML = `
+          <div class="activity-title">${activity.titre || ''}</div>
+          <div class="activity-meta">${durationLabel} ${activity.renderStart || ''}</div>
+        `;
+        applyDoneStyle(card, activity.etat === 'done');
+        column.appendChild(card);
+      });
+    }
+
+    function onGridClick(event) {
+      const card = event.target.closest('.activity-card');
+      if (!card) {
+        const column = event.target.closest('.week-day-column');
+        if (column && column.dataset.date) {
+          selectedDate = parseDate(column.dataset.date);
+          updateAll();
+        }
+        return;
+      }
+      selectActivity(card);
+      if (!card.classList.contains('is-skipped')) {
+        toggleActivity(card);
+      }
+    }
+
+    function onGridDoubleClick(event, column) {
+      const card = event.target.closest('.activity-card');
+      if (card) {
+        openEditModal(card);
+        return;
+      }
+      const time = getTimeFromClick(event, column);
+      openCreateModal(column.dataset.date, time);
+    }
+
+    function onCardDragStart(event, card) {
+      event.dataTransfer.setData('text/plain', card.dataset.id);
+      event.dataTransfer.effectAllowed = 'move';
+      card.classList.add('is-selected');
+    }
+
+    function onCardDragEnd(event) {
+      const card = event.target.closest('.activity-card');
+      if (card) {
+        card.classList.remove('is-selected');
+      }
+    }
+
+    function onColumnDragOver(event) {
+      event.preventDefault();
+    }
+
+    function onColumnDrop(event, column) {
+      event.preventDefault();
+      const activityId = event.dataTransfer.getData('text/plain');
+      if (!activityId) {
+        return;
+      }
+      const time = getTimeFromClick(event, column);
+      submitMove(activityId, column.dataset.date, time);
+    }
+
+    function openCreateModal(date, time) {
+      currentActivity = null;
+      form.dataset.activityId = '';
+      form.dataset.date = date;
+      showFormView('create', { date, time });
+      toggleModal(true);
+    }
+
+    function openEditModal(card) {
+      setCurrentActivityFromCard(card);
+      showActionsView();
+      toggleModal(true);
+    }
+
+    function showActionsView() {
+      modalTitle.textContent = 'Activite';
+      modalActions.classList.remove('is-hidden');
+      modalForm.classList.add('is-hidden');
+      modalDelete.classList.add('is-hidden');
+      notesGroup.classList.add('is-hidden');
+      clearErrors(modalErrors);
+      form.dataset.mode = 'edit';
+      if (currentActivity) {
+        modalDate.textContent = `Date prevue : ${currentActivity.date} | Heure de debut : ${currentActivity.heure}`;
+        form.dataset.activityId = currentActivity.id;
+        form.dataset.date = currentActivity.date;
+      }
+    }
+
+    function showFormView(mode, options = {}) {
+      modalActions.classList.add('is-hidden');
+      modalDelete.classList.add('is-hidden');
+      modalForm.classList.remove('is-hidden');
+      clearErrors(modalErrors);
+
+      form.dataset.mode = mode;
+      createBtn.classList.toggle('is-hidden', mode !== 'create');
+      saveBtn.classList.toggle('is-hidden', mode !== 'edit');
+
+      if (mode === 'create') {
+        modalTitle.textContent = 'Ajouter une activite';
+        form.reset();
+        typeInput.value = '';
+        typeSelect.value = '';
+        notesInput.value = '';
+        durationHoursInput.value = '';
+        durationMinutesInput.value = '';
+        form.dataset.activityId = '';
+        form.dataset.date = options.date || form.dataset.date || '';
+        notesGroup.classList.toggle('is-hidden', !options.showNotes);
+        form.querySelector('[name="heure_debut"]').value = options.time || '';
+        modalDate.textContent = `Date prevue : ${options.date} | Heure de debut : ${options.time}`;
+        return;
+      }
+
+      if (!currentActivity) {
+        return;
+      }
+
+      modalTitle.textContent = 'Mettre a jour';
+      fillFormFromActivity(currentActivity);
+      notesGroup.classList.toggle('is-hidden', !options.showNotes && !notesInput.value);
+      modalDate.textContent = `Date prevue : ${currentActivity.date} | Heure de debut : ${currentActivity.heure}`;
+    }
+
+    function showDeleteView() {
+      modalTitle.textContent = 'Supprimer';
+      modalActions.classList.add('is-hidden');
+      modalForm.classList.add('is-hidden');
+      modalDelete.classList.remove('is-hidden');
+      clearErrors(modalErrors);
+    }
+
+    function setCurrentActivityFromCard(card) {
+      const originalDate = card.dataset.date || '';
+      const originalStart = card.dataset.heure || '';
+      const originalDuration = Number(card.dataset.duree || 0);
+      currentActivity = {
+        id: card.dataset.id,
+        titre: card.dataset.titre || '',
+        heure: originalStart,
+        duree: originalDuration,
+        type: card.dataset.type || '',
+        color: card.dataset.color || '#fcd34d',
+        date: originalDate,
+        notes: card.dataset.notes || '',
+      };
+    }
+
+    function fillFormFromActivity(activity) {
+      form.dataset.mode = 'edit';
+      form.dataset.activityId = activity.id;
+      form.dataset.date = activity.date;
+      form.querySelector('[name="titre_p"]').value = activity.titre;
+      form.querySelector('[name="heure_debut"]').value = activity.heure;
+      const durationParts = splitDuration(activity.duree);
+      durationHoursInput.value = durationParts.hours;
+      durationMinutesInput.value = durationParts.minutes;
+      typeSelect.value = activity.type;
+      if (typeSelect.value) {
+        typeInput.value = '';
+      } else {
+        typeInput.value = activity.type;
+      }
+      colorInput.value = activity.color;
+      notesInput.value = activity.notes;
+    }
+
+    async function submitCreate() {
+      clearErrors(modalErrors);
+      const formData = new FormData(form);
+      const selectedType = typeInput.value.trim() || typeSelect.value.trim();
+      formData.set('type_activite', selectedType);
+      formData.set('date', form.dataset.date || formatDate(selectedDate));
+
+      try {
+        const response = await fetch(createUrl, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const payload = await response.json();
+          showErrors(modalErrors, payload.errors || ['Erreur lors de la sauvegarde.']);
+          return;
+        }
+
+        toggleModal(false);
+        form.reset();
+        typeInput.value = '';
+        await fetchWeekData();
+      } catch (error) {
+        showErrors(modalErrors, ['Erreur reseau.']);
+      }
+    }
+
+    async function submitUpdate() {
+      clearErrors(modalErrors);
+      const formData = new FormData(form);
+      const selectedType = typeInput.value.trim() || typeSelect.value.trim();
+      formData.set('type_activite', selectedType);
+      formData.set('date', form.dataset.date || formatDate(selectedDate));
+
+      const updateUrl = updateUrlTemplate.replace('__ID__', form.dataset.activityId);
+      try {
+        const response = await fetch(updateUrl, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const payload = await response.json();
+          showErrors(modalErrors, payload.errors || ['Erreur lors de la sauvegarde.']);
+          return;
+        }
+
+        toggleModal(false);
+        form.reset();
+        typeInput.value = '';
+        await fetchWeekData();
+      } catch (error) {
+        showErrors(modalErrors, ['Erreur reseau.']);
+      }
+    }
+
+    async function submitDelete() {
+      const deleteUrl = deleteUrlTemplate.replace('__ID__', form.dataset.activityId);
+      try {
+        const response = await fetch(deleteUrl, { method: 'POST' });
+        if (!response.ok) {
+          showErrors(modalErrors, ['Erreur lors de la suppression.']);
+          return;
+        }
+        currentActivity = null;
+        toggleModal(false);
+        await fetchWeekData();
+      } catch (error) {
+        showErrors(modalErrors, ['Erreur reseau.']);
+      }
+    }
+
+    async function submitMove(activityId, date, time) {
+      clearErrors(planningErrors);
+      const moveUrl = moveUrlTemplate.replace('__ID__', activityId);
+      const formData = new FormData();
+      formData.set('date', date);
+      formData.set('heure_debut', time);
+
+      try {
+        const response = await fetch(moveUrl, {
+          method: 'POST',
+          body: formData,
+        });
+        if (!response.ok) {
+          const payload = await response.json();
+          showErrors(planningErrors, payload.errors || ['Erreur lors du deplacement.']);
+          return;
+        }
+        await fetchWeekData();
+      } catch (error) {
+        showErrors(planningErrors, ['Erreur reseau.']);
+      }
+    }
+
+    async function toggleActivity(card) {
+      const toggleUrl = toggleUrlTemplate.replace('__ID__', card.dataset.id);
+      try {
+        const response = await fetch(toggleUrl, { method: 'POST' });
+        if (!response.ok) {
+          showErrors(planningErrors, ['Impossible de mettre a jour le statut.']);
+          return;
+        }
+        const payload = await response.json();
+        applyDoneStyle(card, payload.etat === 'done');
+      } catch (error) {
+        showErrors(planningErrors, ['Erreur reseau.']);
+      }
+    }
+
+    async function fetchSuggestions(title) {
+      const trimmed = title.trim();
+      if (trimmed.length < 2) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`${suggestUrl}?title=${encodeURIComponent(trimmed)}`);
+        if (!response.ok) {
+          return;
+        }
+        const payload = await response.json();
+        if (!payload.suggestion) {
+          return;
+        }
+        const timeInput = form.querySelector('[name="heure_debut"]');
+        if (!timeInput.value && payload.suggestion.heure_debut) {
+          timeInput.value = payload.suggestion.heure_debut;
+        }
+        if (!durationHoursInput.value && !durationMinutesInput.value && payload.suggestion.duree_prevue) {
+          const suggestionParts = splitDuration(payload.suggestion.duree_prevue);
+          durationHoursInput.value = suggestionParts.hours;
+          durationMinutesInput.value = suggestionParts.minutes;
+        }
+      } catch (error) {
+        // ignore suggestion errors
+      }
+    }
+
+    function enableFocusMode(activityId) {
+      const card = weekDays.querySelector(`.activity-card[data-id="${activityId}"]`);
+      if (!card) {
+        return;
+      }
+      app.classList.add('is-focus');
+      selectActivity(card);
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        app.classList.remove('is-focus');
+      }, 4000);
+    }
+
+    async function pollReminders() {
+      if (!remindersUrl) {
+        return;
+      }
+      try {
+        const response = await fetch(remindersUrl);
+        if (!response.ok) {
+          return;
+        }
+        const payload = await response.json();
+        const messages = [];
+
+        (payload.upcoming || []).forEach((item) => {
+          const key = `upcoming-${item.id}-${item.message}`;
+          if (!reminderCache.has(key)) {
+            reminderCache.add(key);
+            messages.push(item.message);
+          }
+        });
+
+        (payload.in_progress || []).forEach((item) => {
+          const key = `progress-${item.id}-${item.message}`;
+          if (!reminderCache.has(key)) {
+            reminderCache.add(key);
+            messages.push(item.message);
+          }
+        });
+
+        if (messages.length > 0) {
+          remindersEl.innerHTML = `<ul class="mb-0">${messages.map((msg) => `<li>${msg}</li>`).join('')}</ul>`;
+          remindersEl.classList.add('is-visible');
+          setTimeout(() => {
+            remindersEl.classList.remove('is-visible');
+            remindersEl.innerHTML = '';
+          }, 90000);
+        }
+      } catch (error) {
+        // ignore reminders errors
+      }
+    }
+
+    function selectActivity(card) {
+      weekDays.querySelectorAll('.activity-card.is-selected').forEach((item) => {
+        item.classList.remove('is-selected');
+      });
+      card.classList.add('is-selected');
+      activeActivityId = card.dataset.id;
+    }
+
+    function getTimeFromClick(event, column) {
+      const rect = column.getBoundingClientRect();
+      const offsetY = event.clientY - rect.top + weekGrid.scrollTop;
+      const minutes = Math.max(0, Math.min(1439, Math.floor((offsetY / rowHeight) * 60)));
+      return minutesToTime(minutes);
+    }
+
+    function toggleModal(open) {
+      modal.classList.toggle('is-open', open);
+      modal.setAttribute('aria-hidden', String(!open));
+    }
+
+    function showErrors(container, errors) {
+      if (!container) {
+        return;
+      }
+      container.innerHTML = `<ul class="mb-0">${errors.map((error) => `<li>${error}</li>`).join('')}</ul>`;
+      container.classList.add('is-visible');
+    }
+
+    function clearErrors(container) {
+      if (!container) {
+        return;
+      }
+      container.innerHTML = '';
+      container.classList.remove('is-visible');
+    }
+
+    function parseDate(value) {
+      const [year, month, day] = value.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function formatDate(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function formatDateDisplay(date) {
+      return new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+    }
+
+    function pad(value) {
+      return String(value).padStart(2, '0');
+    }
+
+    function addDays(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    function addMonths(date, months) {
+      const result = new Date(date);
+      const day = result.getDate();
+      result.setDate(1);
+      result.setMonth(result.getMonth() + months);
+      const max = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+      result.setDate(Math.min(day, max));
+      return result;
+    }
+
+    function addYears(date, years) {
+      const result = new Date(date);
+      const day = result.getDate();
+      result.setDate(1);
+      result.setFullYear(result.getFullYear() + years);
+      const max = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+      result.setDate(Math.min(day, max));
+      return result;
+    }
+
+    function getWeekStart(date) {
+      const result = new Date(date);
+      const day = (result.getDay() + 6) % 7;
+      result.setDate(result.getDate() - day);
+      return result;
+    }
+
+    function isSameDay(a, b) {
+      return a.getFullYear() === b.getFullYear()
+        && a.getMonth() === b.getMonth()
+        && a.getDate() === b.getDate();
+    }
+
+    function timeToMinutes(time) {
+      const [hours, minutes] = time.split(':').map(Number);
+      return (hours * 60) + minutes;
+    }
+
+    function minutesToTime(totalMinutes) {
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return `${pad(hours)}:${pad(minutes)}`;
+    }
+
+    function formatDuration(totalMinutes) {
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      if (minutes === 0) {
+        return `${hours}h`;
+      }
+      return `${hours}h${pad(minutes)}`;
+    }
+
+    function applyDoneStyle(card, isDone) {
+      card.classList.toggle('is-done', isDone);
+      if (isDone) {
+        if (!card.dataset.originalColor) {
+          card.dataset.originalColor = card.style.backgroundColor || '#dfe6e9';
+        }
+        card.style.backgroundColor = blendColors(card.dataset.originalColor, '#e2e8f0', 0.55);
+      } else {
+        card.style.backgroundColor = card.dataset.originalColor || '#dfe6e9';
+      }
+    }
+
+    function blendColors(colorA, colorB, ratio) {
+      const rgbA = hexToRgb(colorA);
+      const rgbB = hexToRgb(colorB);
+      if (!rgbA || !rgbB) {
+        return colorA;
+      }
+      const r = Math.round(rgbA.r + (rgbB.r - rgbA.r) * ratio);
+      const g = Math.round(rgbA.g + (rgbB.g - rgbA.g) * ratio);
+      const b = Math.round(rgbA.b + (rgbB.b - rgbA.b) * ratio);
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function hexToRgb(color) {
+      const value = color.trim();
+      if (value.startsWith('rgb')) {
+        const matches = value.match(/\d+/g);
+        if (!matches) {
+          return null;
+        }
+        return {
+          r: Number(matches[0]),
+          g: Number(matches[1]),
+          b: Number(matches[2]),
+        };
+      }
+      const normalized = value.replace('#', '');
+      if (normalized.length !== 6) {
+        return null;
+      }
+      return {
+        r: parseInt(normalized.slice(0, 2), 16),
+        g: parseInt(normalized.slice(2, 4), 16),
+        b: parseInt(normalized.slice(4, 6), 16),
+      };
+    }
+
+    function splitActivitiesForRender(activities) {
+      const result = [];
+
+      activities.forEach((activity) => {
+        if (!activity.date || !activity.heure_debut) {
+          return;
+        }
+
+        const totalDuration = Number(activity.duree_prevue || 0);
+        if (totalDuration <= 0) {
+          return;
+        }
+
+        let remaining = totalDuration;
+        let currentDate = activity.date;
+        let currentStart = activity.heure_debut;
+
+        while (remaining > 0) {
+          const startMinutes = timeToMinutes(currentStart);
+          const minutesLeftInDay = 1440 - startMinutes;
+          const chunkDuration = Math.min(remaining, minutesLeftInDay);
+
+          result.push({
+            ...activity,
+            renderDate: currentDate,
+            renderStart: currentStart,
+            renderDuration: chunkDuration,
+            originalDate: activity.date,
+            originalStart: activity.heure_debut,
+            originalDuration: totalDuration,
+          });
+
+          remaining -= chunkDuration;
+          if (remaining > 0) {
+            const nextDate = addDays(parseDate(currentDate), 1);
+            currentDate = formatDate(nextDate);
+            currentStart = '00:00';
+          }
+        }
+      });
+
+      return result;
+    }
+
+    function splitDuration(totalMinutes) {
+      const safeMinutes = Number(totalMinutes) || 0;
+      return {
+        hours: Math.floor(safeMinutes / 60),
+        minutes: safeMinutes % 60,
+      };
+    }
+
+    function groupActivitiesByDay(activities) {
+      const grouped = [];
+      const byDate = activities.reduce((acc, activity) => {
+        if (!activity.renderDate || !activity.renderStart) {
+          return acc;
+        }
+        acc[activity.renderDate] = acc[activity.renderDate] || [];
+        acc[activity.renderDate].push(activity);
+        return acc;
+      }, {});
+
+      Object.values(byDate).forEach((dayActivities) => {
+        dayActivities.sort((a, b) => timeToMinutes(a.renderStart) - timeToMinutes(b.renderStart));
+        const active = [];
+        const laneEnds = [];
+        let currentGroup = [];
+        let groupMaxLanes = 0;
+
+        const finalizeGroup = () => {
+          currentGroup.forEach((item) => {
+            item._laneCount = groupMaxLanes || 1;
+          });
+          currentGroup = [];
+          groupMaxLanes = 0;
+          active.length = 0;
+          laneEnds.length = 0;
+        };
+
+        dayActivities.forEach((activity) => {
+          const start = timeToMinutes(activity.renderStart);
+          const duration = Number(activity.renderDuration || 0);
+          const end = start + duration;
+
+          for (let i = active.length - 1; i >= 0; i -= 1) {
+            if (active[i].end <= start) {
+              active.splice(i, 1);
+            }
+          }
+
+          for (let i = 0; i < laneEnds.length; i += 1) {
+            if (laneEnds[i] <= start) {
+              laneEnds[i] = 0;
+            }
+          }
+
+          if (active.length === 0 && currentGroup.length > 0) {
+            finalizeGroup();
+          }
+
+          let laneIndex = laneEnds.findIndex((laneEnd) => laneEnd === 0);
+          if (laneIndex === -1) {
+            laneIndex = laneEnds.length;
+            laneEnds.push(end);
+          } else {
+            laneEnds[laneIndex] = end;
+          }
+
+          activity._lane = laneIndex;
+          active.push({ end });
+          currentGroup.push(activity);
+          groupMaxLanes = Math.max(groupMaxLanes, laneEnds.length);
+          grouped.push(activity);
+        });
+
+        if (currentGroup.length > 0) {
+          finalizeGroup();
+        }
+      });
+
+      return grouped;
+    }
+
+    function renderTypeFilter(types) {
+      if (!typeFilter) {
+        return;
+      }
+      typeFilter.innerHTML = '';
+      const allButton = document.createElement('button');
+      allButton.type = 'button';
+      allButton.dataset.type = 'all';
+      allButton.textContent = 'Tous';
+      allButton.classList.toggle('is-active', activeTypeFilter === 'all');
+      typeFilter.appendChild(allButton);
+
+      types.forEach((type) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.type = type.type;
+        button.textContent = type.type;
+        if (type.color) {
+          button.style.borderColor = type.color;
+        }
+        button.classList.toggle('is-active', activeTypeFilter === type.type);
+        typeFilter.appendChild(button);
+      });
+    }
+
+    function addSwipeHandlers(element, handlers) {
+      let startX = 0;
+      let startY = 0;
+
+      element.addEventListener('touchstart', (event) => {
+        const touch = event.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+      }, { passive: true });
+
+      element.addEventListener('touchend', (event) => {
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        if (Math.abs(deltaX) < 40 && Math.abs(deltaY) < 40) {
+          return;
+        }
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          if (deltaX < 0) {
+            handlers.onLeft?.();
+          } else {
+            handlers.onRight?.();
+          }
+        } else if (deltaY < 0) {
+          handlers.onUp?.();
+        } else {
+          handlers.onDown?.();
+        }
+      });
+    }
+
+    addSwipeHandlers(calendarGrid, {
+      onLeft: () => {
+        selectedDate = addMonths(selectedDate, 1);
+        updateAll();
+      },
+      onRight: () => {
+        selectedDate = addMonths(selectedDate, -1);
+        updateAll();
+      },
+      onUp: () => {
+        selectedDate = addYears(selectedDate, 1);
+        updateAll();
+      },
+      onDown: () => {
+        selectedDate = addYears(selectedDate, -1);
+        updateAll();
+      },
+    });
+
+    addSwipeHandlers(weekGridWrapper, {
+      onLeft: () => {
+        selectedDate = addDays(selectedDate, 1);
+        updateAll();
+      },
+      onRight: () => {
+        selectedDate = addDays(selectedDate, -1);
+        updateAll();
+      },
+    });
+
+    updateAll();
+    pollReminders();
+    setInterval(pollReminders, 60000);
+  </script>
+{% endblock %}

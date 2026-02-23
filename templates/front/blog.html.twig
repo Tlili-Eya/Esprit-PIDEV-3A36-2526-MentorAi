@@ -1,0 +1,860 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Notes{% endblock %}
+
+{% block stylesheets %}
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap');
+
+    .notes-layout {
+      background: radial-gradient(circle at top, #fff4da 0%, #f7f3ea 55%, #f2efe6 100%);
+      padding: 48px 0 64px;
+    }
+
+    .notes-shell {
+      background: #ffffff;
+      border-radius: 22px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+      padding: 32px;
+    }
+
+    .notes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .notes-header h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: 'Fraunces', 'Georgia', serif;
+    }
+
+    .notes-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .notes-list li {
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+      color: #0f172a;
+      background: #fdfcf8;
+    }
+
+    .notes-empty {
+      padding: 16px;
+      border-radius: 14px;
+      background: #f8fafc;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .notes-editor {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .notes-editor.is-active {
+      display: flex;
+    }
+
+    .notes-list-view.is-hidden {
+      display: none;
+    }
+
+    .notes-title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      border: none;
+      border-bottom: 2px solid #0f172a;
+      padding: 8px 4px;
+      outline: none;
+      width: 100%;
+      font-family: 'Fraunces', 'Georgia', serif;
+    }
+
+    .notes-list button {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 0;
+      color: inherit;
+    }
+
+    .notes-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .notes-list-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .notes-delete {
+      border: 1px solid #fecaca;
+      background: #fee2e2;
+      color: #b91c1c;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+    }
+
+    .notes-list-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .notes-list-date {
+      font-size: 0.85rem;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    .notes-editor textarea {
+      min-height: 520px;
+    }
+
+    .notes-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .notes-actions button {
+      padding: 10px 18px;
+      border-radius: 12px;
+    }
+
+    .notes-error {
+      display: none;
+      color: #b91c1c;
+      background: #fee2e2;
+      padding: 8px 12px;
+      border-radius: 10px;
+    }
+
+    .notes-error.is-visible {
+      display: block;
+    }
+
+    .notes-editor-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    .notes-media-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .notes-media-actions input[type="file"] {
+      border-radius: 10px;
+      border: 1px solid #cbd5f5;
+      background: #ffffff;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    .notes-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      position: sticky;
+      top: 12px;
+      background: #f8f4ea;
+      padding: 12px;
+      border-radius: 12px;
+      z-index: 10;
+    }
+
+    .notes-toolbar button,
+    .notes-toolbar select {
+      border-radius: 10px;
+      border: 1px solid #cbd5f5;
+      background: #ffffff;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+    }
+
+    .notes-editor-surface {
+      min-height: 520px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      padding: 18px;
+      background: #fbfaf7;
+      outline: none;
+    }
+
+    .drag-block {
+      border: 1px dashed #cbd5f5;
+      padding: 8px;
+      margin: 8px 0;
+      border-radius: 10px;
+      background: #ffffff;
+      cursor: grab;
+    }
+
+    .drag-block img,
+    .drag-block audio,
+    .drag-block video {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .notes-editor.is-readonly .notes-toolbar,
+    .notes-editor.is-readonly .notes-media-actions {
+      display: none;
+    }
+
+    .notes-editor.is-readonly .notes-title,
+    .notes-editor.is-readonly .notes-actions button,
+    .notes-editor.is-readonly textarea {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .note-attachment {
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      border: 1px dashed #cbd5f5;
+    }
+
+    .note-attachment a {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .pdf-block {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .pdf-block.is-collapsed iframe {
+      display: none;
+    }
+
+    .pdf-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+      color: #475569;
+      cursor: pointer;
+    }
+
+    .pdf-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .pdf-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pdf-close,
+    .pdf-download {
+      border: 1px solid #cbd5f5;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      color: #0f172a;
+    }
+
+    .audio-block {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #ffffff;
+    }
+
+    .confirm-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1055;
+    }
+
+    .confirm-modal.is-open {
+      display: flex;
+    }
+
+    .confirm-modal-content {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 26px 28px;
+      width: min(620px, 100%);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+    }
+
+    .confirm-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .confirm-modal-title {
+      font-size: 26px;
+      font-weight: 600;
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .confirm-modal-close {
+      border: 1px solid #cbd5f5;
+      background: #ffffff;
+      color: #475569;
+      border-radius: 8px;
+      padding: 6px 16px;
+      font-weight: 500;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .confirm-modal-close:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .confirm-modal-meta {
+      color: #64748b;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .confirm-modal-text {
+      font-size: 17px;
+      color: #3b82f6;
+      margin: 0 0 6px;
+    }
+
+    .confirm-modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .confirm-modal-delete {
+      border: 1px solid #ef4444;
+      color: #ef4444;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-weight: 600;
+    }
+
+    .confirm-modal-cancel {
+      border: 1px solid #cbd5f5;
+      color: #64748b;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-weight: 600;
+    }
+     .notes-editor.is-readonly .note-content {
+      pointer-events: auto;
+    }
+    
+  </style>
+{% endblock %}
+
+{% block body %}
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Notes</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li class="current">Notes</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <section class="notes-layout">
+    <div class="container">
+      <div class="notes-shell" data-save-url="{{ path('front_blog_save') }}">
+        <div class="notes-list-view{% if mode != 'list' %} is-hidden{% endif %}" id="notes-list-view">
+          <div class="notes-header">
+            <h1>Mes notes</h1>
+            <a class="btn btn-primary" href="{{ path('front_blog', { mode: 'edit' }) }}">Ajouter une note</a>
+          </div>
+
+          {% if notes is empty %}
+            <div class="notes-empty">Aucune note pour le moment.</div>
+          {% else %}
+            {% set currentId = selected_note.id ?? null %}
+            <ul class="notes-list" id="notes-list">
+              {% for note in notes %}
+                {% set targetMode = (mode == 'read' and currentId == note.id) ? 'edit' : 'read' %}
+                <li>
+                  <div class="notes-list-item">
+                    <a class="notes-list-title" href="{{ path('front_blog', { id: note.id, mode: targetMode }) }}">
+                      {{ note.titre }}
+                    </a>
+                    <div class="notes-list-actions">
+                      <span class="notes-list-date">{{ note.date_affichee }}</span>
+                      <form method="post" action="{{ path('front_blog_delete') }}" data-delete-form data-note-title="{{ note.titre }}" data-note-date="{{ note.date_affichee }}">
+                        <input type="hidden" name="id" value="{{ note.id }}">
+                        <button type="button" class="notes-delete" aria-label="Supprimer">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+
+        {% if mode != 'list' %}
+          <div class="notes-editor is-active {% if mode == 'read' %}is-readonly{% endif %}" id="notes-editor">
+            {% if errors is not empty %}
+              <div class="notes-error is-visible">
+                {% for error in errors %}
+                  <div>{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            {% if mode == 'read' %}
+              <input class="notes-title" value="{{ selected_note.titre ?? '' }}" readonly>
+              <div class="note-content" id="note-content" data-edit-url="{{ path('front_blog', { id: selected_note.id, mode: 'edit' }) }}">
+                {{ selected_note.contenu|raw }}
+              </div>
+            {% else %}
+              <form method="post" action="{{ path('front_blog_save') }}" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="{{ selected_note.id ?? '' }}">
+                <input class="notes-title" name="titre" placeholder="Titre de la note" value="{{ selected_note.titre ?? '' }}" required>
+
+                <div class="notes-editor-status">
+                  <span>{{ selected_note ? 'Edition' : 'Nouveau' }}</span>
+                  <span>Ajoutez du contenu et joignez des fichiers.</span>
+                </div>
+
+                <div class="notes-toolbar" id="notes-toolbar">
+                  <button type="button" data-cmd="undo">Undo</button>
+                  <button type="button" data-cmd="redo">Redo</button>
+                  <select data-cmd="formatBlock">
+                    <option value="P">Paragraphe</option>
+                    <option value="H1">H1</option>
+                    <option value="H2">H2</option>
+                    <option value="H3">H3</option>
+                    <option value="H4">H4</option>
+                    <option value="H5">H5</option>
+                    <option value="H6">H6</option>
+                  </select>
+                  <select data-cmd="fontName">
+                    <option value="Arial">Arial</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Courier New">Courier</option>
+                    <option value="Times New Roman">Times</option>
+                    <option value="Trebuchet MS">Trebuchet</option>
+                    <option value="Verdana">Verdana</option>
+                  </select>
+                  <select data-cmd="fontSize">
+                    <option value="2">12</option>
+                    <option value="3" selected>14</option>
+                    <option value="4">18</option>
+                    <option value="5">24</option>
+                    <option value="6">32</option>
+                  </select>
+                  <button type="button" data-cmd="bold">Gras</button>
+                  <button type="button" data-cmd="italic">Italique</button>
+                  <button type="button" data-cmd="underline">Souligne</button>
+                  <button type="button" data-cmd="insertUnorderedList">Liste</button>
+                  <button type="button" data-cmd="insertOrderedList">Liste numerotee</button>
+                  <button type="button" data-cmd="justifyLeft">Gauche</button>
+                  <button type="button" data-cmd="justifyCenter">Centre</button>
+                  <button type="button" data-cmd="justifyRight">Droite</button>
+                  <button type="button" id="insert-quote">Citation</button>
+                  <button type="button" id="insert-code">Code</button>
+                  <button type="button" id="insert-divider">Separateur</button>
+                </div>
+
+                <div class="notes-media-actions">
+                  <input type="file" id="media-input" name="attachments[]" multiple>
+                  <button type="button" id="record-audio">Enregistrer audio</button>
+                  <button type="button" id="stop-audio" disabled>Stop</button>
+                </div>
+
+                <input type="hidden" name="contenu" id="contenu-input">
+                <div class="notes-editor-surface" id="editor-surface" contenteditable="true">{{ selected_note.contenu ?? '' }}</div>
+
+                <div class="notes-actions">
+                  <a class="btn btn-outline-secondary" href="{{ path('front_blog') }}">Retour</a>
+                  <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+              </form>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <div class="confirm-modal" id="confirm-modal" aria-hidden="true">
+    <div class="confirm-modal-content" role="dialog" aria-modal="true">
+      <div class="confirm-modal-header">
+        <h2 class="confirm-modal-title">Supprimer</h2>
+        <button type="button" class="confirm-modal-close" id="confirm-close">Fermer</button>
+      </div>
+      <div class="confirm-modal-meta" id="confirm-meta">Date prevue : -</div>
+      <p class="confirm-modal-text" id="confirm-message">Etes-vous sur de vouloir supprimer cette note ?</p>
+      <div class="confirm-modal-actions">
+        <button type="button" class="confirm-modal-delete" id="confirm-ok">Supprimer</button>
+        <button type="button" class="confirm-modal-cancel" id="confirm-cancel">Annuler</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script>
+    (function () {
+      const editorSurface = document.getElementById('editor-surface');
+      const contenuInput = document.getElementById('contenu-input');
+      const toolbar = document.getElementById('notes-toolbar');
+      const mediaInput = document.getElementById('media-input');
+      const recordBtn = document.getElementById('record-audio');
+      const stopBtn = document.getElementById('stop-audio');
+      let mediaRecorder = null;
+      let audioChunks = [];
+
+      const readContent = document.getElementById('note-content');
+      if (readContent) {
+        readContent.addEventListener('click', (event) => {
+          if (
+            event.target.closest('iframe') ||
+            event.target.closest('audio') ||
+            event.target.closest('video') ||
+            event.target.closest('a') ||
+            event.target.closest('.pdf-block')
+          ) {
+            return;
+          }
+
+          const url = readContent.dataset.editUrl;
+          if (url) {
+            window.location.href = url;
+          }
+        });
+      }
+
+      function ensureAudioControls(root) {
+        if (!root) {
+          return;
+        }
+        root.querySelectorAll('audio').forEach((audio) => {
+          audio.setAttribute('controls', 'controls');
+          audio.controls = true;
+        });
+      }
+
+      ensureAudioControls(readContent);
+      ensureAudioControls(editorSurface);
+
+      const confirmModal = document.getElementById('confirm-modal');
+      const confirmCancel = document.getElementById('confirm-cancel');
+      const confirmClose = document.getElementById('confirm-close');
+      const confirmOk = document.getElementById('confirm-ok');
+      const confirmMeta = document.getElementById('confirm-meta');
+      let pendingDeleteForm = null;
+
+      document.addEventListener('click', (event) => {
+        const deleteBtn = event.target.closest('form[data-delete-form] .notes-delete');
+        if (!deleteBtn || !confirmModal) {
+          return;
+        }
+        event.preventDefault();
+        pendingDeleteForm = deleteBtn.closest('form');
+        const dateText = pendingDeleteForm?.dataset.noteDate || '-';
+        if (confirmMeta) {
+          confirmMeta.textContent = `Date prevue : ${dateText}`;
+        }
+        confirmModal.classList.add('is-open');
+      });
+
+      confirmCancel?.addEventListener('click', () => {
+        confirmModal.classList.remove('is-open');
+        pendingDeleteForm = null;
+      });
+
+      confirmClose?.addEventListener('click', () => {
+        confirmModal.classList.remove('is-open');
+        pendingDeleteForm = null;
+      });
+
+      confirmModal?.addEventListener('click', (event) => {
+        if (event.target === confirmModal) {
+          confirmModal.classList.remove('is-open');
+          pendingDeleteForm = null;
+        }
+      });
+
+      confirmOk?.addEventListener('click', () => {
+        if (pendingDeleteForm) {
+          pendingDeleteForm.submit();
+        }
+      });
+
+      if (!editorSurface) {
+        return;
+      }
+
+      const form = editorSurface.closest('form');
+      form.addEventListener('submit', () => {
+        contenuInput.value = editorSurface.innerHTML;
+      });
+
+      editorSurface.addEventListener('blur', () => {
+        contenuInput.value = editorSurface.innerHTML;
+      });
+
+      editorSurface.addEventListener('input', () => {
+        contenuInput.value = editorSurface.innerHTML;
+      });
+
+      if (toolbar) {
+        toolbar.addEventListener('click', (event) => {
+          const button = event.target.closest('button[data-cmd]');
+          if (!button) {
+            return;
+          }
+          const cmd = button.dataset.cmd;
+          document.execCommand(cmd, false, null);
+          editorSurface.focus();
+        });
+
+        toolbar.addEventListener('change', (event) => {
+          const select = event.target.closest('select[data-cmd]');
+          if (!select) {
+            return;
+          }
+          const cmd = select.dataset.cmd;
+          const value = select.value;
+          document.execCommand(cmd, false, value);
+          editorSurface.focus();
+        });
+      }
+
+      document.getElementById('insert-quote')?.addEventListener('click', () => {
+        document.execCommand('formatBlock', false, 'blockquote');
+      });
+
+      document.getElementById('insert-code')?.addEventListener('click', () => {
+        document.execCommand('insertHTML', false, '<pre class="drag-block"><code>Code...</code></pre>');
+      });
+
+      document.getElementById('insert-divider')?.addEventListener('click', () => {
+        document.execCommand('insertHTML', false, '<hr class="drag-block">');
+      });
+
+      mediaInput?.addEventListener('change', async (event) => {
+        const files = Array.from(event.target.files || []);
+        for (const file of files) {
+          const dataUrl = await readFileAsDataUrl(file);
+          if (file.type.startsWith('image/')) {
+            insertHtml(`<div class="drag-block" draggable="true" contenteditable="false"><img src="${dataUrl}" alt="${file.name}"></div><p><br></p>`);
+          } else if (file.type.startsWith('audio/')) {
+            insertHtml(`<div class="drag-block audio-block" draggable="true" contenteditable="false"><audio controls src="${dataUrl}"><source src="${dataUrl}" type="${file.type}"></audio></div><p><br></p>`);
+          } else if (file.type.startsWith('video/')) {
+            insertHtml(`<div class="drag-block" draggable="true" contenteditable="false"><video controls src="${dataUrl}"></video></div><p><br></p>`);
+          } else if (file.type === 'application/pdf') {
+            insertHtml(`<div class="drag-block pdf-block" draggable="true" contenteditable="false"><div class="pdf-bar"><div class="pdf-meta"><i class="bi bi-chevron-down"></i><span>${file.name}</span></div><div class="pdf-actions"><a class="pdf-download" href="${dataUrl}" download="${file.name}"><i class="bi bi-download"></i></a><button type="button" class="pdf-close">Fermer</button></div></div><iframe src="${dataUrl}" width="100%" height="480" title="${file.name}"></iframe></div><p><br></p>`);
+          } else {
+            insertHtml(`<div class="note-attachment"><a href="${dataUrl}" download="${file.name}">${file.name}</a></div><p><br></p>`);
+          }
+        }
+        mediaInput.value = '';
+      });
+
+      editorSurface.addEventListener('paste', async (event) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find((item) => item.type.startsWith('image/'));
+        if (!imageItem) {
+          return;
+        }
+        event.preventDefault();
+        const file = imageItem.getAsFile();
+        if (!file) {
+          return;
+        }
+        const dataUrl = await readFileAsDataUrl(file);
+        insertHtml(`<div class="drag-block" draggable="true" contenteditable="false"><img src="${dataUrl}" alt="Image"></div><p><br></p>`);
+      });
+
+      recordBtn?.addEventListener('click', async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+          mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
+          mediaRecorder.onstop = async () => {
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('audio', blob, 'voice.webm');
+
+            const response = await fetch('{{ path('front_blog_upload_audio') }}', {
+              method: 'POST',
+              body: formData
+            });
+
+            if (!response.ok) {
+              return;
+            }
+
+            const result = await response.json();
+            if (result.url) {
+              const mime = result.mime || 'audio/webm';
+              insertHtml(`<div class="drag-block audio-block" draggable="true" contenteditable="false"><audio controls src="${result.url}"><source src="${result.url}" type="${mime}"></audio></div><p><br></p>`);
+            }
+          };
+
+          mediaRecorder.start();
+          recordBtn.disabled = true;
+          stopBtn.disabled = false;
+        } catch (error) {
+          // no-op
+        }
+      });
+
+      stopBtn?.addEventListener('click', () => {
+        if (!mediaRecorder) {
+          return;
+        }
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+      });
+
+      editorSurface.addEventListener('dragstart', (event) => {
+        const block = event.target.closest('.drag-block');
+        if (!block) {
+          return;
+        }
+        event.dataTransfer.setData('text/plain', 'drag');
+        editorSurface._dragBlock = block;
+      });
+
+      editorSurface.addEventListener('dragover', (event) => {
+        if (!editorSurface._dragBlock) {
+          return;
+        }
+        event.preventDefault();
+      });
+
+      editorSurface.addEventListener('drop', (event) => {
+        const block = editorSurface._dragBlock;
+        if (!block) {
+          return;
+        }
+        event.preventDefault();
+        const range = document.caretRangeFromPoint(event.clientX, event.clientY);
+        if (range) {
+          range.insertNode(block);
+        }
+        editorSurface._dragBlock = null;
+      });
+
+      editorSurface.addEventListener('click', (event) => {
+        const bar = event.target.closest('.pdf-bar');
+        const download = event.target.closest('.pdf-download');
+        if (!bar || download) {
+          return;
+        }
+        const block = bar.closest('.pdf-block');
+        if (!block) {
+          return;
+        }
+        block.classList.toggle('is-collapsed');
+        const icon = block.querySelector('.pdf-meta i');
+        if (icon) {
+          icon.classList.toggle('bi-chevron-down');
+          icon.classList.toggle('bi-chevron-right');
+        }
+      });
+
+      function insertHtml(html) {
+        if (!editorSurface) {
+          return;
+        }
+
+        editorSurface.focus();
+        const selection = window.getSelection();
+        let range = null;
+        if (selection && selection.rangeCount > 0) {
+          range = selection.getRangeAt(0);
+        } else {
+          range = document.createRange();
+          range.selectNodeContents(editorSurface);
+          range.collapse(false);
+        }
+
+        const template = document.createElement('template');
+        template.innerHTML = html.trim();
+        const fragment = template.content;
+        range.deleteContents();
+        range.insertNode(fragment);
+
+        if (selection) {
+          selection.removeAllRanges();
+          const newRange = document.createRange();
+          newRange.selectNodeContents(editorSurface);
+          newRange.collapse(false);
+          selection.addRange(newRange);
+        }
+
+        ensureAudioControls(editorSurface);
+        contenuInput.value = editorSurface.innerHTML;
+      }
+
+      function readFileAsDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('Erreur de lecture'));
+          reader.readAsDataURL(file);
+        });
+      }
+    })();
+  </script>
+{% endblock %}

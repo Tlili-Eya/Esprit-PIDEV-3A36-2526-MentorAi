@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\CarnetRepository;
+use App\Entity\PlanningEtude;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -19,8 +20,11 @@ class Carnet
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $titre = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true, columnDefinition: 'LONGTEXT')]
     private ?string $contenu = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $attachments = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $coleur = null;
@@ -35,9 +39,9 @@ class Carnet
     private ?\DateTime $dateModification = null;
 
     /**
-     * @var Collection<int, planningEtude>
+    * @var Collection<int, PlanningEtude>
      */
-    #[ORM\ManyToMany(targetEntity: planningEtude::class)]
+    #[ORM\ManyToMany(targetEntity: PlanningEtude::class)]
     private Collection $planningEtude;
 
     #[ORM\ManyToOne]
@@ -73,6 +77,18 @@ class Carnet
     public function setContenu(?string $contenu): static
     {
         $this->contenu = $contenu;
+
+        return $this;
+    }
+
+    public function getAttachments(): ?array
+    {
+        return $this->attachments;
+    }
+
+    public function setAttachments(?array $attachments): static
+    {
+        $this->attachments = $attachments;
 
         return $this;
     }
@@ -126,14 +142,14 @@ class Carnet
     }
 
     /**
-     * @return Collection<int, planningEtude>
+     * @return Collection<int, PlanningEtude>
      */
     public function getPlanningEtude(): Collection
     {
         return $this->planningEtude;
     }
 
-    public function addPlanningEtude(planningEtude $planningEtude): static
+    public function addPlanningEtude(PlanningEtude $planningEtude): static
     {
         if (!$this->planningEtude->contains($planningEtude)) {
             $this->planningEtude->add($planningEtude);
@@ -142,7 +158,7 @@ class Carnet
         return $this;
     }
 
-    public function removePlanningEtude(planningEtude $planningEtude): static
+    public function removePlanningEtude(PlanningEtude $planningEtude): static
     {
         $this->planningEtude->removeElement($planningEtude);
 
