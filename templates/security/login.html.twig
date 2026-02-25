@@ -452,55 +452,19 @@
                         <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo">
                         <span>Se connecter avec Google</span>
                     </a>
-                    <!-- Séparateur -->
-<div style="display: flex; align-items: center; margin: 20px 0;">
-    <div style="flex-grow: 1; height: 1px; background-color: #ccc;"></div>
-    <span style="padding: 0 10px; color: #666; font-size: 0.9em;">OU</span>
-    <div style="flex-grow: 1; height: 1px; background-color: #ccc;"></div>
-</div>
 
-<!-- Bouton Passkey -->
-<button type="button" id="passkeyBtn" onclick="showPasskeyQR()" class="btn-login" style="background: linear-gradient(135deg, #0a3d62, #102c59);">
-    <i class="fas fa-fingerprint"></i>
-    <span>Se connecter avec Passkey</span>
-</button>
+                    <!-- Separator -->
+                    <div style="display:flex;align-items:center;margin:20px 0;">
+                        <div style="flex-grow:1;height:1px;background:#ccc;"></div>
+                        <span style="padding:0 10px;color:#666;font-size:.9em;">OU</span>
+                        <div style="flex-grow:1;height:1px;background:#ccc;"></div>
+                    </div>
 
-<!-- Modal QR Code -->
-<div id="qrModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
-    <div style="background:white; padding:30px; border-radius:20px; text-align:center; max-width:350px;">
-        <h3 style="color:#102c59; margin-bottom:15px;">📱 Scannez avec votre téléphone</h3>
-        <img id="qrImage" src="" style="width:250px; height:250px; border-radius:10px;">
-        <p style="color:#666; margin-top:15px; font-size:0.9rem;">Puis validez avec Face ID sur votre téléphone</p>
-        <p id="qrStatus" style="color:#102c59; font-weight:600; margin-top:10px;">⏳ En attente...</p>
-        <button onclick="closeQR()" style="margin-top:15px; padding:10px 25px; background:#d52e28; color:white; border:none; border-radius:10px; cursor:pointer;">Annuler</button>
-    </div>
-</div>
-
-<script>
-let statusInterval;
-
-function showPasskeyQR() {
-    document.getElementById('qrImage').src = '/webauthn/login/qr?' + Date.now();
-    document.getElementById('qrModal').style.display = 'flex';
-    document.getElementById('qrStatus').textContent = '⏳ En attente...';
-    
-    statusInterval = setInterval(async () => {
-        const res = await fetch('/webauthn/login/status');
-        const data = await res.json();
-        
-        if (data.status === 'confirmed') {
-            clearInterval(statusInterval);
-            document.getElementById('qrStatus').textContent = '✅ Connecté !';
-            setTimeout(() => window.location.href = '/home', 1000);
-        }
-    }, 2000);
-}
-
-function closeQR() {
-    clearInterval(statusInterval);
-    document.getElementById('qrModal').style.display = 'none';
-}
-</script>
+                    <!-- Face ID Button -->
+                    <button type="button" onclick="openFaceCamera()" class="btn-faceid-static">
+                        <i class="fas fa-camera" style="font-size:1.3rem;"></i>
+                        <span>Se connecter avec Face ID</span>
+                    </button>
 
                     <style>
                         .btn-google-static {
@@ -598,5 +562,128 @@ function closeQR() {
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ═══════════════════════════════════════════════════
+     FACE ID — Modal + Camera + JS
+═══════════════════════════════════════════════════ -->
+
+<!-- Modal camera -->
+<div id="faceModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;justify-content:center;align-items:center;">
+    <div style="background:#fff;border-radius:20px;padding:30px;text-align:center;max-width:400px;width:90%;">
+        <h4 style="color:#102c59;margin-bottom:6px;font-weight:700;">
+            <i class="fas fa-camera me-2"></i>Connexion Face ID
+        </h4>
+        <p style="color:#666;font-size:.9rem;margin-bottom:18px;">Positionnez votre visage face à la caméra</p>
+
+        <!-- Live video -->
+        <video id="faceVideo" autoplay playsinline muted
+               style="width:280px;height:280px;border-radius:50%;object-fit:cover;border:4px solid #102c59;background:#000;"></video>
+
+        <!-- Hidden canvas for capture -->
+        <canvas id="faceCanvas" style="display:none;"></canvas>
+
+        <!-- Status message -->
+        <p id="faceStatus" style="margin:14px 0 0;font-weight:600;color:#102c59;min-height:24px;"></p>
+
+        <!-- Buttons -->
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:18px;">
+            <button onclick="captureAndLogin()"
+                    id="faceCaptureBtn"
+                    style="padding:12px 28px;background:linear-gradient(135deg,#102c59,#0a1a36);color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-size:1rem;">
+                <i class="fas fa-camera me-2"></i>Capturer
+            </button>
+            <button onclick="closeFaceCamera()"
+                    style="padding:12px 28px;background:#e5e7eb;color:#374151;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-size:1rem;">
+                Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-faceid-static {
+        width:100%;padding:16px;
+        background:linear-gradient(135deg,#0a3d62,#102c59);
+        border:none;border-radius:12px;color:#fff;
+        font-size:1.05rem;font-weight:600;cursor:pointer;
+        transition:all .3s ease;display:flex;align-items:center;
+        justify-content:center;gap:12px;
+    }
+    .btn-faceid-static:hover { opacity:.9;transform:translateY(-1px); }
+</style>
+
+<script>
+let faceStream = null;
+
+async function openFaceCamera() {
+    const modal = document.getElementById('faceModal');
+    const video = document.getElementById('faceVideo');
+    const status = document.getElementById('faceStatus');
+
+    modal.style.display = 'flex';
+    status.textContent = 'Démarrage de la caméra…';
+
+    try {
+        faceStream = await navigator.mediaDevices.getUserMedia({ video: { width:640, height:640, facingMode:'user' } });
+        video.srcObject = faceStream;
+        status.textContent = 'Caméra prête — appuyez sur Capturer';
+    } catch (err) {
+        status.style.color = '#dc2626';
+        status.textContent = 'Caméra inaccessible : ' + err.message;
+    }
+}
+
+function closeFaceCamera() {
+    if (faceStream) { faceStream.getTracks().forEach(t => t.stop()); faceStream = null; }
+    document.getElementById('faceModal').style.display = 'none';
+    document.getElementById('faceStatus').textContent = '';
+    document.getElementById('faceStatus').style.color = '#102c59';
+    document.getElementById('faceCaptureBtn').disabled = false;
+}
+
+async function captureAndLogin() {
+    const video  = document.getElementById('faceVideo');
+    const canvas = document.getElementById('faceCanvas');
+    const status = document.getElementById('faceStatus');
+    const btn    = document.getElementById('faceCaptureBtn');
+
+    if (!faceStream) { status.textContent = 'Caméra non démarrée.'; return; }
+
+    // Capture frame
+    canvas.width  = video.videoWidth  || 640;
+    canvas.height = video.videoHeight || 640;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageBase64 = canvas.toDataURL('image/jpeg', 0.9);
+
+    // UI feedback
+    btn.disabled = true;
+    status.style.color = '#102c59';
+    status.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Analyse du visage…';
+
+    try {
+        const res = await fetch('/face/login', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ image: imageBase64 }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            status.style.color = '#10b981';
+            status.innerHTML = `<i class="fas fa-check-circle me-1"></i>Bienvenue ${data.user} — ${data.confidence}% de confiance`;
+            setTimeout(() => { closeFaceCamera(); window.location.href = data.redirect; }, 1200);
+        } else {
+            status.style.color = '#dc2626';
+            status.innerHTML = '<i class="fas fa-times-circle me-1"></i>' + (data.message || 'Visage non reconnu.');
+            btn.disabled = false;
+        }
+    } catch (err) {
+        status.style.color = '#dc2626';
+        status.textContent = 'Erreur réseau : ' + err.message;
+        btn.disabled = false;
+    }
+}
+</script>
+
 </body>
 </html>

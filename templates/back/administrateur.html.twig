@@ -187,7 +187,7 @@
 
                    <!-- Modal Body -->
 <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-  <form method="post" action="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}" id="editInstructorForm{{ utilisateur.id }}">
+  <form method="post" action="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}" id="editInstructorForm{{ utilisateur.id }}" enctype="multipart/form-data">
     <input type="hidden" name="_method" value="POST">
     
     <div class="row g-4">
@@ -293,24 +293,28 @@
                value="{{ utilisateur.dateInscription ? utilisateur.dateInscription|date('Y-m-d') : '' }}">
       </div>
 
-      <!-- Photo de profil URL -->
+      <!-- Photo de profil -->
       <div class="col-12">
         <label class="form-label fw-semibold">
           <i class="bi bi-image me-1 text-primary"></i>
-          Profile Picture URL
+          Profile Picture
           <span class="badge bg-secondary ms-2">Optional</span>
         </label>
-        <input type="text" 
-               name="utilisateur[pdp_url]" 
-               class="form-control form-control-lg" 
-               value="{{ utilisateur.pdpUrl }}" 
-               placeholder="photo.jpg or leave empty">
         {% if utilisateur.pdpUrl %}
-          <small class="text-success d-block mt-1">
-            <i class="bi bi-check-circle me-1"></i>
-            Current: {{ utilisateur.pdpUrl }}
-          </small>
+          <div class="mb-2 d-flex align-items-center gap-2">
+            <img src="{{ asset('uploads/pdp/' ~ utilisateur.pdpUrl) }}"
+                 alt="Current photo"
+                 style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid #e5e7eb;">
+            <small class="text-muted">Current photo — choose a file to replace it</small>
+          </div>
         {% endif %}
+        <input type="file"
+               name="utilisateur[pdp_url]"
+               accept="image/jpeg,image/png,image/webp"
+               class="form-control form-control-lg"
+               onchange="previewEditAdminPhoto(this, {{ utilisateur.id }})">
+        <img id="editAdminPhotoPreview{{ utilisateur.id }}" src="" alt="Preview"
+             style="display:none;margin-top:8px;width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #e5e7eb;">
       </div>
 
       <!-- CSRF Token -->
@@ -561,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       <!-- Modal Body -->
       <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-        <form method="post" action="{{ path('app_utilisateur_new') }}" id="addInstructorForm">
+        <form method="post" action="{{ path('app_utilisateur_new') }}" id="addInstructorForm" enctype="multipart/form-data">
           <div class="row g-4">
             <!-- Prénom -->
             <div class="col-md-6">
@@ -643,14 +647,18 @@ document.addEventListener('DOMContentLoaded', function() {
               </small>
             </div>
 
-            <!-- Photo de profil URL (optionnel) -->
+            <!-- Photo de profil -->
             <div class="col-12">
               <label class="form-label fw-semibold">
                 <i class="bi bi-image me-1 text-primary"></i>
-                Profile Picture URL
+                Profile Picture
                 <span class="badge bg-secondary ms-2">Optional</span>
               </label>
-              <input type="text" name="utilisateur[pdp_url]" class="form-control form-control-lg" placeholder="photo.jpg or leave empty">
+              <input type="file" name="utilisateur[pdp_url]" accept="image/jpeg,image/png,image/webp"
+                     class="form-control form-control-lg"
+                     onchange="previewAddAdminPhoto(this)">
+              <img id="addAdminPhotoPreview" src="" alt="Preview"
+                   style="display:none;margin-top:8px;width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #e5e7eb;">
             </div>
 
             <!-- CSRF Token (important!) -->
@@ -1143,6 +1151,24 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Gestion de la soumission du formulaire modal via AJAX
+  function previewEditAdminPhoto(input, userId) {
+    const preview = document.getElementById('editAdminPhotoPreview' + userId);
+    if (preview && input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function previewAddAdminPhoto(input) {
+    const preview = document.getElementById('addAdminPhotoPreview');
+    if (preview && input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
   document.addEventListener('submit', function(event) {
     if (event.target && event.target.id && event.target.id.startsWith('editInstructorForm')) {
       event.preventDefault();

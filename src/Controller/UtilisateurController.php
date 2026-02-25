@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/utilisateur')]
@@ -66,6 +67,16 @@ final class UtilisateurController extends AbstractController
                 $utilisateur->setRole('etudiant');
             }
 
+            $photoFile = $form->get('pdp_url')->getData();
+            if ($photoFile) {
+                $newFilename = uniqid() . '.' . $photoFile->guessExtension();
+                $photoFile->move(
+                    $this->getParameter('kernel.project_dir') . '/public/uploads/pdp',
+                    $newFilename
+                );
+                $utilisateur->setPdpUrl($newFilename);
+            }
+
             $entityManager->persist($utilisateur);
             $entityManager->flush();
             file_put_contents(__DIR__ . '/../../var/log/mentor_debug.log', sprintf("[%s] FLUSH COMPLETED. User ID: %s\n", date('H:i:s'), $utilisateur->getId()), FILE_APPEND);
@@ -109,6 +120,16 @@ final class UtilisateurController extends AbstractController
                 $user->setMdp($hashedPassword);
             }
 
+            $photoFile = $form->get('pdp_url')->getData();
+            if ($photoFile) {
+                $newFilename = uniqid() . '.' . $photoFile->guessExtension();
+                $photoFile->move(
+                    $this->getParameter('kernel.project_dir') . '/public/uploads/pdp',
+                    $newFilename
+                );
+                $user->setPdpUrl($newFilename);
+            }
+
             $entityManager->flush();
 
             // Rafraîchir le token de sécurité pour mettre à jour la session
@@ -139,10 +160,20 @@ final class UtilisateurController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $plainPassword = $form->get('mdp')->getData();
-            
+
             if ($plainPassword) {
                 $hashedPassword = $passwordHasher->hashPassword($utilisateur, $plainPassword);
                 $utilisateur->setMdp($hashedPassword);
+            }
+
+            $photoFile = $form->get('pdp_url')->getData();
+            if ($photoFile) {
+                $newFilename = uniqid() . '.' . $photoFile->guessExtension();
+                $photoFile->move(
+                    $this->getParameter('kernel.project_dir') . '/public/uploads/pdp',
+                    $newFilename
+                );
+                $utilisateur->setPdpUrl($newFilename);
             }
 
             $entityManager->flush();

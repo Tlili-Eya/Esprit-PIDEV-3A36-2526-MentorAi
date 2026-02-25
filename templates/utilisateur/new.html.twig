@@ -62,7 +62,7 @@
                 </div>
                 
                 <div class="card-body p-4">
-                    {{ form_start(form, {'attr': {'class': 'modern-form', 'id': 'newUserForm'}}) }}
+                    {{ form_start(form, {'attr': {'class': 'modern-form', 'id': 'newUserForm', 'enctype': 'multipart/form-data'}}) }}
                     
                     <div class="row g-4">
                         <div class="col-md-6">
@@ -143,11 +143,12 @@
                         <div class="col-12">
                             <div class="form-group-modern">
                                 <label class="form-label-modern">
-                                    <i class="fas fa-image me-2"></i>URL de la photo de profil
+                                    <i class="fas fa-image me-2"></i>Photo de profil
                                     <span class="badge bg-secondary-subtle text-secondary ms-2">Optionnel</span>
                                 </label>
-                                {{ form_widget(form.pdp_url, {'attr': {'class': 'form-control-modern', 'placeholder': 'photo.jpg ou laissez vide'}}) }}
+                                {{ form_widget(form.pdp_url, {'attr': {'class': 'form-control-modern', 'accept': 'image/jpeg,image/png,image/webp', 'onchange': 'previewNewPhoto(this)'}}) }}
                                 {{ form_errors(form.pdp_url) }}
+                                <img id="newPhotoPreview" src="" alt="Aperçu" style="display:none; margin-top:10px; width:80px; height:80px; object-fit:cover; border-radius:12px; border:2px solid #e5e7eb;">
                             </div>
                         </div>
                     </div>
@@ -173,15 +174,6 @@
                     </div>
 
                     {{ form_end(form) }}
-
-                    <!-- ✅ SECTION PASSKEY SORTIE DU FORMULAIRE POUR ÉVITER TOUTE PERSISTANCE ACCIDENTELLE -->
-                    <div class="mt-4 pt-4 border-top">
-                        <p class="text-center text-muted mb-3"><i class="fas fa-shield-alt me-2"></i>OU utilisez la sécurité biométrique</p>
-                        <button type="button" id="passkeyRegisterBtn" onclick="preparePasskeyRegister(event)" class="btn-create-action w-100" style="background: linear-gradient(135deg, #0a3d62, #102c59); border-color: #102c59; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 15px; padding: 1.2rem;">
-                            <i class="fas fa-fingerprint" style="font-size: 2rem;"></i>
-                            <span style="font-size: 1.1rem;">S'inscrire avec Face ID / Passkey</span>
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -219,16 +211,6 @@
     </div>
 </div>
 
-<!-- ✅ MODAL QR REGISTER -->
-<div id="qrRegisterModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
-    <div style="background:white; padding:30px; border-radius:20px; text-align:center; max-width:350px;">
-        <h3 style="color:#102c59; margin-bottom:15px;">📱 Scannez avec votre téléphone</h3>
-        <img id="qrRegisterImage" src="" style="width:250px; height:250px; border-radius:10px;">
-        <p style="color:#666; margin-top:15px; font-size:0.9rem;">Puis enregistrez votre visage sur votre téléphone</p>
-        <p id="qrRegisterStatus" style="color:#102c59; font-weight:600; margin-top:10px;">⏳ En attente...</p>
-        <button onclick="closeRegisterQR()" style="margin-top:15px; padding:10px 25px; background:#d52e28; color:white; border:none; border-radius:10px; cursor:pointer;">Annuler</button>
-    </div>
-</div>
 
 <style>
     :root {
@@ -310,54 +292,13 @@
 </style>
 
 <script>
-    let registerInterval;
-
-    // ✅ FONCTION PASSKEY CORRIGEE
-    async function preparePasskeyRegister(event) {
-        event.preventDefault();
-        
-        const nom = document.querySelector('input[name*="nom"]')?.value;
-        const prenom = document.querySelector('input[name*="prenom"]')?.value;
-        const email = document.querySelector('input[name*="email"]')?.value;
-        const mdp = document.getElementById('passwordInput')?.value;
-        const role = document.querySelector('select[name*="role"]')?.value;
-
-        if (!nom || !prenom || !email || !role) {
-            alert('⚠️ Remplissez d\'abord tous les champs (nom, prénom, email, rôle) !');
-            return;
+    function previewNewPhoto(input) {
+        const preview = document.getElementById('newPhotoPreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+            reader.readAsDataURL(input.files[0]);
         }
-
-        const res = await fetch('/webauthn/register/qr', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nom, prenom, email, mdp, role })
-        });
-
-        if (!res.ok) {
-            const errData = await res.json();
-            alert('❌ Erreur : ' + (errData.message || 'Impossible de générer le QR code'));
-            return;
-        }
-
-        const blob = await res.blob();
-        document.getElementById('qrRegisterImage').src = URL.createObjectURL(blob);
-        document.getElementById('qrRegisterModal').style.display = 'flex';
-        document.getElementById('qrRegisterStatus').textContent = '⏳ En attente...';
-
-        registerInterval = setInterval(async () => {
-            const statusRes = await fetch('/webauthn/register/status');
-            const data = await statusRes.json();
-            if (data.status === 'confirmed') {
-                clearInterval(registerInterval);
-                document.getElementById('qrRegisterStatus').textContent = '✅ Compte créé !';
-                setTimeout(() => window.location.href = '/utilisateur/profil', 1000);
-            }
-        }, 2000);
-    }
-
-    function closeRegisterQR() {
-        clearInterval(registerInterval);
-        document.getElementById('qrRegisterModal').style.display = 'none';
     }
 
     function updatePreview() {
