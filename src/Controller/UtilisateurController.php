@@ -17,11 +17,45 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 #[Route('/utilisateur')]
 final class UtilisateurController extends AbstractController
 {
+    public function __construct(
+        private readonly UtilisateurRepository $utilisateurRepository,
+    ) {}
+
+    /**
+     * Returns true if another user already owns a photo with the same content.
+     * Uses SHA-256 file hashing so renaming a file doesn't bypass the check.
+     *
+     * @param \Symfony\Component\HttpFoundation\File\UploadedFile $file
+     * @param int|null $excludeUserId  Skip this user's current photo (for edit/profil)
+     */
+    private function isPhotoDuplicate(
+        \Symfony\Component\HttpFoundation\File\UploadedFile $file,
+        ?int $excludeUserId = null
+    ): bool {
+        $newHash   = hash_file('sha256', $file->getPathname());
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/pdp';
+
+        foreach ($this->utilisateurRepository->findAll() as $user) {
+            if ($excludeUserId !== null && $user->getId() === $excludeUserId) {
+                continue;
+            }
+            if (!$user->getPdpUrl()) {
+                continue;
+            }
+            $path = $uploadDir . '/' . $user->getPdpUrl();
+            if (file_exists($path) && hash_file('sha256', $path) === $newHash) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     #[Route(name: 'app_utilisateur_index', methods: ['GET'])]
-    public function index(UtilisateurRepository $utilisateurRepository): Response
+    public function index(): Response
     {
         return $this->render('utilisateur/index.html.twig', [
-            'utilisateurs' => $utilisateurRepository->findAll(),
+            'utilisateurs' => $this->utilisateurRepository->findAll(),
         ]);
     }
 
@@ -69,6 +103,10 @@ final class UtilisateurController extends AbstractController
 
             $photoFile = $form->get('pdp_url')->getData();
             if ($photoFile) {
+                if ($this->isPhotoDuplicate($photoFile)) {
+                    $this->addFlash('error', 'Cette photo de profil est déjà utilisée par un autre utilisateur.');
+                    return $this->redirectToRoute('back_administrateur', [], Response::HTTP_SEE_OTHER);
+                }
                 $newFilename = uniqid() . '.' . $photoFile->guessExtension();
                 $photoFile->move(
                     $this->getParameter('kernel.project_dir') . '/public/uploads/pdp',
@@ -122,6 +160,10 @@ final class UtilisateurController extends AbstractController
 
             $photoFile = $form->get('pdp_url')->getData();
             if ($photoFile) {
+                if ($this->isPhotoDuplicate($photoFile, $user->getId())) {
+                    $this->addFlash('error', 'Cette photo de profil est déjà utilisée par un autre utilisateur.');
+                    return $this->redirectToRoute('app_profil', [], Response::HTTP_SEE_OTHER);
+                }
                 $newFilename = uniqid() . '.' . $photoFile->guessExtension();
                 $photoFile->move(
                     $this->getParameter('kernel.project_dir') . '/public/uploads/pdp',
@@ -168,6 +210,14 @@ final class UtilisateurController extends AbstractController
 
             $photoFile = $form->get('pdp_url')->getData();
             if ($photoFile) {
+                if ($this->isPhotoDuplicate($photoFile, $utilisateur->getId())) {
+                    $msg = 'Cette photo de profil est déjà utilisée par un autre utilisateur.';
+                    if ($request->isXmlHttpRequest()) {
+                        return new JsonResponse(['status' => 'error', 'message' => $msg], 422);
+                    }
+                    $this->addFlash('error', $msg);
+                    return $this->redirectToRoute('back_administrateur', [], Response::HTTP_SEE_OTHER);
+                }
                 $newFilename = uniqid() . '.' . $photoFile->guessExtension();
                 $photoFile->move(
                     $this->getParameter('kernel.project_dir') . '/public/uploads/pdp',

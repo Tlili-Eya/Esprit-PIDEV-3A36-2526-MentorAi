@@ -36,6 +36,11 @@
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addInstructorModal">
           <i class="bi bi-plus-circle me-1"></i> Ajouter Membre
         </button>
+
+        <!-- Bouton Surveillance des Risques IA -->
+        <a href="{{ path('admin_users_index') }}" class="btn btn-primary">
+          <i class="bi bi-shield-exclamation me-1"></i> Surveillance des Risques IA
+        </a>
       </div>
     </div>
     
@@ -54,11 +59,11 @@
       </div>
       <div class="col-md-4">
         <select class="form-select" id="sortSelect">
-          <option value="">Sort by</option>
-          <option value="name">Name (A-Z)</option>
-          <option value="email">Email (A-Z)</option>
-          <option value="role">Role</option>
-          <option value="date">Registration Date</option>
+          <option value="">Trier par</option>
+          <option value="name">Nom (A-Z)</option>
+          <option value="email">E-mail (A-Z)</option>
+          <option value="role">Rôle</option>
+          <option value="date">Date d'inscription</option>
         </select>
       </div>
       <div class="col-md-2">
@@ -71,7 +76,7 @@
     <!-- Results counter -->
     <div class="mb-2">
       <small class="text-muted">
-        Showing <strong id="resultCount">{{ utilisateurs|length }}</strong> of {{ utilisateurs|length }} instructor(s)
+        Affichage de <strong id="resultCount">{{ utilisateurs|length }}</strong> sur {{ utilisateurs|length }} membre(s)
       </small>
     </div>
     
@@ -83,11 +88,11 @@
             <thead style="background-color: #eef3f7;">
               <tr class="text-secondary">
                 <th>#</th>
-                <th>Instructor</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Registration Date</th>
-                <th>Status</th>
+                <th>Membre</th>
+                <th>E-mail</th>
+                <th>Rôle</th>
+                <th>Date d'inscription</th>
+                <th>Statut</th>
                 <th class="text-end no-export">Actions</th>
               </tr>
             </thead>
@@ -178,9 +183,9 @@
                       <div>
                         <h4 class="modal-title text-white fw-bold mb-1" id="editInstructorModalLabel{{ utilisateur.id }}">
                           <i class="bi bi-pencil-square me-2"></i>
-                          Edit Instructor
+                          Modifier le membre
                         </h4>
-                        <p class="text-white-50 mb-0 small">Update information for {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
+                        <p class="text-white-50 mb-0 small">Mettre à jour les informations de {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
                       </div>
                       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -195,13 +200,13 @@
       <div class="col-md-6">
         <label class="form-label fw-semibold">
           <i class="bi bi-person me-1 text-primary"></i>
-          First Name <span class="text-danger">*</span>
+          Prénom <span class="text-danger">*</span>
         </label>
-        <input type="text" 
-               name="utilisateur[prenom]" 
-               class="form-control form-control-lg" 
-               value="{{ utilisateur.prenom }}" 
-               placeholder="Enter first name" 
+        <input type="text"
+               name="utilisateur[prenom]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.prenom }}"
+               placeholder="Entrez le prénom"
                required>
       </div>
 
@@ -209,13 +214,13 @@
       <div class="col-md-6">
         <label class="form-label fw-semibold">
           <i class="bi bi-person-badge me-1 text-primary"></i>
-          Last Name <span class="text-danger">*</span>
+          Nom <span class="text-danger">*</span>
         </label>
-        <input type="text" 
-               name="utilisateur[nom]" 
-               class="form-control form-control-lg" 
-               value="{{ utilisateur.nom }}" 
-               placeholder="Enter last name" 
+        <input type="text"
+               name="utilisateur[nom]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.nom }}"
+               placeholder="Entrez le nom"
                required>
       </div>
 
@@ -223,17 +228,17 @@
       <div class="col-12">
         <label class="form-label fw-semibold">
           <i class="bi bi-envelope me-1 text-primary"></i>
-          Email Address <span class="text-danger">*</span>
+          Adresse e-mail <span class="text-danger">*</span>
         </label>
-        <input type="email" 
-               name="utilisateur[email]" 
-               class="form-control form-control-lg" 
-               value="{{ utilisateur.email }}" 
-               placeholder="instructor@example.com" 
+        <input type="email"
+               name="utilisateur[email]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.email }}"
+               placeholder="membre@exemple.com"
                required>
         <small class="text-muted">
           <i class="bi bi-info-circle me-1"></i>
-          This email will be used for login
+          Cet e-mail sera utilisé pour la connexion
         </small>
       </div>
 
@@ -241,28 +246,28 @@
       <div class="col-12">
         <label class="form-label fw-semibold">
           <i class="bi bi-lock me-1 text-primary"></i>
-          New Password 
-          <span class="badge bg-secondary ms-2">Optional</span>
+          Nouveau mot de passe
+          <span class="badge bg-secondary ms-2">Optionnel</span>
         </label>
         <div class="input-group">
-          <input type="password" 
-                 name="utilisateur[mdp]" 
-                 id="editPasswordInput{{ utilisateur.id }}" 
-                 class="form-control form-control-lg" 
-                 placeholder="Leave empty to keep current password">
+          <input type="password"
+                 name="utilisateur[mdp]"
+                 id="editPasswordInput{{ utilisateur.id }}"
+                 class="form-control form-control-lg"
+                 placeholder="Laisser vide pour conserver le mot de passe actuel">
           <button class="btn btn-outline-secondary" type="button" onclick="toggleEditPassword({{ utilisateur.id }})">
             <i class="bi bi-eye" id="editToggleIcon{{ utilisateur.id }}"></i>
           </button>
         </div>
         <small class="text-muted">
           <i class="bi bi-info-circle me-1"></i>
-          Leave blank to keep the current password
+          Laisser vide pour conserver le mot de passe actuel
         </small>
         <div class="password-strength mt-2">
           <div class="progress" style="height: 6px;">
             <div class="progress-bar" id="editStrengthBar{{ utilisateur.id }}" role="progressbar" style="width: 0%"></div>
           </div>
-          <small class="text-muted" id="editStrengthText{{ utilisateur.id }}">Password strength</small>
+          <small class="text-muted" id="editStrengthText{{ utilisateur.id }}">Force du mot de passe</small>
         </div>
       </div>
 
@@ -270,14 +275,14 @@
       <div class="col-md-6">
         <label class="form-label fw-semibold">
           <i class="bi bi-shield-check me-1 text-primary"></i>
-          Role <span class="text-danger">*</span>
+          Rôle <span class="text-danger">*</span>
         </label>
         <select name="utilisateur[role]" class="form-select form-select-lg" required>
-          <option value="">Select a role</option>
-          <option value="enseignant" {% if utilisateur.role == 'enseignant' %}selected{% endif %}>Enseignant (Teacher)</option>
-          <option value="administrateur" {% if utilisateur.role == 'administrateur' %}selected{% endif %}>Administrateur (Admin)</option>
-          <option value="etudiant" {% if utilisateur.role == 'etudiant' %}selected{% endif %}>Étudiant (Student)</option>
-           <option value="adminm" {% if utilisateur.role == 'adminm' %}selected{% endif %}>Adminm (Adminm)</option>
+          <option value="">Choisir un rôle</option>
+          <option value="enseignant" {% if utilisateur.role == 'enseignant' %}selected{% endif %}>Enseignant</option>
+          <option value="administrateur" {% if utilisateur.role == 'administrateur' %}selected{% endif %}>Administrateur</option>
+          <option value="etudiant" {% if utilisateur.role == 'etudiant' %}selected{% endif %}>Étudiant</option>
+          <option value="adminm" {% if utilisateur.role == 'adminm' %}selected{% endif %}>Adminm</option>
         </select>
       </div>
 
@@ -285,11 +290,11 @@
       <div class="col-md-6">
         <label class="form-label fw-semibold">
           <i class="bi bi-calendar-check me-1 text-primary"></i>
-          Registration Date
+          Date d'inscription
         </label>
-        <input type="date" 
-               name="utilisateur[date_inscription]" 
-               class="form-control form-control-lg" 
+        <input type="date"
+               name="utilisateur[date_inscription]"
+               class="form-control form-control-lg"
                value="{{ utilisateur.dateInscription ? utilisateur.dateInscription|date('Y-m-d') : '' }}">
       </div>
 
@@ -297,15 +302,15 @@
       <div class="col-12">
         <label class="form-label fw-semibold">
           <i class="bi bi-image me-1 text-primary"></i>
-          Profile Picture
-          <span class="badge bg-secondary ms-2">Optional</span>
+          Photo de profil
+          <span class="badge bg-secondary ms-2">Optionnel</span>
         </label>
         {% if utilisateur.pdpUrl %}
           <div class="mb-2 d-flex align-items-center gap-2">
             <img src="{{ asset('uploads/pdp/' ~ utilisateur.pdpUrl) }}"
-                 alt="Current photo"
+                 alt="Photo actuelle"
                  style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid #e5e7eb;">
-            <small class="text-muted">Current photo — choose a file to replace it</small>
+            <small class="text-muted">Photo actuelle — choisir un fichier pour la remplacer</small>
           </div>
         {% endif %}
         <input type="file"
@@ -325,12 +330,12 @@
     <div class="alert alert-info border-0 mt-4" style="background: rgba(99, 102, 241, 0.1);">
       <h6 class="fw-semibold mb-2">
         <i class="bi bi-info-circle me-2"></i>
-        Update Information
+        Informations de mise à jour
       </h6>
       <ul class="mb-0 small">
-        <li>Only fill in the password field if you want to change it</li>
-        <li>Changes will be saved immediately after clicking "Update"</li>
-        <li>Make sure the email address is valid for notifications</li>
+        <li>Ne remplissez le champ mot de passe que si vous souhaitez le modifier</li>
+        <li>Les modifications seront enregistrées immédiatement après avoir cliqué sur "Modifier"</li>
+        <li>Assurez-vous que l'adresse e-mail est valide pour les notifications</li>
       </ul>
     </div>
   </form>
@@ -556,9 +561,9 @@ document.addEventListener('DOMContentLoaded', function() {
         <div>
           <h4 class="modal-title text-white fw-bold mb-1" id="addInstructorModalLabel">
             <i class="bi bi-person-plus-fill me-2"></i>
-            Add New Instructor
+            Ajouter un nouveau membre
           </h4>
-          <p class="text-white-50 mb-0 small">Fill in the details to create a new instructor account</p>
+          <p class="text-white-50 mb-0 small">Remplissez les informations pour créer un nouveau compte</p>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -571,30 +576,30 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <i class="bi bi-person me-1 text-primary"></i>
-                First Name <span class="text-danger">*</span>
+                Prénom <span class="text-danger">*</span>
               </label>
-              <input type="text" name="utilisateur[prenom]" class="form-control form-control-lg" placeholder="Enter first name" required>
+              <input type="text" name="utilisateur[prenom]" class="form-control form-control-lg" placeholder="Entrez le prénom" required>
             </div>
 
             <!-- Nom -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <i class="bi bi-person-badge me-1 text-primary"></i>
-                Last Name <span class="text-danger">*</span>
+                Nom <span class="text-danger">*</span>
               </label>
-              <input type="text" name="utilisateur[nom]" class="form-control form-control-lg" placeholder="Enter last name" required>
+              <input type="text" name="utilisateur[nom]" class="form-control form-control-lg" placeholder="Entrez le nom" required>
             </div>
 
             <!-- Email -->
             <div class="col-12">
               <label class="form-label fw-semibold">
                 <i class="bi bi-envelope me-1 text-primary"></i>
-                Email Address <span class="text-danger">*</span>
+                Adresse e-mail <span class="text-danger">*</span>
               </label>
-              <input type="email" name="utilisateur[email]" class="form-control form-control-lg" placeholder="instructor@example.com" required>
+              <input type="email" name="utilisateur[email]" class="form-control form-control-lg" placeholder="membre@exemple.com" required>
               <small class="text-muted">
                 <i class="bi bi-info-circle me-1"></i>
-                This email will be used for login
+                Cet e-mail sera utilisé pour la connexion
               </small>
             </div>
 
@@ -602,10 +607,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-12">
               <label class="form-label fw-semibold">
                 <i class="bi bi-lock me-1 text-primary"></i>
-                Password <span class="text-danger">*</span>
+                Mot de passe <span class="text-danger">*</span>
               </label>
               <div class="input-group">
-                <input type="password" name="utilisateur[mdp]" id="modalPasswordInput" class="form-control form-control-lg" placeholder="Minimum 8 characters" required>
+                <input type="password" name="utilisateur[mdp]" id="modalPasswordInput" class="form-control form-control-lg" placeholder="Minimum 8 caractères" required>
                 <button class="btn btn-outline-secondary" type="button" onclick="toggleModalPassword()">
                   <i class="bi bi-eye" id="modalToggleIcon"></i>
                 </button>
@@ -614,7 +619,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="progress" style="height: 6px;">
                   <div class="progress-bar" id="modalStrengthBar" role="progressbar" style="width: 0%"></div>
                 </div>
-                <small class="text-muted" id="modalStrengthText">Password strength</small>
+                <small class="text-muted" id="modalStrengthText">Force du mot de passe</small>
               </div>
             </div>
 
@@ -622,14 +627,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <i class="bi bi-shield-check me-1 text-primary"></i>
-                Role <span class="text-danger">*</span>
+                Rôle <span class="text-danger">*</span>
               </label>
               <select name="utilisateur[role]" class="form-select form-select-lg" required>
-                <option value="">Select a role</option>
-                <option value="enseignant">Enseignant (Teacher)</option>
-                <option value="administrateur">Administrateur (Admin)</option>
-                <option value="etudiant">Étudiant (Student)</option>
-                <option value="adminm">Adminm (Adminm)</option>
+                <option value="">Choisir un rôle</option>
+                <option value="enseignant">Enseignant</option>
+                <option value="administrateur">Administrateur</option>
+                <option value="etudiant">Étudiant</option>
+                <option value="adminm">Adminm</option>
               </select>
             </div>
 
@@ -637,13 +642,13 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <i class="bi bi-calendar-check me-1 text-primary"></i>
-                Registration Date
+                Date d'inscription
                 <span class="badge bg-info ms-2">Auto</span>
               </label>
               <input type="date" name="utilisateur[date_inscription]" class="form-control form-control-lg" value="{{ 'now'|date('Y-m-d') }}">
               <small class="text-muted">
                 <i class="bi bi-info-circle me-1"></i>
-                Default: Today
+                Par défaut : Aujourd'hui
               </small>
             </div>
 
@@ -651,8 +656,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-12">
               <label class="form-label fw-semibold">
                 <i class="bi bi-image me-1 text-primary"></i>
-                Profile Picture
-                <span class="badge bg-secondary ms-2">Optional</span>
+                Photo de profil
+                <span class="badge bg-secondary ms-2">Optionnel</span>
               </label>
               <input type="file" name="utilisateur[pdp_url]" accept="image/jpeg,image/png,image/webp"
                      class="form-control form-control-lg"
@@ -663,18 +668,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
             <!-- CSRF Token (important!) -->
             <input type="hidden" name="utilisateur[_token]" value="{{ csrf_token('utilisateur') }}">
+            <!-- Clé obligatoire pour que le controller traite la soumission -->
+            <input type="hidden" name="submission_secret" value="STRICT_MANUAL_v4_GOLD">
           </div>
 
-          <!-- Security Tips -->
+          <!-- Conseils de sécurité -->
           <div class="alert alert-info border-0 mt-4" style="background: rgba(99, 102, 241, 0.1);">
             <h6 class="fw-semibold mb-2">
               <i class="bi bi-shield-check me-2"></i>
-              Security Tips
+              Conseils de sécurité
             </h6>
             <ul class="mb-0 small">
-              <li>Use a strong password (8+ characters with uppercase, lowercase, and numbers)</li>
-              <li>Assign only necessary permissions based on the user's role</li>
-              <li>Ensure the email address is valid for notifications</li>
+              <li>Utilisez un mot de passe fort (8+ caractères avec majuscules, minuscules et chiffres)</li>
+              <li>N'attribuez que les permissions nécessaires selon le rôle de l'utilisateur</li>
+              <li>Assurez-vous que l'adresse e-mail est valide pour les notifications</li>
             </ul>
           </div>
         </form>
@@ -683,10 +690,10 @@ document.addEventListener('DOMContentLoaded', function() {
       <!-- Modal Footer -->
       <div class="modal-footer border-0 bg-light p-3">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="bi bi-x-circle me-1"></i> Cancel
+          <i class="bi bi-x-circle me-1"></i> Annuler
         </button>
         <button type="submit" form="addInstructorForm" class="btn btn-danger">
-          <i class="bi bi-check-circle me-1"></i> Create Instructor
+          <i class="bi bi-check-circle me-1"></i> Créer le membre
         </button>
       </div>
     </div>
@@ -820,7 +827,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Re-append rows in sorted order
     sortedRows.forEach(row => tableBody.appendChild(row));
     
-    showNotification(`Sorted by ${sortBy}`, 'info');
+    showNotification(`Trié par ${sortBy}`, 'info');
   }
   
   // Export to Excel function
@@ -830,15 +837,15 @@ document.addEventListener('DOMContentLoaded', function() {
       const visibleRows = allRows.filter(row => row.style.display !== 'none');
       
       if (visibleRows.length === 0) {
-        showNotification('No data to export', 'warning');
+        showNotification('Aucune donnée à exporter', 'warning');
         return;
       }
-      
+
       // Prepare data for Excel
       const data = [];
-      
+
       // Add headers
-      data.push(['ID', 'Instructor Name', 'Email', 'Role', 'Registration Date', 'Status']);
+      data.push(['ID', 'Membre', 'E-mail', 'Rôle', "Date d'inscription", 'Statut']);
       
       // Add data rows
       visibleRows.forEach(row => {
@@ -868,19 +875,19 @@ document.addEventListener('DOMContentLoaded', function() {
       ];
       
       // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Instructors');
-      
+      XLSX.utils.book_append_sheet(wb, ws, 'Membres');
+
       // Generate filename with timestamp
       const timestamp = new Date().toISOString().slice(0, 10);
-      const filename = `instructors_${timestamp}.xlsx`;
-      
+      const filename = `membres_${timestamp}.xlsx`;
+
       // Save file
       XLSX.writeFile(wb, filename);
-      
-      showNotification('Excel file exported successfully!', 'success');
+
+      showNotification('Fichier Excel exporté avec succès !', 'success');
     } catch (error) {
       console.error('Export error:', error);
-      showNotification('Error exporting to Excel', 'danger');
+      showNotification("Erreur lors de l'export Excel", 'danger');
     }
   }
   
@@ -891,25 +898,25 @@ document.addEventListener('DOMContentLoaded', function() {
       const visibleRows = allRows.filter(row => row.style.display !== 'none');
       
       if (visibleRows.length === 0) {
-        showNotification('No data to export', 'warning');
+        showNotification('Aucune donnée à exporter', 'warning');
         return;
       }
-      
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
-      
+
       // Add title
       doc.setFontSize(18);
       doc.setTextColor(40, 40, 40);
-      doc.text('Instructors Management Report', 14, 15);
-      
+      doc.text('Rapport de gestion des membres', 14, 15);
+
       // Add date
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 22);
-      
+      doc.text(`Généré le : ${new Date().toLocaleDateString('fr-FR')}`, 14, 22);
+
       // Prepare data for PDF table
-      const headers = [['ID', 'Instructor Name', 'Email', 'Role', 'Registration Date', 'Status']];
+      const headers = [['ID', 'Membre', 'E-mail', 'Rôle', "Date d'inscription", 'Statut']];
       const data = [];
       
       visibleRows.forEach(row => {
@@ -959,7 +966,7 @@ document.addEventListener('DOMContentLoaded', function() {
           doc.setFontSize(8);
           doc.setTextColor(150);
           doc.text(
-            `Page ${data.pageNumber} of ${pageCount}`,
+            `Page ${data.pageNumber} sur ${pageCount}`,
             doc.internal.pageSize.width / 2,
             doc.internal.pageSize.height - 10,
             { align: 'center' }
@@ -971,19 +978,19 @@ document.addEventListener('DOMContentLoaded', function() {
       const finalY = doc.lastAutoTable.finalY + 10;
       doc.setFontSize(10);
       doc.setTextColor(60, 60, 60);
-      doc.text(`Total Instructors: ${visibleRows.length}`, 14, finalY);
-      
+      doc.text(`Total membres : ${visibleRows.length}`, 14, finalY);
+
       // Generate filename with timestamp
       const timestamp = new Date().toISOString().slice(0, 10);
-      const filename = `instructors_${timestamp}.pdf`;
-      
+      const filename = `membres_${timestamp}.pdf`;
+
       // Save PDF
       doc.save(filename);
-      
-      showNotification('PDF file exported successfully!', 'success');
+
+      showNotification('Fichier PDF exporté avec succès !', 'success');
     } catch (error) {
       console.error('Export error:', error);
-      showNotification('Error exporting to PDF', 'danger');
+      showNotification("Erreur lors de l'export PDF", 'danger');
     }
   }
   
@@ -998,8 +1005,8 @@ document.addEventListener('DOMContentLoaded', function() {
         noResultsRow.innerHTML = `
           <td colspan="7" class="text-center text-muted py-5">
             <i class="bi bi-search" style="font-size: 3rem; opacity: 0.3;"></i>
-            <p class="mt-3 mb-0 fw-semibold">No results found</p>
-            <small class="text-muted">Try adjusting your search terms</small>
+            <p class="mt-3 mb-0 fw-semibold">Aucun résultat trouvé</p>
+            <small class="text-muted">Essayez d'ajuster vos termes de recherche</small>
           </td>
         `;
         tableBody.appendChild(noResultsRow);
@@ -1090,15 +1097,15 @@ function checkModalPasswordStrength(password) {
 
   if (strength < 40) {
     strengthBar.className = 'progress-bar bg-danger';
-    strengthText.textContent = 'Weak password';
+    strengthText.textContent = 'Mot de passe faible';
     strengthText.style.color = '#dc3545';
   } else if (strength < 70) {
     strengthBar.className = 'progress-bar bg-warning';
-    strengthText.textContent = 'Medium strength';
+    strengthText.textContent = 'Mot de passe moyen';
     strengthText.style.color = '#ffc107';
   } else {
     strengthBar.className = 'progress-bar bg-success';
-    strengthText.textContent = 'Strong password';
+    strengthText.textContent = 'Mot de passe fort';
     strengthText.style.color = '#198754';
   }
 }
@@ -1122,22 +1129,22 @@ function checkEditPasswordStrength(password, userId) {
 
   if (password.length === 0) {
     strengthBar.style.width = '0%';
-    strengthText.textContent = 'Password strength';
+    strengthText.textContent = 'Force du mot de passe';
     strengthText.style.color = '#6c757d';
     return;
   }
 
   if (strength < 40) {
     strengthBar.className = 'progress-bar bg-danger';
-    strengthText.textContent = 'Weak password';
+    strengthText.textContent = 'Mot de passe faible';
     strengthText.style.color = '#dc3545';
   } else if (strength < 70) {
     strengthBar.className = 'progress-bar bg-warning';
-    strengthText.textContent = 'Medium strength';
+    strengthText.textContent = 'Mot de passe moyen';
     strengthText.style.color = '#ffc107';
   } else {
     strengthBar.className = 'progress-bar bg-success';
-    strengthText.textContent = 'Strong password';
+    strengthText.textContent = 'Mot de passe fort';
     strengthText.style.color = '#198754';
   }
 }

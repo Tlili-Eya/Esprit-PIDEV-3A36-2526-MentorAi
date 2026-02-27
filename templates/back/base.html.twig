@@ -561,6 +561,16 @@
             <span>About</span>
           </a>
         </li>
+
+        {% if is_granted('ROLE_ADMIN') %}
+        <li>
+          <a href="{{ path('admin_ai_risk_index') }}"
+             class="{% if app.request.attributes.get('_route') starts with 'admin_ai_risk' %}active{% endif %}">
+            <i class="bi bi-robot"></i>
+            <span>Surveillance des Risques IA</span>
+          </a>
+        </li>
+        {% endif %}
       </ul>
     </nav>
     
