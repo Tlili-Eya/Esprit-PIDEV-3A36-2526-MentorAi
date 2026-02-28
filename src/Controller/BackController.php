@@ -91,8 +91,44 @@ final class BackController extends AbstractController
     #[Route('/administrateur', name: 'administrateur')]
     public function administrateur(UtilisateurRepository $utilisateurRepository): Response
     {
+        $utilisateurs = $utilisateurRepository->findAll();
+
+        // Calculate statistics for the pie chart
+        $countActif = 0;
+        $countInactif = 0;
+
+        // Calculate data for the line chart (registrations by date)
+        $registrationData = [];
+
+        foreach ($utilisateurs as $user) {
+            // Status count
+            if (strtolower($user->getStatus()) === 'actif') {
+                $countActif++;
+            } else {
+                $countInactif++;
+            }
+
+            // Registrations by date
+            $date = $user->getDateInscription();
+            if ($date) {
+                // Ensure format matches the line chart expectations
+                $dateStr = $date->format('Y-m-d');
+                if (!isset($registrationData[$dateStr])) {
+                    $registrationData[$dateStr] = 0;
+                }
+                $registrationData[$dateStr]++;
+            }
+        }
+
+        // Sort dates chronologically
+        ksort($registrationData);
+
         return $this->render('back/administrateur.html.twig', [
-            'utilisateurs' => $utilisateurRepository->findAll(),
+            'utilisateurs' => $utilisateurs,
+            'countActif' => $countActif,
+            'countInactif' => $countInactif,
+            'registrationDates' => json_encode(array_keys($registrationData)),
+            'registrationCounts' => json_encode(array_values($registrationData)),
         ]);
     }
 }

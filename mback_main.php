@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // src/Controller/BackController.php
 
 namespace App\Controller;
@@ -39,10 +39,10 @@ class mBackController extends AbstractController
             'rejete' => $planRepo->count(['statut' => \App\Enum\Statut::Rejete]),
         ];
 
-        // Récents
-        $derniers_articles = $articleRepo->findBy([], ['createdAt' => 'DESC'], 5);
+        // R├®cents
+        $derniers_articles = $articleRepo->findBy([], ['date' => 'DESC'], 5);
         $derniers_plans = $planRepo->findBy([], ['date' => 'DESC'], 5);
-        $dernieres_sorties = $sortieRepo->findBy([], ['createdAt' => 'DESC'], 5);
+        $dernieres_sorties = $sortieRepo->findBy([], ['date' => 'DESC'], 5);
 
         return $this->render('back/dashboard.html.twig', [
             'stats' => $stats,

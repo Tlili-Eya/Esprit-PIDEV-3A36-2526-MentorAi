@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surveillance des Risques Utilisateurs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #102c59;
+            --low:     #10b981;
+            --medium:  #f59e0b;
+            --high:    #ef4444;
+        }
+        body { background: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
+
+        /* ── En-tête ── */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary), #1e4a8a);
+            color: #fff; padding: 28px 32px; border-radius: 16px;
+            margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .page-header h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
+        .page-header p  { margin: 4px 0 0; opacity: .8; font-size: .9rem; }
+
+        /* ── Cartes statistiques ── */
+        .stat-card {
+            border-radius: 14px; padding: 22px 26px;
+            color: #fff; display: flex; align-items: center; gap: 16px;
+        }
+        .stat-card .icon  { font-size: 2.4rem; opacity: .85; }
+        .stat-card .label { font-size: .8rem; opacity: .85; text-transform: uppercase; letter-spacing: .05em; }
+        .stat-card .value { font-size: 2rem; font-weight: 800; line-height: 1; }
+        .card-low    { background: linear-gradient(135deg, #059669, #10b981); }
+        .card-medium { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        .card-high   { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        .card-dup    { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+
+        /* ── Tableau ── */
+        .risk-table thead th { background: var(--primary); color: #fff; font-weight: 600; border: none; }
+        .risk-table tbody tr:hover { background: #f8fafc; }
+
+        /* ── Badges ── */
+        .badge-low    { background: #d1fae5; color: #065f46; }
+        .badge-medium { background: #fef3c7; color: #92400e; }
+        .badge-high   { background: #fee2e2; color: #991b1b; }
+        .badge-risk   { padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: .78rem; }
+
+        /* ── Barre de score ── */
+        .score-wrap { display: flex; align-items: center; gap: 10px; min-width: 140px; }
+        .score-bar  { flex-grow: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .score-fill { height: 100%; border-radius: 4px; transition: width .4s; }
+
+        /* ── Boutons d'action ── */
+        .btn-recalc  { font-size: .78rem; padding: 5px 10px; }
+        .btn-suspend { font-size: .78rem; padding: 5px 10px; }
+    </style>
+</head>
+<body class="p-4">
+
+{# ── En-tête ── #}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-shield-exclamation me-2"></i>Surveillance des Risques Utilisateurs</h1>
+        <p>Détection automatique des comptes à risque · Backoffice Admin</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('back_administrateur') }}" class="btn btn-light btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Retour Admin
+        </a>
+        <a href="{{ path('admin_ai_risk_index') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-robot me-1"></i>Surveillance IA
+        </a>
+        <button id="btnRecalcAll" class="btn btn-warning btn-sm fw-bold">
+            <i class="bi bi-arrow-clockwise me-1"></i>Recalculer tout
+        </button>
+    </div>
+</div>
+
+{# ── Cartes statistiques ── #}
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="stat-card card-low">
+            <div class="icon"><i class="bi bi-shield-check"></i></div>
+            <div>
+                <div class="label">Risque Faible</div>
+                <div class="value" id="countLow">{{ stats.LOW }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card card-medium">
+            <div class="icon"><i class="bi bi-shield-half"></i></div>
+            <div>
+                <div class="label">Risque Moyen</div>
+                <div class="value" id="countMedium">{{ stats.MEDIUM }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card card-high">
+            <div class="icon"><i class="bi bi-shield-x"></i></div>
+            <div>
+                <div class="label">Risque Élevé</div>
+                <div class="value" id="countHigh">{{ stats.HIGH }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card card-dup">
+            <div class="icon"><i class="bi bi-person-fill-exclamation"></i></div>
+            <div>
+                <div class="label">Doublons</div>
+                <div class="value">{{ stats.duplicates }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Zone de notifications ── #}
+<div id="toastWrap" style="position:fixed;top:20px;right:20px;z-index:9999;"></div>
+
+{# ── Tableau des utilisateurs ── #}
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold text-dark">
+            <i class="bi bi-people-fill me-2 text-primary"></i>
+            Utilisateurs ({{ utilisateurs|length }})
+        </h5>
+        <input type="text" id="searchInput" class="form-control form-control-sm w-auto"
+               placeholder="🔍 Rechercher..." style="min-width:200px;" onkeyup="filtrerTableau()">
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 risk-table" id="userTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Utilisateur</th>
+                        <th>Adresse e-mail</th>
+                        <th>Rôle</th>
+                        <th>Score de confiance</th>
+                        <th>Niveau de risque</th>
+                        <th>Doublon</th>
+                        <th>Tentatives de connexion</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in utilisateurs %}
+                    {% set score = user.trustScore %}
+                    {% set level = user.riskLevel %}
+                    {% set fillColor = level == 'LOW' ? '#10b981' : (level == 'MEDIUM' ? '#f59e0b' : '#ef4444') %}
+                    {% set levelFr = level == 'LOW' ? 'Faible' : (level == 'MEDIUM' ? 'Moyen' : 'Élevé') %}
+                    <tr id="row-{{ user.id }}">
+                        <td class="fw-semibold text-muted">{{ user.id }}</td>
+
+                        {# Avatar + nom #}
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if user.pdpUrl %}
+                                    <img src="{{ asset('uploads/pdp/' ~ user.pdpUrl) }}"
+                                         style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;"
+                                         alt="{{ user.prenom }}">
+                                {% else %}
+                                    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#102c59,#1e4a8a);
+                                                display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.8rem;">
+                                        {{ user.prenom|slice(0,1) }}{{ user.nom|slice(0,1) }}
+                                    </div>
+                                {% endif %}
+                                <span class="fw-semibold">{{ user.prenom }} {{ user.nom }}</span>
+                            </div>
+                        </td>
+
+                        <td class="text-muted small">{{ user.email }}</td>
+
+                        {# Rôle #}
+                        <td>
+                            <span class="badge bg-secondary rounded-pill">{{ user.role|capitalize }}</span>
+                        </td>
+
+                        {# Score de confiance + barre #}
+                        <td>
+                            <div class="score-wrap" id="scoreWrap-{{ user.id }}">
+                                <div class="score-bar">
+                                    <div class="score-fill" id="scoreFill-{{ user.id }}"
+                                         style="width:{{ score }}%;background:{{ fillColor }};"></div>
+                                </div>
+                                <span class="fw-bold small" id="scoreVal-{{ user.id }}">{{ score|number_format(1) }}%</span>
+                            </div>
+                        </td>
+
+                        {# Niveau de risque #}
+                        <td>
+                            <span class="badge-risk badge-{{ level|lower }}" id="riskBadge-{{ user.id }}">
+                                {% if level == 'LOW' %}✅{% elseif level == 'MEDIUM' %}⚠️{% else %}🔴{% endif %}
+                                {{ levelFr }}
+                            </span>
+                        </td>
+
+                        {# Doublon #}
+                        <td id="dupCell-{{ user.id }}">
+                            {% if user.flaggedDuplicate %}
+                                <span class="badge bg-danger">⚠ Oui</span>
+                            {% else %}
+                                <span class="badge bg-success">Non</span>
+                            {% endif %}
+                        </td>
+
+                        {# Tentatives de connexion #}
+                        <td>
+                            <span class="badge {{ user.loginAttempts > 5 ? 'bg-danger' : 'bg-secondary' }}">
+                                {{ user.loginAttempts }}
+                            </span>
+                        </td>
+
+                        {# Statut #}
+                        <td>
+                            {% if user.status == 'actif' %}
+                                <span class="badge bg-success">Actif</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactif</span>
+                            {% endif %}
+                        </td>
+
+                        {# Actions #}
+                        <td>
+                            <div class="d-flex gap-1 flex-wrap">
+                                <button class="btn btn-outline-primary btn-recalc btn-sm"
+                                        onclick="recalculerUser({{ user.id }})"
+                                        title="Recalculer le risque">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                                {% if user.status == 'actif' %}
+                                <button class="btn btn-outline-danger btn-suspend btn-sm"
+                                        onclick="suspendreUser({{ user.id }})"
+                                        title="Suspendre">
+                                    <i class="bi bi-person-slash"></i>
+                                </button>
+                                {% endif %}
+                                <a href="{{ path('app_utilisateur_show', {id: user.id}) }}"
+                                   class="btn btn-outline-secondary btn-sm" title="Voir le profil">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="10" class="text-center py-5 text-muted">Aucun utilisateur trouvé.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ── Notification ── */
+function notifier(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `alert alert-${type} shadow-sm py-2 px-3 mb-2`;
+    el.style.cssText = 'min-width:260px;border-radius:10px;font-size:.9rem;white-space:pre-line;';
+    el.textContent = msg;
+    document.getElementById('toastWrap').appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+}
+
+/* ── Traduction des niveaux de risque ── */
+const niveauxFr = { LOW: 'Faible', MEDIUM: 'Moyen', HIGH: 'Élevé' };
+const emojisRisque = { LOW: '✅', MEDIUM: '⚠️', HIGH: '🔴' };
+const classesBadge = { LOW: 'badge-low', MEDIUM: 'badge-medium', HIGH: 'badge-high' };
+
+/* ── Mettre à jour une ligne du tableau ── */
+function mettreAJourLigne(id, data) {
+    const couleurs = { LOW: '#10b981', MEDIUM: '#f59e0b', HIGH: '#ef4444' };
+    const couleur  = couleurs[data.riskLevel];
+
+    document.getElementById(`scoreFill-${id}`).style.width      = data.trustScore + '%';
+    document.getElementById(`scoreFill-${id}`).style.background = couleur;
+    document.getElementById(`scoreVal-${id}`).textContent        = data.trustScore.toFixed(1) + '%';
+
+    const badge = document.getElementById(`riskBadge-${id}`);
+    badge.className   = `badge-risk ${classesBadge[data.riskLevel]}`;
+    badge.textContent = `${emojisRisque[data.riskLevel]} ${niveauxFr[data.riskLevel]}`;
+
+    const dupCell = document.getElementById(`dupCell-${id}`);
+    dupCell.innerHTML = data.flaggedDuplicate
+        ? '<span class="badge bg-danger">⚠ Oui</span>'
+        : '<span class="badge bg-success">Non</span>';
+}
+
+/* ── Recalculer un seul utilisateur ── */
+async function recalculerUser(id) {
+    try {
+        const res  = await fetch(`/admin/users/${id}/recalculate`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            mettreAJourLigne(id, data);
+            notifier(`✅ Utilisateur #${id} recalculé — ${niveauxFr[data.riskLevel]} (${data.trustScore.toFixed(1)}%)`);
+        }
+    } catch (e) { notifier('Erreur réseau. Vérifiez votre connexion.', 'danger'); }
+}
+
+/* ── Recalculer TOUS les utilisateurs ── */
+document.getElementById('btnRecalcAll').addEventListener('click', async () => {
+    const btn = document.getElementById('btnRecalcAll');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Calcul en cours…';
+
+    try {
+        const res  = await fetch('/admin/users/recalculate-all', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            notifier(`✅ Terminé — Faible : ${data.counts.LOW}  Moyen : ${data.counts.MEDIUM}  Élevé : ${data.counts.HIGH}`);
+            document.getElementById('countLow').textContent    = data.counts.LOW;
+            document.getElementById('countMedium').textContent = data.counts.MEDIUM;
+            document.getElementById('countHigh').textContent   = data.counts.HIGH;
+            setTimeout(() => location.reload(), 1800);
+        }
+    } catch (e) { notifier('Erreur réseau. Vérifiez votre connexion.', 'danger'); }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Recalculer tout';
+});
+
+/* ── Suspendre un utilisateur ── */
+async function suspendreUser(id) {
+    if (!confirm(`Voulez-vous vraiment suspendre l'utilisateur #${id} ?`)) return;
+    try {
+        const res  = await fetch(`/admin/users/${id}/suspend`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            const row = document.getElementById(`row-${id}`);
+            row.style.opacity = '.45';
+            row.querySelector('.btn-suspend')?.remove();
+            notifier(`Utilisateur #${id} suspendu.`, 'warning');
+        }
+    } catch (e) { notifier('Erreur réseau. Vérifiez votre connexion.', 'danger'); }
+}
+
+/* ── Filtre de recherche ── */
+function filtrerTableau() {
+    const q    = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#userTable tbody tr');
+    rows.forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

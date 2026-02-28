@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Security;
 
@@ -24,18 +24,13 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 
         // Check roles and redirect accordingly
         
-        // ROLE_ADMIN -> back_home
+        // ROLE_ADMIN -> front_home (as requested)
         if (in_array('ROLE_ADMIN', $roles, true)) {
-             return new RedirectResponse($this->router->generate('back_home'));
+             return new RedirectResponse($this->router->generate('front_home'));
         }
 
-        // ROLE_ADMINISTRATEUR -> back_administrateur
-        if (in_array('ROLE_ADMINISTRATEUR', $roles, true)) {
-            return new RedirectResponse($this->router->generate('back_administrateur'));
-        }
-
-        // ROLE_ADMINM -> app_admin_dashboard
-        if (in_array('ROLE_ADMINM', $roles, true)) {
+        // ROLE_ADMINM or ROLE_ADMINISTRATEUR -> app_admin_dashboard
+        if (in_array('ROLE_ADMINM', $roles, true) || in_array('ROLE_ADMINISTRATEUR', $roles, true)) {
             return new RedirectResponse($this->router->generate('app_admin_dashboard'));
         }
 

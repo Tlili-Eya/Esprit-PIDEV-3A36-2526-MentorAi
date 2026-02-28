@@ -1,4 +1,4 @@
-# In all environments, the following files are loaded if they exist,
+﻿# In all environments, the following files are loaded if they exist,
 # the latter taking precedence over the former:
 #
 #  * .env                contains default values for the environment variables needed by the app
@@ -19,12 +19,24 @@ APP_ENV=dev
 APP_SECRET=a1c63433feb754d193353099838c1087
 ###< symfony/framework-bundle ###
 
+###> knpuniversity/oauth2-client-bundle ###
+GOOGLE_CLIENT_ID=222819625196-45gs8t6ma3eb2he3rbcag3g4mvg2arn6.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+###< knpuniversity/oauth2-client-bundle ###
+
 ###> doctrine/doctrine-bundle ###
 # Format described at https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url
 # IMPORTANT: You MUST configure your server version, either here or in config/packages/doctrine.yaml
 #
 # DATABASE_URL="sqlite:///%kernel.project_dir%/var/data_%kernel.environment%.db"
 DATABASE_URL="mysql://root:@127.0.0.1:3306/mentorai"
+MAILER_DSN="gmail+smtp://hejerh666@gmail.com:jntuuxtzckyvlgqk@default?verify_peer=0"
+
+
+
+
+
+
 # DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
 #DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=16&charset=utf8"
 ###< doctrine/doctrine-bundle ###
@@ -37,41 +49,25 @@ MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
 ###< symfony/messenger ###
 
 ###> symfony/mailer ###
-MAILER_DSN_HEJER="gmail+smtp://hejerh666@gmail.com:jntuuxtzckyvlgqk@default?verify_peer=0"
+#MAILER_DSN=null://null
 ###< symfony/mailer ###
-###> Symfony Mailer ###
-MAILER_DSN_AMAL=smtp://amal.mokdad07@gmail.com:pkcxaobvyouwctmk@smtp.gmail.com:587?encryption=tls&auth_mode=login
-###< Symfony Mailer ###
 
 ###> symfony/google-mailer ###
 # Gmail SHOULD NOT be used on production, use it in development only.
 # MAILER_DSN=gmail://USERNAME:PASSWORD@default
 ###< symfony/google-mailer ###
-DEEPSEEK_API_KEY=sk-3cb5aec1eaa54de28b79f266f4db8c80
-
-###> groq/api ###
-GROQ_API_KEY=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
-###< groq/api ###
-STRIPE_SECRET_KEY=sk_test_51T3HLEAn7CRzwdrvGPToyqR7KSEjsMOzNYQVHCpR3Tk5TNsyiqBqyodGhoyPUyxhJYzJs1dMeeanM19nMJLepFwL00kIoimsOx
-###> stripe/stripe-php ###
-#STRIPE_SECRET_KEY=sk_test_***
-###< stripe/stripe-php ###
-
-###> Azure Text Analytics ###
-AZURE_TEXT_ANALYTICS_ENDPOINT=https://amdouni.cognitiveservices.azure.com/
-AZURE_TEXT_ANALYTICS_KEY=16hQPvL3p6VMpJlIDN3CvAiwo354gKZZ0EjotF6rc8DYzQKcn2fYJQQJ99BEAC5T7U2XJ3w3AAAaACOGIwpF
-###< Azure Text Analytics ###
-
-###> knpuniversity/oauth2-client-bundle ###
-GOOGLE_CLIENT_ID=222819625196-45gs8t6ma3eb2he3rbcag3g4mvg2arn6.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
-###< knpuniversity/oauth2-client-bundle ###
 
 ###> hcaptcha ###
 HCAPTCHA_SITE_KEY=35e6c3cc-8104-4422-8f80-f88253f465ea
 HCAPTCHA_SECRET_KEY=ES_65fa7d1c108c44b0853ff513570b88a7
 ###< hcaptcha ###
 
+
 ###> python local analyzer ###
+# Chemin vers l'interpr├®teur Python.
+# Laisser VIDE pour la d├®tection automatique (recommand├®).
+# Windows : PYTHON_PATH=python
+# Linux   : PYTHON_PATH=python3
+# Chemin complet si n├®cessaire : PYTHON_PATH=C:\Python312\python.exe
 PYTHON_PATH=
 ###< python local analyzer ###

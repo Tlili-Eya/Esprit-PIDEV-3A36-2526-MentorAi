@@ -1,0 +1,282 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Surveillance des Risques IA{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --primary: #102c59;
+        --low:     #10b981;
+        --medium:  #f59e0b;
+        --high:    #ef4444;
+    }
+
+    /* ── En-tête ── */
+    .ai-header {
+        background: linear-gradient(135deg, #102c59, #1e4a8a);
+        color: #fff;
+        padding: 28px 32px;
+        border-radius: 16px;
+        margin-bottom: 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .ai-header h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
+    .ai-header p  { margin: 4px 0 0; opacity: .8; font-size: .9rem; }
+
+    /* ── Tableau ── */
+    .ai-table thead th {
+        background: var(--primary);
+        color: #fff;
+        font-weight: 600;
+        border: none;
+        white-space: nowrap;
+    }
+    .ai-table tbody tr:hover { background: #f8fafc; }
+
+    /* ── Badges de risque ── */
+    .badge-low    { background: #d1fae5; color: #065f46; }
+    .badge-medium { background: #fef3c7; color: #92400e; }
+    .badge-high   { background: #fee2e2; color: #991b1b; }
+    .badge-risque { padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: .78rem; display: inline-block; }
+
+    /* ── Verdict ── */
+    .verdict-box {
+        font-size: .82rem;
+        line-height: 1.5;
+        max-width: 340px;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .verdict-suspect { color: #991b1b; }
+    .verdict-fiable  { color: #065f46; }
+    .verdict-neutre  { color: #92400e; }
+
+    /* ── Barre de score ── */
+    .score-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+    .score-bar  { flex-grow: 1; height: 7px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .score-fill { height: 100%; border-radius: 4px; }
+
+    /* ── Notifications ── */
+    #toastWrap { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+    .toast-item {
+        min-width: 260px; border-radius: 10px; font-size: .9rem;
+        padding: 10px 16px; margin-bottom: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.15);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ── Zone de notifications ── #}
+<div id="toastWrap"></div>
+
+{# ── En-tête ── #}
+<div class="ai-header">
+    <div>
+        <h1><i class="bi bi-robot me-2"></i>Surveillance des Risques IA</h1>
+        <p>Analyse comportementale des utilisateurs par intelligence artificielle · Backoffice Admin</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ path('back_administrateur') }}" class="btn btn-light btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Retour Admin
+        </a>
+        <button id="btnAnalyzeAll" class="btn btn-warning btn-sm fw-bold">
+            <i class="bi bi-cpu me-1"></i>Analyser tous les utilisateurs
+        </button>
+    </div>
+</div>
+
+{# ── Tableau ── #}
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold text-dark">
+            <i class="bi bi-people-fill me-2 text-primary"></i>
+            Utilisateurs ({{ utilisateurs|length }})
+        </h5>
+        <input type="text" id="searchInput" class="form-control form-control-sm w-auto"
+               placeholder="🔍 Rechercher..." style="min-width:200px;" onkeyup="filtrerTableau()">
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 ai-table" id="aiTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Utilisateur</th>
+                        <th>Adresse e-mail</th>
+                        <th>Score de confiance</th>
+                        <th>Niveau de risque</th>
+                        <th>Verdict IA</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in utilisateurs %}
+                    {% set level = user.riskLevel %}
+                    {% set fillColor = level == 'LOW' ? '#10b981' : (level == 'MEDIUM' ? '#f59e0b' : '#ef4444') %}
+                    {% set levelFr = level == 'LOW' ? 'Faible' : (level == 'MEDIUM' ? 'Moyen' : 'Élevé') %}
+                    <tr id="row-{{ user.id }}">
+                        <td class="fw-semibold text-muted">{{ user.id }}</td>
+
+                        {# Avatar + nom #}
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if user.pdpUrl %}
+                                    <img src="{{ asset('uploads/pdp/' ~ user.pdpUrl) }}"
+                                         style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;"
+                                         alt="{{ user.prenom }}">
+                                {% else %}
+                                    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#102c59,#1e4a8a);
+                                                display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.75rem;">
+                                        {{ user.prenom|slice(0,1) }}{{ user.nom|slice(0,1) }}
+                                    </div>
+                                {% endif %}
+                                <span class="fw-semibold small">{{ user.prenom }} {{ user.nom }}</span>
+                            </div>
+                        </td>
+
+                        <td class="text-muted small">{{ user.email }}</td>
+
+                        {# Barre de score de confiance #}
+                        <td>
+                            <div class="score-wrap">
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width:{{ user.trustScore }}%;background:{{ fillColor }};"></div>
+                                </div>
+                                <span class="fw-bold small">{{ user.trustScore|number_format(1) }}%</span>
+                            </div>
+                        </td>
+
+                        {# Niveau de risque #}
+                        <td>
+                            <span class="badge-risque badge-{{ level|lower }}">
+                                {% if level == 'LOW' %}✅{% elseif level == 'MEDIUM' %}⚠️{% else %}🔴{% endif %}
+                                {{ levelFr }}
+                            </span>
+                        </td>
+
+                        {# Verdict IA #}
+                        <td id="verdict-{{ user.id }}">
+                            {% if user.aiVerdict %}
+                                <div class="verdict-box {% if 'SUSPECT' in user.aiVerdict|upper %}verdict-suspect{% elseif 'FIABLE' in user.aiVerdict|upper %}verdict-fiable{% else %}verdict-neutre{% endif %}">
+                                    {{ user.aiVerdict }}
+                                </div>
+                            {% else %}
+                                <span class="text-muted small fst-italic">Non analysé</span>
+                            {% endif %}
+                        </td>
+
+                        {# Actions #}
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm"
+                                    onclick="analyserUtilisateur({{ user.id }})"
+                                    id="btn-{{ user.id }}"
+                                    title="Analyser avec l'IA">
+                                <i class="bi bi-cpu"></i> Analyser
+                            </button>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7" class="text-center py-5 text-muted">Aucun utilisateur trouvé.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+/* ── Notification ── */
+function notifier(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `toast-item alert alert-${type}`;
+    el.style.cssText = 'white-space:pre-line;line-height:1.5;';
+    el.textContent = msg;
+    document.getElementById('toastWrap').appendChild(el);
+    const delai = type === 'danger' ? 8000 : 4000;
+    setTimeout(() => el.remove(), delai);
+}
+
+/* ── Afficher le verdict dans la cellule ── */
+function afficherVerdict(id, texte) {
+    const upper = texte.toUpperCase();
+    let cls = 'verdict-neutre';
+    if (upper.includes('SUSPECT')) cls = 'verdict-suspect';
+    else if (upper.includes('FIABLE')) cls = 'verdict-fiable';
+
+    document.getElementById(`verdict-${id}`).innerHTML =
+        `<div class="verdict-box ${cls}">${texte}</div>`;
+}
+
+/* ── Analyse un seul utilisateur ── */
+async function analyserUtilisateur(id) {
+    const btn = document.getElementById(`btn-${id}`);
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Analyse…';
+
+    try {
+        const res  = await fetch(`/admin/ai-risk/analyze/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            afficherVerdict(id, data.verdict);
+            notifier(`✅ Utilisateur #${id} analysé avec succès.`);
+        } else {
+            notifier(`❌ ${data.message}`, 'danger');
+        }
+    } catch (e) {
+        notifier('Erreur réseau. Vérifiez votre connexion.', 'danger');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-cpu"></i> Analyser';
+}
+
+/* ── Analyser tous les utilisateurs ── */
+document.getElementById('btnAnalyzeAll').addEventListener('click', async () => {
+    const btn = document.getElementById('btnAnalyzeAll');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Analyse en cours…';
+
+    try {
+        const res  = await fetch('/admin/ai-risk/analyze-all', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            for (const [id, result] of Object.entries(data.results)) {
+                if (result.success) {
+                    afficherVerdict(id, result.verdict);
+                } else {
+                    document.getElementById(`verdict-${id}`).innerHTML =
+                        `<span class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i>${result.message}</span>`;
+                }
+            }
+            if (data.failCount > 0 && data.successCount === 0) {
+                notifier(`❌ Tous les appels ont échoué. Vérifiez votre clé API.\n${Object.values(data.results)[0]?.message ?? ''}`, 'danger');
+            } else if (data.failCount > 0) {
+                notifier(`⚠️ ${data.successCount} analysés avec succès, ${data.failCount} en erreur.`, 'warning');
+            } else {
+                notifier(`✅ ${data.successCount} utilisateurs analysés avec succès !`);
+            }
+        }
+    } catch (e) {
+        notifier('Erreur réseau. Vérifiez votre connexion.', 'danger');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-cpu me-1"></i>Analyser tous les utilisateurs';
+});
+
+/* ── Filtre de recherche ── */
+function filtrerTableau() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#aiTable tbody tr').forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

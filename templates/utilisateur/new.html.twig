@@ -11,7 +11,6 @@
 
 {% block body %}
 <div class="container py-5">
-    <!-- Header avec navigation -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <nav aria-label="breadcrumb">
@@ -26,13 +25,10 @@
             </h2>
             <p class="text-muted mt-2 mb-0">Remplissez le formulaire pour ajouter un nouveau membre à votre équipe</p>
         </div>
-        
     </div>
 
     <div class="row g-4">
-        <!-- Colonne gauche - Aperçu et Progression -->
         <div class="col-lg-4">
-            <!-- Aperçu du profil -->
             <div class="card profile-preview border-0 shadow-modern rounded-4 overflow-hidden sticky-top" style="top: 2rem;">
                 <div class="profile-header">
                     <div class="profile-bg"></div>
@@ -45,24 +41,17 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="card-body text-center pt-5 pb-4">
                     <h5 class="fw-bold mb-1" id="namePreview">Nouveau Utilisateur</h5>
                     <p class="text-muted mb-3" id="emailPreview">email@exemple.com</p>
-                    
                     <div class="info-badge">
                         <i class="fas fa-eye me-2"></i>
                         Aperçu en direct
                     </div>
-
-                    
                 </div>
             </div>
-
-            
         </div>
 
-        <!-- Colonne droite - Formulaire -->
         <div class="col-lg-8">
             <div class="card border-0 shadow-modern rounded-4 overflow-hidden">
                 <div class="card-header bg-gradient-modern border-0 p-4">
@@ -73,91 +62,49 @@
                 </div>
                 
                 <div class="card-body p-4">
-                    {{ form_start(form, {'attr': {'class': 'modern-form', 'id': 'newUserForm'}}) }}
+                    {{ form_start(form, {'attr': {'class': 'modern-form', 'id': 'newUserForm', 'enctype': 'multipart/form-data'}}) }}
                     
                     <div class="row g-4">
-                        <!-- Prénom -->
                         <div class="col-md-6">
                             <div class="form-group-modern">
                                 <label class="form-label-modern required">
-                                    <i class="fas fa-user me-2"></i>
-                                    Prénom
-                                    <span class="required-star">*</span>
+                                    <i class="fas fa-user me-2"></i>Prénom<span class="required-star">*</span>
                                 </label>
-                                {{ form_widget(form.prenom, {
-                                    'attr': {
-                                        'class': 'form-control-modern',
-                                        'placeholder': 'Entrez le prénom',
-                                        'onkeyup': 'updatePreview()',
-                                        'required': true
-                                    }
-                                }) }}
+                                {{ form_widget(form.prenom, {'attr': {'class': 'form-control-modern', 'placeholder': 'Entrez le prénom', 'onkeyup': 'updatePreview()', 'required': true}}) }}
                                 {{ form_errors(form.prenom) }}
                             </div>
                         </div>
 
-                        <!-- Nom -->
                         <div class="col-md-6">
                             <div class="form-group-modern">
                                 <label class="form-label-modern required">
-                                    <i class="fas fa-user-tag me-2"></i>
-                                    Nom
-                                    <span class="required-star">*</span>
+                                    <i class="fas fa-user-tag me-2"></i>Nom<span class="required-star">*</span>
                                 </label>
-                                {{ form_widget(form.nom, {
-                                    'attr': {
-                                        'class': 'form-control-modern',
-                                        'placeholder': 'Entrez le nom',
-                                        'onkeyup': 'updatePreview()',
-                                        'required': true
-                                    }
-                                }) }}
+                                {{ form_widget(form.nom, {'attr': {'class': 'form-control-modern', 'placeholder': 'Entrez le nom', 'onkeyup': 'updatePreview()', 'required': true}}) }}
                                 {{ form_errors(form.nom) }}
                             </div>
                         </div>
 
-                        <!-- Email -->
                         <div class="col-12">
                             <div class="form-group-modern">
                                 <label class="form-label-modern required">
-                                    <i class="fas fa-envelope me-2"></i>
-                                    Adresse email
-                                    <span class="required-star">*</span>
+                                    <i class="fas fa-envelope me-2"></i>Adresse email<span class="required-star">*</span>
                                 </label>
-                                {{ form_widget(form.email, {
-                                    'attr': {
-                                        'class': 'form-control-modern',
-                                        'placeholder': 'exemple@email.com',
-                                        'onkeyup': 'updatePreview()',
-                                        'required': true,
-                                        'type': 'email'
-                                    }
-                                }) }}
+                                {{ form_widget(form.email, {'attr': {'class': 'form-control-modern', 'placeholder': 'exemple@email.com', 'onkeyup': 'updatePreview()', 'required': true, 'type': 'email'}}) }}
                                 {{ form_errors(form.email) }}
                                 <small class="form-text text-muted d-block mt-2">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    L'email sera utilisé pour la connexion
+                                    <i class="fas fa-info-circle me-1"></i>L'email sera utilisé pour la connexion
                                 </small>
                             </div>
                         </div>
 
-                        <!-- Mot de passe -->
                         <div class="col-12">
                             <div class="form-group-modern">
                                 <label class="form-label-modern required">
-                                    <i class="fas fa-lock me-2"></i>
-                                    Mot de passe
-                                    <span class="required-star">*</span>
+                                    <i class="fas fa-lock me-2"></i>Mot de passe<span class="required-star">*</span>
                                 </label>
                                 <div class="password-input-wrapper">
-                                    {{ form_widget(form.mdp, {
-                                        'attr': {
-                                            'class': 'form-control-modern',
-                                            'placeholder': 'Minimum 8 caractères',
-                                            'required': true,
-                                            'id': 'passwordInput'
-                                        }
-                                    }) }}
+                                    {{ form_widget(form.mdp, {'attr': {'class': 'form-control-modern', 'placeholder': 'Minimum 8 caractères', 'required': true, 'id': 'passwordInput'}}) }}
                                     <button type="button" class="password-toggle" onclick="togglePassword()">
                                         <i class="fas fa-eye" id="toggleIcon"></i>
                                     </button>
@@ -172,74 +119,53 @@
                             </div>
                         </div>
 
-                        <!-- Rôle -->
                         <div class="col-md-6">
                             <div class="form-group-modern">
                                 <label class="form-label-modern required">
-                                    <i class="fas fa-user-shield me-2"></i>
-                                    Rôle
-                                    <span class="required-star">*</span>
+                                    <i class="fas fa-user-shield me-2"></i>Rôle<span class="required-star">*</span>
                                 </label>
-                                {{ form_widget(form.role, {
-                                    'attr': {
-                                        'class': 'form-control-modern form-select-modern',
-                                        'required': true
-                                    }
-                                }) }}
+                                {{ form_widget(form.role, {'attr': {'class': 'form-control-modern form-select-modern', 'required': true}}) }}
                                 {{ form_errors(form.role) }}
                             </div>
                         </div>
 
-                        <!-- Date d'inscription -->
                         <div class="col-md-6">
                             <div class="form-group-modern">
                                 <label class="form-label-modern">
-                                    <i class="fas fa-calendar-check me-2"></i>
-                                    Date d'inscription
+                                    <i class="fas fa-calendar-check me-2"></i>Date d'inscription
                                     <span class="badge bg-info-subtle text-info ms-2">Auto</span>
                                 </label>
-                                {{ form_widget(form.date_inscription, {
-                                    'attr': {
-                                        'class': 'form-control-modern'
-                                    }
-                                }) }}
+                                {{ form_widget(form.date_inscription, {'attr': {'class': 'form-control-modern'}}) }}
                                 {{ form_errors(form.date_inscription) }}
-                                <small class="form-text text-muted d-block mt-2">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Par défaut: aujourd'hui
-                                </small>
                             </div>
                         </div>
 
-                        <!-- Photo de profil URL -->
                         <div class="col-12">
                             <div class="form-group-modern">
                                 <label class="form-label-modern">
-                                    <i class="fas fa-image me-2"></i>
-                                    URL de la photo de profil
+                                    <i class="fas fa-image me-2"></i>Photo de profil
                                     <span class="badge bg-secondary-subtle text-secondary ms-2">Optionnel</span>
                                 </label>
-                                {{ form_widget(form.pdp_url, {
-                                    'attr': {
-                                        'class': 'form-control-modern',
-                                        'placeholder': 'photo.jpg ou laissez vide'
-                                    }
-                                }) }}
+                                {{ form_widget(form.pdp_url, {'attr': {'class': 'form-control-modern', 'accept': 'image/jpeg,image/png,image/webp', 'onchange': 'previewNewPhoto(this)'}}) }}
                                 {{ form_errors(form.pdp_url) }}
+                                <img id="newPhotoPreview" src="" alt="Aperçu" style="display:none; margin-top:10px; width:80px; height:80px; object-fit:cover; border-radius:12px; border:2px solid #e5e7eb;">
                             </div>
                         </div>
                     </div>
 
                     {{ form_rest(form) }}
 
-                    <!-- Action Buttons - GROS ET VISIBLES -->
                     <div class="form-actions mt-5">
-                        <button type="submit" class="btn-create-action">
+                        <input type="hidden" name="submission_secret" id="submissionSecret" value="">
+                        <button type="submit" onclick="document.getElementById('submissionSecret').value='STRICT_MANUAL_v4_GOLD'" class="btn-create-action">
                             <i class="fas fa-user-plus"></i>
                             <span>Créer l'utilisateur</span>
                         </button>
                         
-                        
+                        <a href="{{ path('connect_google_register') }}" class="btn-google-action">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo" style="width: 28px; height: 28px;">
+                            <span>S'inscrire avec Google</span>
+                        </a>
 
                         <button type="reset" class="btn-reset-action" onclick="resetForm()">
                             <i class="fas fa-redo"></i>
@@ -251,12 +177,10 @@
                 </div>
             </div>
 
-            <!-- Conseils de sécurité -->
             <div class="card border-0 shadow-modern rounded-4 overflow-hidden mt-4">
                 <div class="card-body p-4">
                     <h6 class="fw-semibold mb-3">
-                        <i class="fas fa-shield-alt text-success me-2"></i>
-                        Conseils de sécurité
+                        <i class="fas fa-shield-alt text-success me-2"></i>Conseils de sécurité
                     </h6>
                     <div class="security-tips">
                         <div class="tip-item">
@@ -287,15 +211,13 @@
     </div>
 </div>
 
+
 <style>
     :root {
         --primary-color: #6366f1;
-        --primary-light: #818cf8;
-        --primary-dark: #4f46e5;
         --success-color: #7A9AAD;
         --warning-color: #f59e0b;
         --danger-color: #ef4444;
-        --info-color: #3b82f6;
         --dark-color: #1f2937;
         --light-color: #f9fafb;
         --border-color: #e5e7eb;
@@ -307,621 +229,139 @@
         min-height: 100vh;
     }
 
-    .shadow-modern {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
-    }
+    .shadow-modern { box-shadow: 0 4px 20px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.02); }
+    .breadcrumb { background: none; padding: 0; margin: 0; }
+    .breadcrumb-item a { color: #6b7280; text-decoration: none; }
+    .breadcrumb-item.active { color: var(--dark-color); font-weight: 600; }
+    .bg-gradient-modern { background: linear-gradient(135deg, var(--success-color), #059669); }
 
-    /* Breadcrumb */
-    .breadcrumb {
-        background: none;
-        padding: 0;
-        margin: 0;
-    }
+    .profile-preview { position: relative; }
+    .profile-header { position: relative; height: 120px; }
+    .profile-bg { position: absolute; top: 0; left: 0; right: 0; height: 120px; background: linear-gradient(135deg, var(--success-color) 0%, #7A9AAD 100%); }
+    .profile-avatar-container { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); }
+    .profile-avatar { width: 100px; height: 100px; border-radius: 20px; border: 4px solid white; box-shadow: 0 8px 24px rgba(0,0,0,0.15); object-fit: cover; }
+    .profile-avatar-placeholder { background: linear-gradient(135deg, #d1d5db, #9ca3af); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+    .new-user-badge { position: absolute; bottom: -5px; right: -5px; width: 32px; height: 32px; background: var(--success-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; }
+    .info-badge { display: inline-flex; align-items: center; padding: 0.5rem 1rem; background: rgba(16,185,129,0.1); color: var(--success-color); border-radius: 10px; font-size: 0.8125rem; font-weight: 600; }
 
-    .breadcrumb-item a {
-        color: #6b7280;
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
+    .form-group-modern { margin-bottom: 0; }
+    .form-label-modern { display: flex; align-items: center; font-weight: 600; color: var(--dark-color); margin-bottom: 0.75rem; font-size: 0.9375rem; }
+    .required-star { color: var(--danger-color); margin-left: 0.25rem; }
+    .form-control-modern, .form-select-modern { padding: 0.875rem 1.25rem; border: 2px solid var(--border-color); border-radius: 12px; font-size: 0.9375rem; transition: all 0.3s ease; background: white; width: 100%; }
+    .form-control-modern:focus, .form-select-modern:focus { border-color: var(--success-color); box-shadow: 0 0 0 4px rgba(16,185,129,0.1); outline: none; }
+    .password-input-wrapper { position: relative; }
+    .password-toggle { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #6b7280; cursor: pointer; padding: 0.5rem; }
+    .strength-bar { height: 6px; background: #e5e7eb; border-radius: 10px; overflow: hidden; }
+    .strength-fill { height: 100%; width: 0%; border-radius: 10px; transition: all 0.3s ease; }
+    .strength-text { display: block; margin-top: 0.5rem; font-weight: 600; font-size: 0.8125rem; }
 
-    .breadcrumb-item a:hover {
-        color: var(--primary-color);
-    }
+    .form-actions { display: flex; gap: 1rem; padding-top: 2rem; border-top: 2px dashed var(--border-color); flex-wrap: wrap; }
 
-    .breadcrumb-item.active {
-        color: var(--dark-color);
-        font-weight: 600;
+    .btn-create-action, .btn-reset-action {
+        flex: 1; min-width: 180px; display: flex; flex-direction: column; align-items: center;
+        gap: 0.5rem; padding: 1.5rem; border-radius: 16px; border: 2px solid; cursor: pointer;
+        transition: all 0.3s ease; text-decoration: none; font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
+    .btn-create-action i, .btn-reset-action i { font-size: 2.25rem; transition: all 0.3s ease; }
+    .btn-create-action { background: linear-gradient(135deg, var(--success-color), #7A9AAD); color: white; border-color: var(--success-color); }
+    .btn-create-action:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 20px 40px rgba(16,185,129,0.4); }
+    .btn-reset-action { background: rgba(239,68,68,0.1); color: var(--danger-color); border-color: rgba(239,68,68,0.3); }
+    .btn-reset-action:hover { background: linear-gradient(135deg, var(--danger-color), #dc2626); color: white; border-color: var(--danger-color); transform: translateY(-6px); }
 
-    /* Bouton retour */
-    .btn-modern-outline {
-        border: 2px solid var(--border-color);
-        border-radius: 12px;
-        font-weight: 600;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    .btn-google-action {
+        flex: 1; min-width: 180px; display: flex; flex-direction: column; align-items: center;
+        gap: 0.5rem; padding: 1.5rem; border-radius: 16px; border: none; cursor: pointer;
+        text-decoration: none; font-weight: 600;
+        background: linear-gradient(135deg, #102c59 0%, #0a1a36 100%);
+        color: white; transition: all 0.3s ease;
     }
+    .btn-google-action:hover { background: linear-gradient(135deg, #0a1a36 0%, #102c59 100%); color: white; transform: translateY(-2px); }
+    .btn-google-action img { background-color: white; border-radius: 50%; padding: 2px; }
 
-    .btn-modern-outline:hover {
-        border-color: var(--primary-color);
-        background: var(--primary-color);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
-    }
+    .security-tips { display: flex; flex-direction: column; gap: 1.25rem; }
+    .tip-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem; background: var(--light-color); border-radius: 12px; border-left: 4px solid var(--success-color); }
+    .tip-item i { font-size: 1.5rem; margin-top: 0.25rem; flex-shrink: 0; }
+    .tip-item strong { display: block; color: var(--dark-color); margin-bottom: 0.25rem; }
+    .tip-item p { margin: 0; color: #6b7280; font-size: 0.875rem; }
 
-    /* Card header gradient */
-    .bg-gradient-modern {
-        background: linear-gradient(135deg, var(--success-color), #059669);
-    }
-
-    /* Profile Preview */
-    .profile-preview {
-        position: relative;
-    }
-
-    .profile-header {
-        position: relative;
-        height: 120px;
-    }
-
-    .profile-bg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 120px;
-        background: linear-gradient(135deg, var(--success-color) 0%, #7A9AAD 100%);
-    }
-
-    .profile-avatar-container {
-        position: absolute;
-        bottom: -40px;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-        border-radius: 20px;
-        border: 4px solid white;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-        object-fit: cover;
-    }
-
-    .profile-avatar-placeholder {
-        background: linear-gradient(135deg, #d1d5db, #9ca3af);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-    }
-
-    .new-user-badge {
-        position: absolute;
-        bottom: -5px;
-        right: -5px;
-        width: 32px;
-        height: 32px;
-        background: var(--success-color);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 3px solid white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        animation: pulse-plus 2s infinite;
-    }
-
-    @keyframes pulse-plus {
-        0%, 100% {
-            transform: scale(1);
-            box-shadow: 0 4px 12px #7A9AAD(16, 185, 129, 0.4);
-        }
-        50% {
-            transform: scale(1.15);
-            box-shadow: 0 4px 16px #7A9AAD(16, 185, 129, 0.6);
-        }
-    }
-
-    .info-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.5rem 1rem;
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success-color);
-        border-radius: 10px;
-        font-size: 0.8125rem;
-        font-weight: 600;
-    }
-
-    /* Progress Card */
-    .progress-card {
-        background: var(--light-color);
-        padding: 1.25rem;
-        border-radius: 12px;
-    }
-
-    .progress-bar-custom {
-        height: 12px;
-        background: #e5e7eb;
-        border-radius: 10px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--success-color), #7A9AAD);
-        border-radius: 10px;
-        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .progress-fill::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        animation: shimmer 2s infinite;
-    }
-
-    @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-
-    .progress-text {
-        font-weight: 700;
-        color: var(--dark-color);
-        font-size: 1.125rem;
-    }
-
-    /* Guide List */
-    .guide-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .guide-list li {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .guide-list li:last-child {
-        border-bottom: none;
-    }
-
-    .guide-list i {
-        font-size: 1rem;
-        margin-top: 0.125rem;
-        flex-shrink: 0;
-    }
-
-    /* Form moderne */
-    .modern-form {
-        animation: fadeInUp 0.5s ease;
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .form-group-modern {
-        margin-bottom: 0;
-    }
-
-    .form-label-modern {
-        display: flex;
-        align-items: center;
-        font-weight: 600;
-        color: var(--dark-color);
-        margin-bottom: 0.75rem;
-        font-size: 0.9375rem;
-    }
-
-    .form-label-modern i {
-        color: var(--success-color);
-        font-size: 0.875rem;
-    }
-
-    .required-star {
-        color: var(--danger-color);
-        margin-left: 0.25rem;
-        font-size: 1rem;
-    }
-
-    .form-control-modern,
-    .form-select-modern {
-        padding: 0.875rem 1.25rem;
-        border: 2px solid var(--border-color);
-        border-radius: 12px;
-        font-size: 0.9375rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        background: white;
-    }
-
-    .form-control-modern:focus,
-    .form-select-modern:focus {
-        border-color: var(--success-color);
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
-        outline: none;
-        transform: translateY(-2px);
-    }
-
-    .form-control-modern:hover,
-    .form-select-modern:hover {
-        border-color: #6ee7b7;
-    }
-
-    /* Password Input */
-    .password-input-wrapper {
-        position: relative;
-    }
-
-    .password-toggle {
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        color: #6b7280;
-        cursor: pointer;
-        padding: 0.5rem;
-        transition: color 0.3s ease;
-    }
-
-    .password-toggle:hover {
-        color: var(--success-color);
-    }
-
-    .password-strength {
-        margin-top: 0.75rem;
-    }
-
-    .strength-bar {
-        height: 6px;
-        background: #e5e7eb;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .strength-fill {
-        height: 100%;
-        width: 0%;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-    }
-
-    .strength-text {
-        display: block;
-        margin-top: 0.5rem;
-        font-weight: 600;
-        font-size: 0.8125rem;
-    }
-
-    /* Form Actions - GROS BOUTONS VISIBLES */
-    .form-actions {
-        display: flex;
-        gap: 1rem;
-        padding-top: 2rem;
-        border-top: 2px dashed var(--border-color);
-        flex-wrap: wrap;
-    }
-
-    .btn-create-action,
-    .btn-cancel-action,
-    .btn-reset-action {
-        flex: 1;
-        min-width: 180px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 1.5rem 1.5rem;
-        border-radius: 16px;
-        border: 2px solid;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-decoration: none;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .btn-create-action i,
-    .btn-cancel-action i,
-    .btn-reset-action i {
-        font-size: 2.25rem;
-        transition: all 0.3s ease;
-    }
-
-    .btn-create-action span,
-    .btn-cancel-action span,
-    .btn-reset-action span {
-        font-size: 1rem;
-        letter-spacing: 0.3px;
-    }
-
-    /* Bouton Créer */
-    .btn-create-action {
-        background: linear-gradient(135deg, var(--success-color), #7A9AAD);
-        color: white;
-        border-color: var(--success-color);
-    }
-
-    .btn-create-action:hover {
-        background: linear-gradient(135deg, #7A9AAD, #7A9AAD);
-        transform: translateY(-6px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(16, 185, 129, 0.4);
-    }
-
-    .btn-create-action:hover i {
-        transform: scale(1.3) rotate(360deg);
-    }
-
-    /* Bouton Annuler */
-    .btn-cancel-action {
-        background: white;
-        color: #6b7280;
-        border-color: var(--border-color);
-    }
-
-    .btn-cancel-action:hover {
-        background: linear-gradient(135deg, #6b7280, #4b5563);
-        color: white;
-        border-color: #6b7280;
-        transform: translateY(-6px);
-        box-shadow: 0 20px 40px rgba(107, 114, 128, 0.3);
-    }
-
-    .btn-cancel-action:hover i {
-        transform: scale(1.3) rotate(-180deg);
-    }
-
-    /* Bouton Réinitialiser */
-    .btn-reset-action {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger-color);
-        border-color: rgba(239, 68, 68, 0.3);
-    }
-
-    .btn-reset-action:hover {
-        background: linear-gradient(135deg, var(--danger-color), #dc2626);
-        color: white;
-        border-color: var(--danger-color);
-        transform: translateY(-6px);
-        box-shadow: 0 20px 40px rgba(239, 68, 68, 0.35);
-    }
-
-    .btn-reset-action:hover i {
-        transform: scale(1.3) rotate(-360deg);
-    }
-
-    /* Security Tips */
-    .security-tips {
-        display: flex;
-        flex-direction: column;
-        gap: 1.25rem;
-    }
-
-    .tip-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-        padding: 1rem;
-        background: var(--light-color);
-        border-radius: 12px;
-        border-left: 4px solid var(--success-color);
-    }
-
-    .tip-item i {
-        font-size: 1.5rem;
-        margin-top: 0.25rem;
-        flex-shrink: 0;
-    }
-
-    .tip-item strong {
-        display: block;
-        color: var(--dark-color);
-        margin-bottom: 0.25rem;
-    }
-
-    .tip-item p {
-        margin: 0;
-        color: #6b7280;
-        font-size: 0.875rem;
-    }
-
-    /* Responsive */
     @media (max-width: 768px) {
-        .form-actions {
-            flex-direction: column;
-        }
-
-        .btn-create-action,
-        .btn-cancel-action,
-        .btn-reset-action {
-            min-width: 100%;
-        }
+        .form-actions { flex-direction: column; }
+        .btn-create-action, .btn-reset-action, .btn-google-action { min-width: 100%; }
     }
-
-    /* Animation d'entrée pour les groupes de formulaire */
-    .form-group-modern {
-        animation: slideIn 0.5s ease backwards;
-    }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    .row .col-md-6:nth-child(1) .form-group-modern { animation-delay: 0.1s; }
-    .row .col-md-6:nth-child(2) .form-group-modern { animation-delay: 0.15s; }
-    .row .col-12:nth-child(3) .form-group-modern { animation-delay: 0.2s; }
-    .row .col-12:nth-child(4) .form-group-modern { animation-delay: 0.25s; }
-    .row .col-md-6:nth-child(5) .form-group-modern { animation-delay: 0.3s; }
-    .row .col-md-6:nth-child(6) .form-group-modern { animation-delay: 0.35s; }
-    .row .col-12:nth-child(7) .form-group-modern { animation-delay: 0.4s; }
 </style>
 
 <script>
-    // Mise à jour de l'aperçu en temps réel
+    function previewNewPhoto(input) {
+        const preview = document.getElementById('newPhotoPreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
     function updatePreview() {
         const prenom = document.querySelector('input[name*="prenom"]')?.value || '';
         const nom = document.querySelector('input[name*="nom"]')?.value || '';
         const email = document.querySelector('input[name*="email"]')?.value || '';
-
         const namePreview = document.getElementById('namePreview');
         const emailPreview = document.getElementById('emailPreview');
-
-        if (namePreview) {
-            const fullName = `${prenom} ${nom}`.trim();
-            namePreview.textContent = fullName || 'Nouveau Utilisateur';
-        }
-
-        if (emailPreview) {
-            emailPreview.textContent = email || 'email@exemple.com';
-        }
-
-        // Mise à jour de la progression
-        updateProgress();
+        if (namePreview) namePreview.textContent = `${prenom} ${nom}`.trim() || 'Nouveau Utilisateur';
+        if (emailPreview) emailPreview.textContent = email || 'email@exemple.com';
     }
 
-    // Calculer et afficher la progression du formulaire
-    function updateProgress() {
-        const fields = [
-            document.querySelector('input[name*="prenom"]'),
-            document.querySelector('input[name*="nom"]'),
-            document.querySelector('input[name*="email"]'),
-            document.querySelector('input[name*="mdp"]'),
-            document.querySelector('select[name*="role"]')
-        ];
-
-        let filledFields = 0;
-        fields.forEach(field => {
-            if (field && field.value.trim()) {
-                filledFields++;
-            }
-        });
-
-        const percent = Math.round((filledFields / fields.length) * 100);
-        const progressBar = document.getElementById('progressBar');
-        const progressPercent = document.getElementById('progressPercent');
-        const progressMessage = document.getElementById('progressMessage');
-
-        if (progressBar) progressBar.style.width = percent + '%';
-        if (progressPercent) progressPercent.textContent = percent;
-
-        if (progressMessage) {
-            if (percent === 0) {
-                progressMessage.textContent = 'Commencez à remplir le formulaire';
-            } else if (percent < 50) {
-                progressMessage.textContent = 'Bon début, continuez !';
-            } else if (percent < 100) {
-                progressMessage.textContent = 'Vous y êtes presque !';
-            } else {
-                progressMessage.textContent = '✨ Formulaire complet !';
-            }
-        }
-    }
-
-    // Toggle visibilité du mot de passe
     function togglePassword() {
         const passwordInput = document.getElementById('passwordInput');
         const toggleIcon = document.getElementById('toggleIcon');
-        
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
-            toggleIcon.classList.remove('fa-eye');
-            toggleIcon.classList.add('fa-eye-slash');
+            toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
         } else {
             passwordInput.type = 'password';
-            toggleIcon.classList.remove('fa-eye-slash');
-            toggleIcon.classList.add('fa-eye');
+            toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
         }
     }
 
-    // Vérifier la force du mot de passe
     function checkPasswordStrength(password) {
         let strength = 0;
-        
         if (password.length >= 8) strength += 25;
         if (password.length >= 12) strength += 25;
         if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
         if (/[0-9]/.test(password)) strength += 15;
         if (/[^a-zA-Z0-9]/.test(password)) strength += 10;
-
         const strengthBar = document.getElementById('strengthBar');
         const strengthText = document.getElementById('strengthText');
-
         strengthBar.style.width = strength + '%';
-
-        if (strength < 40) {
-            strengthBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
-            strengthText.textContent = 'Faible';
-            strengthText.style.color = '#ef4444';
-        } else if (strength < 70) {
-            strengthBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
-            strengthText.textContent = 'Moyen';
-            strengthText.style.color = '#f59e0b';
-        } else {
-            strengthBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
-            strengthText.textContent = 'Fort';
-            strengthText.style.color = '#10b981';
-        }
+        if (strength < 40) { strengthBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)'; strengthText.textContent = 'Faible'; strengthText.style.color = '#ef4444'; }
+        else if (strength < 70) { strengthBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)'; strengthText.textContent = 'Moyen'; strengthText.style.color = '#f59e0b'; }
+        else { strengthBar.style.background = 'linear-gradient(90deg, #10b981, #059669)'; strengthText.textContent = 'Fort'; strengthText.style.color = '#10b981'; }
     }
 
-    // Réinitialiser le formulaire
     function resetForm() {
-        setTimeout(() => {
-            updatePreview();
-            checkPasswordStrength('');
-        }, 100);
+        setTimeout(() => { updatePreview(); checkPasswordStrength(''); }, 100);
     }
 
-    // Initialiser au chargement
     document.addEventListener('DOMContentLoaded', function() {
         const passwordInput = document.getElementById('passwordInput');
-        
         if (passwordInput) {
-            passwordInput.addEventListener('keyup', function() {
-                checkPasswordStrength(this.value);
-                updateProgress();
+            passwordInput.addEventListener('keyup', function() { checkPasswordStrength(this.value); });
+        }
+        updatePreview();
+
+        // ✅ BLOQUER LA SOUMISSION DU FORMULAIRE SI LE SECRET N'EST PAS LE BON
+        const form = document.getElementById('newUserForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const secret = document.getElementById('submissionSecret').value;
+                if (secret !== 'STRICT_MANUAL_v4_GOLD' && !e.submitter?.classList.contains('btn-create-action')) {
+                    console.log('Submission blocked: Secret missing or wrong button');
+                    e.preventDefault();
+                    return false;
+                }
+                console.log('Submission allowed');
             });
         }
-
-        // Ajouter listeners pour la progression
-        const allInputs = document.querySelectorAll('input, select');
-        allInputs.forEach(input => {
-            input.addEventListener('input', updateProgress);
-        });
-
-        updatePreview();
-        updateProgress();
     });
 </script>
 

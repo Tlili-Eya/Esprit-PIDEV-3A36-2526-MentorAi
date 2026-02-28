@@ -1,0 +1,33 @@
+﻿php : 
+Au caractère Ligne:1 : 
+1
++ php bin/console 
+cache:clear 2>&1 | 
+Out-File -Encoding 
+utf8 cache_err_ ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo     
+         : 
+NotSpecified: (:St    
+ring) [], RemoteExcept 
+   ion
+    + 
+FullyQualifiedErrorI   
+ d : NativeCommandError
+ 
+In DefinitionErrorExcep
+tionPass.php line 51:
+                       
+  Cannot autowire ser  
+  vice "App\Service\P  
+  ythonLocalAnalyzer"  
+  : argument "$projec  
+  tDir" of method "__  
+  construct()" is typ  
+  e-hinted "string",   
+  you should configur  
+  e its value explici  
+  tly.                 
+                       
+

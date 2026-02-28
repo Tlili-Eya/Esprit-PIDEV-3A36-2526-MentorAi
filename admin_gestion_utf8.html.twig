@@ -1,4 +1,4 @@
-{% extends 'back/base.html.twig' %}
+﻿{% extends 'back/base.html.twig' %}
 
 {% block title %}Gestion des utilisateurs{% endblock %}
 
@@ -21,7 +21,7 @@
     
     <!-- Header actions -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="mb-0 text-secondary">Gérer les utilisateurs</h2>
+      <h2 class="mb-0 text-secondary">G├®rer les utilisateurs</h2>
       
       <div class="d-flex gap-2">
         <!-- Export Buttons -->
@@ -59,16 +59,16 @@
       </div>
       <div class="col-md-4">
         <select class="form-select" id="sortSelect">
-          <option value="">Sort by</option>
-          <option value="name">Name (A-Z)</option>
-          <option value="email">Email (A-Z)</option>
-          <option value="role">Role</option>
-          <option value="date">Registration Date</option>
+          <option value="">Trier par</option>
+          <option value="name">Nom (A-Z)</option>
+          <option value="email">E-mail (A-Z)</option>
+          <option value="role">R├┤le</option>
+          <option value="date">Date d'inscription</option>
         </select>
       </div>
       <div class="col-md-2">
         <button type="button" class="btn btn-outline-secondary w-100" id="resetBtn">
-          <i class="bi bi-arrow-clockwise"></i> Réinitialiser
+          <i class="bi bi-arrow-clockwise"></i> R├®initialiser
         </button>
       </div>
     </div>
@@ -76,7 +76,7 @@
     <!-- Results counter -->
     <div class="mb-2">
       <small class="text-muted">
-        Showing <strong id="resultCount">{{ utilisateurs|length }}</strong> of {{ utilisateurs|length }} instructor(s)
+        Affichage de <strong id="resultCount">{{ utilisateurs|length }}</strong> sur {{ utilisateurs|length }} membre(s)
       </small>
     </div>
     
@@ -88,11 +88,11 @@
             <thead style="background-color: #eef3f7;">
               <tr class="text-secondary">
                 <th>#</th>
-                <th>Instructor</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Registration Date</th>
-                <th>Status</th>
+                <th>Membre</th>
+                <th>E-mail</th>
+                <th>R├┤le</th>
+                <th>Date d'inscription</th>
+                <th>Statut</th>
                 <th class="text-end no-export">Actions</th>
               </tr>
             </thead>
@@ -142,7 +142,7 @@
                   {% if utilisateur.status == 'actif' %}
                     <span class="badge bg-success">ACTIF</span>
                   {% elseif utilisateur.status == 'desactiver' %}
-                    <span class="badge bg-danger">DÉSACTIVÉ</span>
+                    <span class="badge bg-danger">D├ëSACTIV├ë</span>
                   {% else %}
                     <span class="badge bg-secondary">{{ utilisateur.status|upper }}</span>
                   {% endif %}
@@ -155,7 +155,7 @@
                      <i class="bi bi-eye"></i>
                   </a>
                   
-                  <!-- MODIFIÉ: Edit button triggers modal instead of page navigation -->
+                  <!-- MODIFI├ë: Edit button triggers modal instead of page navigation -->
                   <button type="button"
                      class="btn btn-sm btn-outline-primary me-1" 
                      title="Edit"
@@ -183,30 +183,30 @@
                       <div>
                         <h4 class="modal-title text-white fw-bold mb-1" id="editInstructorModalLabel{{ utilisateur.id }}">
                           <i class="bi bi-pencil-square me-2"></i>
-                          Edit Instructor
+                          Modifier le membre
                         </h4>
-                        <p class="text-white-50 mb-0 small">Update information for {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
+                        <p class="text-white-50 mb-0 small">Mettre ├á jour les informations de {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
                       </div>
                       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
                    <!-- Modal Body -->
 <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-  <form method="post" action="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}" id="editInstructorForm{{ utilisateur.id }}">
+  <form method="post" action="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}" id="editInstructorForm{{ utilisateur.id }}" enctype="multipart/form-data">
     <input type="hidden" name="_method" value="POST">
     
     <div class="row g-4">
-      <!-- Prénom -->
+      <!-- Pr├®nom -->
       <div class="col-md-6">
         <label class="form-label fw-semibold">
           <i class="bi bi-person me-1 text-primary"></i>
-          First Name <span class="text-danger">*</span>
+          Pr├®nom <span class="text-danger">*</span>
         </label>
-        <input type="text" 
-               name="utilisateur[prenom]" 
-               class="form-control form-control-lg" 
-               value="{{ utilisateur.prenom }}" 
-               placeholder="Enter first name" 
+        <input type="text"
+               name="utilisateur[prenom]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.prenom }}"
+               placeholder="Entrez le pr├®nom"
                required>
       </div>
 
@@ -214,13 +214,13 @@
       <div class="col-md-6">
         <label class="form-label fw-semibold">
           <i class="bi bi-person-badge me-1 text-primary"></i>
-          Last Name <span class="text-danger">*</span>
+          Nom <span class="text-danger">*</span>
         </label>
-        <input type="text" 
-               name="utilisateur[nom]" 
-               class="form-control form-control-lg" 
-               value="{{ utilisateur.nom }}" 
-               placeholder="Enter last name" 
+        <input type="text"
+               name="utilisateur[nom]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.nom }}"
+               placeholder="Entrez le nom"
                required>
       </div>
 
@@ -228,17 +228,17 @@
       <div class="col-12">
         <label class="form-label fw-semibold">
           <i class="bi bi-envelope me-1 text-primary"></i>
-          Email Address <span class="text-danger">*</span>
+          Adresse e-mail <span class="text-danger">*</span>
         </label>
-        <input type="email" 
-               name="utilisateur[email]" 
-               class="form-control form-control-lg" 
-               value="{{ utilisateur.email }}" 
-               placeholder="instructor@example.com" 
+        <input type="email"
+               name="utilisateur[email]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.email }}"
+               placeholder="membre@exemple.com"
                required>
         <small class="text-muted">
           <i class="bi bi-info-circle me-1"></i>
-          This email will be used for login
+          Cet e-mail sera utilis├® pour la connexion
         </small>
       </div>
 
@@ -246,43 +246,43 @@
       <div class="col-12">
         <label class="form-label fw-semibold">
           <i class="bi bi-lock me-1 text-primary"></i>
-          New Password 
-          <span class="badge bg-secondary ms-2">Optional</span>
+          Nouveau mot de passe
+          <span class="badge bg-secondary ms-2">Optionnel</span>
         </label>
         <div class="input-group">
-          <input type="password" 
-                 name="utilisateur[mdp]" 
-                 id="editPasswordInput{{ utilisateur.id }}" 
-                 class="form-control form-control-lg" 
-                 placeholder="Leave empty to keep current password">
+          <input type="password"
+                 name="utilisateur[mdp]"
+                 id="editPasswordInput{{ utilisateur.id }}"
+                 class="form-control form-control-lg"
+                 placeholder="Laisser vide pour conserver le mot de passe actuel">
           <button class="btn btn-outline-secondary" type="button" onclick="toggleEditPassword({{ utilisateur.id }})">
             <i class="bi bi-eye" id="editToggleIcon{{ utilisateur.id }}"></i>
           </button>
         </div>
         <small class="text-muted">
           <i class="bi bi-info-circle me-1"></i>
-          Leave blank to keep the current password
+          Laisser vide pour conserver le mot de passe actuel
         </small>
         <div class="password-strength mt-2">
           <div class="progress" style="height: 6px;">
             <div class="progress-bar" id="editStrengthBar{{ utilisateur.id }}" role="progressbar" style="width: 0%"></div>
           </div>
-          <small class="text-muted" id="editStrengthText{{ utilisateur.id }}">Password strength</small>
+          <small class="text-muted" id="editStrengthText{{ utilisateur.id }}">Force du mot de passe</small>
         </div>
       </div>
 
-      <!-- Rôle -->
+      <!-- R├┤le -->
       <div class="col-md-6">
         <label class="form-label fw-semibold">
           <i class="bi bi-shield-check me-1 text-primary"></i>
-          Role <span class="text-danger">*</span>
+          R├┤le <span class="text-danger">*</span>
         </label>
         <select name="utilisateur[role]" class="form-select form-select-lg" required>
-          <option value="">Select a role</option>
-          <option value="enseignant" {% if utilisateur.role == 'enseignant' %}selected{% endif %}>Enseignant (Teacher)</option>
-          <option value="administrateur" {% if utilisateur.role == 'administrateur' %}selected{% endif %}>Administrateur (Admin)</option>
-          <option value="etudiant" {% if utilisateur.role == 'etudiant' %}selected{% endif %}>Étudiant (Student)</option>
-           <option value="adminm" {% if utilisateur.role == 'adminm' %}selected{% endif %}>Adminm (Adminm)</option>
+          <option value="">Choisir un r├┤le</option>
+          <option value="enseignant" {% if utilisateur.role == 'enseignant' %}selected{% endif %}>Enseignant</option>
+          <option value="administrateur" {% if utilisateur.role == 'administrateur' %}selected{% endif %}>Administrateur</option>
+          <option value="etudiant" {% if utilisateur.role == 'etudiant' %}selected{% endif %}>├ëtudiant</option>
+          <option value="adminm" {% if utilisateur.role == 'adminm' %}selected{% endif %}>Adminm</option>
         </select>
       </div>
 
@@ -290,32 +290,36 @@
       <div class="col-md-6">
         <label class="form-label fw-semibold">
           <i class="bi bi-calendar-check me-1 text-primary"></i>
-          Registration Date
+          Date d'inscription
         </label>
-        <input type="date" 
-               name="utilisateur[date_inscription]" 
-               class="form-control form-control-lg" 
+        <input type="date"
+               name="utilisateur[date_inscription]"
+               class="form-control form-control-lg"
                value="{{ utilisateur.dateInscription ? utilisateur.dateInscription|date('Y-m-d') : '' }}">
       </div>
 
-      <!-- Photo de profil URL -->
+      <!-- Photo de profil -->
       <div class="col-12">
         <label class="form-label fw-semibold">
           <i class="bi bi-image me-1 text-primary"></i>
-          Profile Picture URL
-          <span class="badge bg-secondary ms-2">Optional</span>
+          Photo de profil
+          <span class="badge bg-secondary ms-2">Optionnel</span>
         </label>
-        <input type="text" 
-               name="utilisateur[pdp_url]" 
-               class="form-control form-control-lg" 
-               value="{{ utilisateur.pdpUrl }}" 
-               placeholder="photo.jpg or leave empty">
         {% if utilisateur.pdpUrl %}
-          <small class="text-success d-block mt-1">
-            <i class="bi bi-check-circle me-1"></i>
-            Current: {{ utilisateur.pdpUrl }}
-          </small>
+          <div class="mb-2 d-flex align-items-center gap-2">
+            <img src="{{ asset('uploads/pdp/' ~ utilisateur.pdpUrl) }}"
+                 alt="Photo actuelle"
+                 style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid #e5e7eb;">
+            <small class="text-muted">Photo actuelle ÔÇö choisir un fichier pour la remplacer</small>
+          </div>
         {% endif %}
+        <input type="file"
+               name="utilisateur[pdp_url]"
+               accept="image/jpeg,image/png,image/webp"
+               class="form-control form-control-lg"
+               onchange="previewEditAdminPhoto(this, {{ utilisateur.id }})">
+        <img id="editAdminPhotoPreview{{ utilisateur.id }}" src="" alt="Preview"
+             style="display:none;margin-top:8px;width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #e5e7eb;">
       </div>
 
       <!-- CSRF Token -->
@@ -326,12 +330,12 @@
     <div class="alert alert-info border-0 mt-4" style="background: rgba(99, 102, 241, 0.1);">
       <h6 class="fw-semibold mb-2">
         <i class="bi bi-info-circle me-2"></i>
-        Update Information
+        Informations de mise ├á jour
       </h6>
       <ul class="mb-0 small">
-        <li>Only fill in the password field if you want to change it</li>
-        <li>Changes will be saved immediately after clicking "Update"</li>
-        <li>Make sure the email address is valid for notifications</li>
+        <li>Ne remplissez le champ mot de passe que si vous souhaitez le modifier</li>
+        <li>Les modifications seront enregistr├®es imm├®diatement apr├¿s avoir cliqu├® sur "Modifier"</li>
+        <li>Assurez-vous que l'adresse e-mail est valide pour les notifications</li>
       </ul>
     </div>
   </form>
@@ -356,17 +360,17 @@
                     <div class="modal-header">
                       <h5 class="modal-title" id="deleteModalLabel{{ utilisateur.id }}">
                         <i class="bi bi-person-slash text-warning me-2"></i>
-                        Désactiver le compte
+                        D├®sactiver le compte
                       </h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                       <div class="alert alert-danger border-0">
                         <i class="bi bi-exclamation-circle me-2"></i>
-                        <strong>Attention :</strong> Cette action désactivera l'accès au compte.
+                        <strong>Attention :</strong> Cette action d├®sactivera l'acc├¿s au compte.
                       </div>
                       <p class="mb-0">
-                        Tu veux désactiver le compte <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong> ??
+                        Tu veux d├®sactiver le compte <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong> ??
                       </p>
                     </div>
                     <div class="modal-footer">
@@ -376,7 +380,7 @@
                       <form method="post" action="{{ path('app_utilisateur_delete', {'id': utilisateur.id}) }}" style="display: inline;">
                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.id) }}">
                         <button type="submit" class="btn btn-danger">
-                          <i class="bi bi-person-slash me-1"></i> Désactiver
+                          <i class="bi bi-person-slash me-1"></i> D├®sactiver
                         </button>
                       </form>
                     </div>
@@ -449,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: ['Actif', 'Désactivé'],
+            labels: ['Actif', 'D├®sactiv├®'],
             datasets: [{
                 data: [countActif, countInactif],
                 backgroundColor: [
@@ -495,8 +499,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Registration Line Chart
     const ctxReg = document.getElementById('registrationChart').getContext('2d');
-    const registrationDates = {{ registrationDates|default('[]')|raw }};
-    const registrationCounts = {{ registrationCounts|default('[]')|raw }};
+    const registrationDates = {{ registrationDates|json_encode|raw }};
+    const registrationCounts = {{ registrationCounts|json_encode|raw }};
 
     new Chart(ctxReg, {
         type: 'line',
@@ -557,45 +561,45 @@ document.addEventListener('DOMContentLoaded', function() {
         <div>
           <h4 class="modal-title text-white fw-bold mb-1" id="addInstructorModalLabel">
             <i class="bi bi-person-plus-fill me-2"></i>
-            Add New Instructor
+            Ajouter un nouveau membre
           </h4>
-          <p class="text-white-50 mb-0 small">Fill in the details to create a new instructor account</p>
+          <p class="text-white-50 mb-0 small">Remplissez les informations pour cr├®er un nouveau compte</p>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
       <!-- Modal Body -->
       <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-        <form method="post" action="{{ path('app_utilisateur_new') }}" id="addInstructorForm">
+        <form method="post" action="{{ path('app_utilisateur_new') }}" id="addInstructorForm" enctype="multipart/form-data">
           <div class="row g-4">
-            <!-- Prénom -->
+            <!-- Pr├®nom -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <i class="bi bi-person me-1 text-primary"></i>
-                First Name <span class="text-danger">*</span>
+                Pr├®nom <span class="text-danger">*</span>
               </label>
-              <input type="text" name="utilisateur[prenom]" class="form-control form-control-lg" placeholder="Enter first name" required>
+              <input type="text" name="utilisateur[prenom]" class="form-control form-control-lg" placeholder="Entrez le pr├®nom" required>
             </div>
 
             <!-- Nom -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <i class="bi bi-person-badge me-1 text-primary"></i>
-                Last Name <span class="text-danger">*</span>
+                Nom <span class="text-danger">*</span>
               </label>
-              <input type="text" name="utilisateur[nom]" class="form-control form-control-lg" placeholder="Enter last name" required>
+              <input type="text" name="utilisateur[nom]" class="form-control form-control-lg" placeholder="Entrez le nom" required>
             </div>
 
             <!-- Email -->
             <div class="col-12">
               <label class="form-label fw-semibold">
                 <i class="bi bi-envelope me-1 text-primary"></i>
-                Email Address <span class="text-danger">*</span>
+                Adresse e-mail <span class="text-danger">*</span>
               </label>
-              <input type="email" name="utilisateur[email]" class="form-control form-control-lg" placeholder="instructor@example.com" required>
+              <input type="email" name="utilisateur[email]" class="form-control form-control-lg" placeholder="membre@exemple.com" required>
               <small class="text-muted">
                 <i class="bi bi-info-circle me-1"></i>
-                This email will be used for login
+                Cet e-mail sera utilis├® pour la connexion
               </small>
             </div>
 
@@ -603,10 +607,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-12">
               <label class="form-label fw-semibold">
                 <i class="bi bi-lock me-1 text-primary"></i>
-                Password <span class="text-danger">*</span>
+                Mot de passe <span class="text-danger">*</span>
               </label>
               <div class="input-group">
-                <input type="password" name="utilisateur[mdp]" id="modalPasswordInput" class="form-control form-control-lg" placeholder="Minimum 8 characters" required>
+                <input type="password" name="utilisateur[mdp]" id="modalPasswordInput" class="form-control form-control-lg" placeholder="Minimum 8 caract├¿res" required>
                 <button class="btn btn-outline-secondary" type="button" onclick="toggleModalPassword()">
                   <i class="bi bi-eye" id="modalToggleIcon"></i>
                 </button>
@@ -615,22 +619,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="progress" style="height: 6px;">
                   <div class="progress-bar" id="modalStrengthBar" role="progressbar" style="width: 0%"></div>
                 </div>
-                <small class="text-muted" id="modalStrengthText">Password strength</small>
+                <small class="text-muted" id="modalStrengthText">Force du mot de passe</small>
               </div>
             </div>
 
-            <!-- Rôle -->
+            <!-- R├┤le -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <i class="bi bi-shield-check me-1 text-primary"></i>
-                Role <span class="text-danger">*</span>
+                R├┤le <span class="text-danger">*</span>
               </label>
               <select name="utilisateur[role]" class="form-select form-select-lg" required>
-                <option value="">Select a role</option>
-                <option value="enseignant">Enseignant (Teacher)</option>
-                <option value="administrateur">Administrateur (Admin)</option>
-                <option value="etudiant">Étudiant (Student)</option>
-                <option value="adminm">Adminm (Adminm)</option>
+                <option value="">Choisir un r├┤le</option>
+                <option value="enseignant">Enseignant</option>
+                <option value="administrateur">Administrateur</option>
+                <option value="etudiant">├ëtudiant</option>
+                <option value="adminm">Adminm</option>
               </select>
             </div>
 
@@ -638,40 +642,46 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <i class="bi bi-calendar-check me-1 text-primary"></i>
-                Registration Date
+                Date d'inscription
                 <span class="badge bg-info ms-2">Auto</span>
               </label>
               <input type="date" name="utilisateur[date_inscription]" class="form-control form-control-lg" value="{{ 'now'|date('Y-m-d') }}">
               <small class="text-muted">
                 <i class="bi bi-info-circle me-1"></i>
-                Default: Today
+                Par d├®faut : Aujourd'hui
               </small>
             </div>
 
-            <!-- Photo de profil URL (optionnel) -->
+            <!-- Photo de profil -->
             <div class="col-12">
               <label class="form-label fw-semibold">
                 <i class="bi bi-image me-1 text-primary"></i>
-                Profile Picture URL
-                <span class="badge bg-secondary ms-2">Optional</span>
+                Photo de profil
+                <span class="badge bg-secondary ms-2">Optionnel</span>
               </label>
-              <input type="text" name="utilisateur[pdp_url]" class="form-control form-control-lg" placeholder="photo.jpg or leave empty">
+              <input type="file" name="utilisateur[pdp_url]" accept="image/jpeg,image/png,image/webp"
+                     class="form-control form-control-lg"
+                     onchange="previewAddAdminPhoto(this)">
+              <img id="addAdminPhotoPreview" src="" alt="Preview"
+                   style="display:none;margin-top:8px;width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #e5e7eb;">
             </div>
 
             <!-- CSRF Token (important!) -->
             <input type="hidden" name="utilisateur[_token]" value="{{ csrf_token('utilisateur') }}">
+            <!-- Cl├® obligatoire pour que le controller traite la soumission -->
+            <input type="hidden" name="submission_secret" value="STRICT_MANUAL_v4_GOLD">
           </div>
 
-          <!-- Security Tips -->
+          <!-- Conseils de s├®curit├® -->
           <div class="alert alert-info border-0 mt-4" style="background: rgba(99, 102, 241, 0.1);">
             <h6 class="fw-semibold mb-2">
               <i class="bi bi-shield-check me-2"></i>
-              Security Tips
+              Conseils de s├®curit├®
             </h6>
             <ul class="mb-0 small">
-              <li>Use a strong password (8+ characters with uppercase, lowercase, and numbers)</li>
-              <li>Assign only necessary permissions based on the user's role</li>
-              <li>Ensure the email address is valid for notifications</li>
+              <li>Utilisez un mot de passe fort (8+ caract├¿res avec majuscules, minuscules et chiffres)</li>
+              <li>N'attribuez que les permissions n├®cessaires selon le r├┤le de l'utilisateur</li>
+              <li>Assurez-vous que l'adresse e-mail est valide pour les notifications</li>
             </ul>
           </div>
         </form>
@@ -680,10 +690,10 @@ document.addEventListener('DOMContentLoaded', function() {
       <!-- Modal Footer -->
       <div class="modal-footer border-0 bg-light p-3">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="bi bi-x-circle me-1"></i> Cancel
+          <i class="bi bi-x-circle me-1"></i> Annuler
         </button>
         <button type="submit" form="addInstructorForm" class="btn btn-danger">
-          <i class="bi bi-check-circle me-1"></i> Create Instructor
+          <i class="bi bi-check-circle me-1"></i> Cr├®er le membre
         </button>
       </div>
     </div>
@@ -817,7 +827,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Re-append rows in sorted order
     sortedRows.forEach(row => tableBody.appendChild(row));
     
-    showNotification(`Sorted by ${sortBy}`, 'info');
+    showNotification(`Tri├® par ${sortBy}`, 'info');
   }
   
   // Export to Excel function
@@ -827,15 +837,15 @@ document.addEventListener('DOMContentLoaded', function() {
       const visibleRows = allRows.filter(row => row.style.display !== 'none');
       
       if (visibleRows.length === 0) {
-        showNotification('No data to export', 'warning');
+        showNotification('Aucune donn├®e ├á exporter', 'warning');
         return;
       }
-      
+
       // Prepare data for Excel
       const data = [];
-      
+
       // Add headers
-      data.push(['ID', 'Instructor Name', 'Email', 'Role', 'Registration Date', 'Status']);
+      data.push(['ID', 'Membre', 'E-mail', 'R├┤le', "Date d'inscription", 'Statut']);
       
       // Add data rows
       visibleRows.forEach(row => {
@@ -865,19 +875,19 @@ document.addEventListener('DOMContentLoaded', function() {
       ];
       
       // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Instructors');
-      
+      XLSX.utils.book_append_sheet(wb, ws, 'Membres');
+
       // Generate filename with timestamp
       const timestamp = new Date().toISOString().slice(0, 10);
-      const filename = `instructors_${timestamp}.xlsx`;
-      
+      const filename = `membres_${timestamp}.xlsx`;
+
       // Save file
       XLSX.writeFile(wb, filename);
-      
-      showNotification('Excel file exported successfully!', 'success');
+
+      showNotification('Fichier Excel export├® avec succ├¿s !', 'success');
     } catch (error) {
       console.error('Export error:', error);
-      showNotification('Error exporting to Excel', 'danger');
+      showNotification("Erreur lors de l'export Excel", 'danger');
     }
   }
   
@@ -888,25 +898,25 @@ document.addEventListener('DOMContentLoaded', function() {
       const visibleRows = allRows.filter(row => row.style.display !== 'none');
       
       if (visibleRows.length === 0) {
-        showNotification('No data to export', 'warning');
+        showNotification('Aucune donn├®e ├á exporter', 'warning');
         return;
       }
-      
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
-      
+
       // Add title
       doc.setFontSize(18);
       doc.setTextColor(40, 40, 40);
-      doc.text('Instructors Management Report', 14, 15);
-      
+      doc.text('Rapport de gestion des membres', 14, 15);
+
       // Add date
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 22);
-      
+      doc.text(`G├®n├®r├® le : ${new Date().toLocaleDateString('fr-FR')}`, 14, 22);
+
       // Prepare data for PDF table
-      const headers = [['ID', 'Instructor Name', 'Email', 'Role', 'Registration Date', 'Status']];
+      const headers = [['ID', 'Membre', 'E-mail', 'R├┤le', "Date d'inscription", 'Statut']];
       const data = [];
       
       visibleRows.forEach(row => {
@@ -956,7 +966,7 @@ document.addEventListener('DOMContentLoaded', function() {
           doc.setFontSize(8);
           doc.setTextColor(150);
           doc.text(
-            `Page ${data.pageNumber} of ${pageCount}`,
+            `Page ${data.pageNumber} sur ${pageCount}`,
             doc.internal.pageSize.width / 2,
             doc.internal.pageSize.height - 10,
             { align: 'center' }
@@ -968,19 +978,19 @@ document.addEventListener('DOMContentLoaded', function() {
       const finalY = doc.lastAutoTable.finalY + 10;
       doc.setFontSize(10);
       doc.setTextColor(60, 60, 60);
-      doc.text(`Total Instructors: ${visibleRows.length}`, 14, finalY);
-      
+      doc.text(`Total membres : ${visibleRows.length}`, 14, finalY);
+
       // Generate filename with timestamp
       const timestamp = new Date().toISOString().slice(0, 10);
-      const filename = `instructors_${timestamp}.pdf`;
-      
+      const filename = `membres_${timestamp}.pdf`;
+
       // Save PDF
       doc.save(filename);
-      
-      showNotification('PDF file exported successfully!', 'success');
+
+      showNotification('Fichier PDF export├® avec succ├¿s !', 'success');
     } catch (error) {
       console.error('Export error:', error);
-      showNotification('Error exporting to PDF', 'danger');
+      showNotification("Erreur lors de l'export PDF", 'danger');
     }
   }
   
@@ -995,8 +1005,8 @@ document.addEventListener('DOMContentLoaded', function() {
         noResultsRow.innerHTML = `
           <td colspan="7" class="text-center text-muted py-5">
             <i class="bi bi-search" style="font-size: 3rem; opacity: 0.3;"></i>
-            <p class="mt-3 mb-0 fw-semibold">No results found</p>
-            <small class="text-muted">Try adjusting your search terms</small>
+            <p class="mt-3 mb-0 fw-semibold">Aucun r├®sultat trouv├®</p>
+            <small class="text-muted">Essayez d'ajuster vos termes de recherche</small>
           </td>
         `;
         tableBody.appendChild(noResultsRow);
@@ -1087,15 +1097,15 @@ function checkModalPasswordStrength(password) {
 
   if (strength < 40) {
     strengthBar.className = 'progress-bar bg-danger';
-    strengthText.textContent = 'Weak password';
+    strengthText.textContent = 'Mot de passe faible';
     strengthText.style.color = '#dc3545';
   } else if (strength < 70) {
     strengthBar.className = 'progress-bar bg-warning';
-    strengthText.textContent = 'Medium strength';
+    strengthText.textContent = 'Mot de passe moyen';
     strengthText.style.color = '#ffc107';
   } else {
     strengthBar.className = 'progress-bar bg-success';
-    strengthText.textContent = 'Strong password';
+    strengthText.textContent = 'Mot de passe fort';
     strengthText.style.color = '#198754';
   }
 }
@@ -1119,35 +1129,53 @@ function checkEditPasswordStrength(password, userId) {
 
   if (password.length === 0) {
     strengthBar.style.width = '0%';
-    strengthText.textContent = 'Password strength';
+    strengthText.textContent = 'Force du mot de passe';
     strengthText.style.color = '#6c757d';
     return;
   }
 
   if (strength < 40) {
     strengthBar.className = 'progress-bar bg-danger';
-    strengthText.textContent = 'Weak password';
+    strengthText.textContent = 'Mot de passe faible';
     strengthText.style.color = '#dc3545';
   } else if (strength < 70) {
     strengthBar.className = 'progress-bar bg-warning';
-    strengthText.textContent = 'Medium strength';
+    strengthText.textContent = 'Mot de passe moyen';
     strengthText.style.color = '#ffc107';
   } else {
     strengthBar.className = 'progress-bar bg-success';
-    strengthText.textContent = 'Strong password';
+    strengthText.textContent = 'Mot de passe fort';
     strengthText.style.color = '#198754';
   }
 }
 
 // Initialize modal events
 document.addEventListener('DOMContentLoaded', function() {
-    // Mise à jour de l'aperçu en temps réel
+    // Mise ├á jour de l'aper├ºu en temps r├®el
     function updatePreview() {
         // ... (existing code for preview) ...
     }
   });
 
   // Gestion de la soumission du formulaire modal via AJAX
+  function previewEditAdminPhoto(input, userId) {
+    const preview = document.getElementById('editAdminPhotoPreview' + userId);
+    if (preview && input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function previewAddAdminPhoto(input) {
+    const preview = document.getElementById('addAdminPhotoPreview');
+    if (preview && input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
   document.addEventListener('submit', function(event) {
     if (event.target && event.target.id && event.target.id.startsWith('editInstructorForm')) {
       event.preventDefault();
@@ -1163,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const originalBtnText = submitBtn.innerHTML;
 
-      // Désactiver le bouton pour éviter double soumission
+      // D├®sactiver le bouton pour ├®viter double soumission
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
 

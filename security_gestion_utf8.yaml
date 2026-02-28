@@ -1,4 +1,4 @@
-security:
+﻿security:
     # Password hashers
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
@@ -12,13 +12,6 @@ security:
                 class: App\Entity\Utilisateur
                 property: email
 
-    role_hierarchy:
-        ROLE_ADMINISTRATEUR: [ROLE_ADMINM, ROLE_ADMIN, ROLE_ENSEIGNANT]
-        ROLE_ADMINM: [ROLE_ADMIN, ROLE_ENSEIGNANT]
-        ROLE_ENSEIGNANT: [ROLE_USER]
-        ROLE_ADMIN: [ROLE_USER]
-
-
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -29,12 +22,12 @@ security:
             provider: app_user_provider
             user_checker: App\Security\UserChecker
 
-            # Utilisation de nos deux authentificateurs personnalisés
+            # Utilisation de nos deux authentificateurs personnalis├®s
             custom_authenticator: 
                 - App\Security\CustomAuthenticator
                 - App\Security\GoogleAuthenticator
 
-            # Désactivation du form_login standard car CustomAuthenticator gère le login maintenant
+            # D├®sactivation du form_login standard car CustomAuthenticator g├¿re le login maintenant
             # form_login:
             #     login_path: app_login
             #     check_path: app_login
@@ -53,20 +46,20 @@ security:
 
             entry_point: App\Security\CustomAuthenticator
 
-    # ✅ CORRECTION: Règles d'accès réorganisées
+    # Ô£à CORRECTION: R├¿gles d'acc├¿s r├®organis├®es
     access_control:
-        # Pages publiques (AVANT la règle générale)
+        # Pages publiques (AVANT la r├¿gle g├®n├®rale)
         - { path: ^/login$, roles: PUBLIC_ACCESS }
         - { path: ^/logout$, roles: PUBLIC_ACCESS }
         - { path: ^/connect/google, roles: PUBLIC_ACCESS }
-        - { path: ^/face/login$, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/utilisateur/new$, roles: PUBLIC_ACCESS }
+        - { path: ^/face/login$, roles: PUBLIC_ACCESS }
         
         # Backoffice admin uniquement
         - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/adminm, roles: ROLE_ADMINM }
-        # Routes utilisateur connecté
+        
+        # Routes utilisateur connect├®
         - { path: ^/utilisateur, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/chat, roles: [ROLE_ADMINM, ROLE_ENSEIGNANT] }
-
+        
+        # ÔÜá´©Å IMPORTANT: PAS de r├¿gle g├®n├®rale ^/ car elle bloquerait tout

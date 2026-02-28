@@ -8,10 +8,12 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\File;
 
 class UtilisateurType extends AbstractType
 {
@@ -45,9 +47,17 @@ class UtilisateurType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('pdp_url', TextType::class, [
-                'label' => 'Photo de profil (URL)',
+            ->add('pdp_url', FileType::class, [
+                'label' => 'Photo de profil',
+                'mapped' => false,
                 'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
+                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPG, PNG, WEBP)',
+                    ]),
+                ],
             ])
             ->add('date_inscription', DateType::class, [
                 'label' => 'Date d\'inscription',

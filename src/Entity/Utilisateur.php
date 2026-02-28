@@ -48,7 +48,29 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 20, options: ['default' => 'actif'])]
     private ?string $status = 'actif';
 
-    #[ORM\Column(type: Types::JSON, nullable: true)]
+    // ── AI Risk Monitoring ───────────────────────────────────────────────
+    #[ORM\Column(type: 'float', options: ['default' => 100])]
+    private float $trustScore = 100.0;
+
+    #[ORM\Column(length: 10, options: ['default' => 'LOW'])]
+    private string $riskLevel = 'LOW';
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $flaggedDuplicate = false;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $loginAttempts = 0;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastLogin = null;
+
+    #[ORM\Column(length: 45, nullable: true)]
+    private ?string $registrationIp = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $aiVerdict = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
     private ?array $preferences = [];
 
     /**
@@ -70,6 +92,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $projets;
 
     /**
+     * @var Collection<int, Projet>
+     */
+    #[ORM\OneToMany(targetEntity: Projet::class, mappedBy: 'utilisateur')]
+    private Collection $projet;
+
+    /**
      * @var Collection<int, Feedback>
      */
     #[ORM\OneToMany(targetEntity: Feedback::class, mappedBy: 'utilisateur', orphanRemoval: true)]
@@ -81,34 +109,14 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Objectif::class, mappedBy: 'utilisateur', orphanRemoval: true)]
     private Collection $objectifs;
 
-    /**
-     * @var Collection<int, Parcours>
-     */
-    #[ORM\OneToMany(targetEntity: Parcours::class, mappedBy: 'utilisateur')]
-    private Collection $parcours;
-
-    /**
-     * @var Collection<int, Conversation>
-     */
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Conversation::class, orphanRemoval: true)]
-    private Collection $conversations;
-
-    /**
-     * @var Collection<int, PlanActions>
-     */
-    #[ORM\OneToMany(targetEntity: PlanActions::class, mappedBy: 'auteur')]
-    private Collection $plansCrees;
-
     public function __construct()
     {
         $this->categorieArticles = new ArrayCollection();
         $this->referenceArticles = new ArrayCollection();
         $this->projets = new ArrayCollection();
+        $this->projet = new ArrayCollection();
         $this->feedback = new ArrayCollection();
         $this->objectifs = new ArrayCollection();
-        $this->parcours = new ArrayCollection();
-        $this->conversations = new ArrayCollection();
-        $this->plansCrees = new ArrayCollection();
     }
 
     // ==================== MÉTHODES POUR UserInterface ====================
@@ -274,21 +282,38 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPreferences(): ?array
-    {
-        return $this->preferences ?? [];
-    }
-
-    public function setPreferences(?array $preferences): static
-    {
-        $this->preferences = $preferences;
-        return $this;
-    }
-
     public function isActive(): bool
     {
         return $this->status === 'actif';
     }
+
+    // ── AI Risk Monitoring — Getters/Setters ─────────────────────────────
+
+    public function getTrustScore(): float { return $this->trustScore; }
+    public function setTrustScore(float $v): static { $this->trustScore = $v; return $this; }
+
+    public function getRiskLevel(): string { return $this->riskLevel; }
+    public function setRiskLevel(string $v): static { $this->riskLevel = $v; return $this; }
+
+    public function isFlaggedDuplicate(): bool { return $this->flaggedDuplicate; }
+    public function setFlaggedDuplicate(bool $v): static { $this->flaggedDuplicate = $v; return $this; }
+
+    public function getLoginAttempts(): int { return $this->loginAttempts; }
+    public function setLoginAttempts(int $v): static { $this->loginAttempts = $v; return $this; }
+    public function incrementLoginAttempts(): static { $this->loginAttempts++; return $this; }
+    public function resetLoginAttempts(): static { $this->loginAttempts = 0; return $this; }
+
+    public function getLastLogin(): ?\DateTimeInterface { return $this->lastLogin; }
+    public function setLastLogin(?\DateTimeInterface $v): static { $this->lastLogin = $v; return $this; }
+
+    public function getRegistrationIp(): ?string { return $this->registrationIp; }
+    public function setRegistrationIp(?string $v): static { $this->registrationIp = $v; return $this; }
+
+    public function getAiVerdict(): ?string { return $this->aiVerdict; }
+    public function setAiVerdict(?string $v): static { $this->aiVerdict = $v; return $this; }
+
+    public function getPreferences(): array { return $this->preferences ?? []; }
+    public function setPreferences(?array $preferences): static { $this->preferences = $preferences; return $this; }
 
     // ==================== RELATIONS ====================
 
@@ -349,15 +374,15 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, Projet>
      */
-    public function getProjets(): Collection
+    public function getProjet(): Collection
     {
-        return $this->projets;
+        return $this->projet;
     }
 
     public function addProjet(Projet $projet): static
     {
-        if (!$this->projets->contains($projet)) {
-            $this->projets->add($projet);
+        if (!$this->projet->contains($projet)) {
+            $this->projet->add($projet);
             $projet->setUtilisateur($this);
         }
         return $this;
@@ -365,7 +390,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeProjet(Projet $projet): static
     {
-        if ($this->projets->removeElement($projet)) {
+        if ($this->projet->removeElement($projet)) {
             if ($projet->getUtilisateur() === $this) {
                 $projet->setUtilisateur(null);
             }
@@ -425,97 +450,5 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
         return $this;
-    }
-
-    /**
-     * @return Collection<int, Parcours>
-     */
-    public function getParcours(): Collection
-    {
-        return $this->parcours;
-    }
-
-    public function addParcours(Parcours $parcours): static
-    {
-        if (!$this->parcours->contains($parcours)) {
-            $this->parcours->add($parcours);
-            $parcours->setUtilisateur($this);
-        }
-        return $this;
-    }
-
-    public function removeParcours(Parcours $parcours): static
-    {
-        if ($this->parcours->removeElement($parcours)) {
-            if ($parcours->getUtilisateur() === $this) {
-                $parcours->setUtilisateur(null);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Conversation>
-     */
-    public function getConversations(): Collection
-    {
-        return $this->conversations;
-    }
-
-    public function addConversation(Conversation $conversation): static
-    {
-        if (!$this->conversations->contains($conversation)) {
-            $this->conversations->add($conversation);
-            $conversation->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeConversation(Conversation $conversation): static
-    {
-        if ($this->conversations->removeElement($conversation)) {
-            // set the owning side to null (unless already changed)
-            if ($conversation->getUser() === $this) {
-                $conversation->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, PlanActions>
-     */
-    public function getPlansCrees(): Collection
-    {
-        return $this->plansCrees;
-    }
-
-    public function addPlansCree(PlanActions $plan): static
-    {
-        if (!$this->plansCrees->contains($plan)) {
-            $this->plansCrees->add($plan);
-            $plan->setAuteur($this);
-        }
-        return $this;
-    }
-
-    public function removePlansCree(PlanActions $plan): static
-    {
-        if ($this->plansCrees->removeElement($plan)) {
-            if ($plan->getAuteur() === $this) {
-                $plan->setAuteur(null);
-            }
-        }
-        return $this;
-    }
-
-    public function __toString(): string
-    {
-        if ($this->nom || $this->prenom) {
-            return trim(($this->prenom ?? '') . ' ' . ($this->nom ?? ''));
-        }
-        return $this->email ?? 'Utilisateur inconnu';
     }
 }

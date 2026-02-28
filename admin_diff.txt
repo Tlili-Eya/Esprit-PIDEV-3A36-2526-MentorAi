@@ -1,0 +1,1364 @@
+﻿diff --git a/templates/back/administrateur.html.twig b/templates/back/administrateur.html.twig
+new file mode 100644
+index 0000000..472dbf7
+--- /dev/null
++++ b/templates/back/administrateur.html.twig
+@@ -0,0 +1,1357 @@
++{% extends 'back/base.html.twig' %}
++
++{% block title %}Gestion des utilisateurs{% endblock %}
++
++{% block body %}
++<!-- Page Title -->
++<div class="page-title light-background">
++  <div class="container d-lg-flex justify-content-between align-items-center">
++    <h1 class="mb-2 mb-lg-0 text-primary">Gestion des utilisateurs</h1>
++    <nav class="breadcrumbs">
++      <ol>
++        <li><a href="{{ path('back_home') }}">Home</a></li>
++        <li class="current">utilisateur</li>
++      </ol>
++    </nav>
++  </div>
++</div>
++
++<section class="section">
++  <div class="container">
++    
++    <!-- Header actions -->
++    <div class="d-flex justify-content-between align-items-center mb-4">
++      <h2 class="mb-0 text-secondary">G├®rer les utilisateurs</h2>
++      
++      <div class="d-flex gap-2">
++        <!-- Export Buttons -->
++        <button type="button" class="btn btn-success" id="exportExcelBtn">
++          <i class="bi bi-file-earmark-excel me-1"></i> Exporter  Excel
++        </button>
++        <button type="button" class="btn btn-warning" id="exportPdfBtn">
++          <i class="bi bi-file-earmark-pdf me-1"></i> Exporter  PDF
++        </button>
++        
++        <!-- Add Instructor Button -->
++        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addInstructorModal">
++          <i class="bi bi-plus-circle me-1"></i> Ajouter Membre
++        </button>
++
++        <!-- Bouton Surveillance des Risques IA -->
++        <a href="{{ path('admin_users_index') }}" class="btn btn-primary">
++          <i class="bi bi-shield-exclamation me-1"></i> Surveillance des Risques IA
++        </a>
++      </div>
++    </div>
++    
++    <!-- Filters -->
++    <div class="row mb-3 g-3">
++      <div class="col-md-6">
++        <div class="input-group">
++          <span class="input-group-text bg-white border-end-0">
++            <i class="bi bi-search"></i>
++          </span>
++          <input type="text" 
++                 class="form-control border-start-0" 
++                 placeholder="Search by name, email, or role..." 
++                 id="searchInput">
++        </div>
++      </div>
++      <div class="col-md-4">
++        <select class="form-select" id="sortSelect">
++          <option value="">Trier par</option>
++          <option value="name">Nom (A-Z)</option>
++          <option value="email">E-mail (A-Z)</option>
++          <option value="role">R├┤le</option>
++          <option value="date">Date d'inscription</option>
++        </select>
++      </div>
++      <div class="col-md-2">
++        <button type="button" class="btn btn-outline-secondary w-100" id="resetBtn">
++          <i class="bi bi-arrow-clockwise"></i> R├®initialiser
++        </button>
++      </div>
++    </div>
++    
++    <!-- Results counter -->
++    <div class="mb-2">
++      <small class="text-muted">
++        Affichage de <strong id="resultCount">{{ utilisateurs|length }}</strong> sur {{ utilisateurs|length }} membre(s)
++      </small>
++    </div>
++    
++    <!-- Table -->
++    <div class="card shadow-sm border-0">
++      <div class="card-body p-0">
++        <div class="table-responsive">
++          <table class="table table-hover align-middle mb-0" id="instructorsTable">
++            <thead style="background-color: #eef3f7;">
++              <tr class="text-secondary">
++                <th>#</th>
++                <th>Membre</th>
++                <th>E-mail</th>
++                <th>R├┤le</th>
++                <th>Date d'inscription</th>
++                <th>Statut</th>
++                <th class="text-end no-export">Actions</th>
++              </tr>
++            </thead>
++            
++            <tbody id="tableBody">
++              {% for utilisateur in utilisateurs %}
++              <tr class="data-row">
++                <td>{{ utilisateur.id }}</td>
++                <td>
++                  <div class="d-flex align-items-center">
++                    {% if utilisateur.pdpUrl %}
++                      <img src="{{ asset('uploads/pdp/' ~ utilisateur.pdpUrl) }}" 
++                           alt="{{ utilisateur.prenom ~ ' ' ~ utilisateur.nom }}" 
++                           class="rounded-circle me-2" 
++                           style="width: 40px; height: 40px; object-fit: cover;">
++                    {% else %}
++                      <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2" 
++                           style="width: 40px; height: 40px; font-size: 0.9rem;">
++                        {{ utilisateur.prenom|first|upper }}{{ utilisateur.nom|first|upper }}
++                      </div>
++                    {% endif %}
++                    <div>
++                      <strong class="text-dark">{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong><br>
++                      <small class="text-muted">ID: {{ utilisateur.id }}</small>
++                    </div>
++                  </div>
++                </td>
++                <td>
++                  <a href="mailto:{{ utilisateur.email }}" class="text-primary text-decoration-none">
++                    {{ utilisateur.email }}
++                  </a>
++                </td>
++                <td>
++                  <span class="badge {% if utilisateur.role == 'administrateur' %}bg-danger{% elseif utilisateur.role == 'enseignant' %}bg-primary{% elseif utilisateur.role == 'etudiant' %}bg-info{% else %}bg-secondary{% endif %}">
++                    {{ utilisateur.role|upper }}
++                  </span>
++                </td>
++                <td>
++                  {% if utilisateur.dateInscription %}
++                    <i class="bi bi-calendar-event me-1"></i>
++                    {{ utilisateur.dateInscription|date('Y-m-d') }}
++                  {% else %}
++                    <span class="text-muted">N/A</span>
++                  {% endif %}
++                </td>
++                <td>
++                  {% if utilisateur.status == 'actif' %}
++                    <span class="badge bg-success">ACTIF</span>
++                  {% elseif utilisateur.status == 'desactiver' %}
++                    <span class="badge bg-danger">D├ëSACTIV├ë</span>
++                  {% else %}
++                    <span class="badge bg-secondary">{{ utilisateur.status|upper }}</span>
++                  {% endif %}
++                </td>
++                <td class="text-end no-export">
++                  <a href="{{ path('app_utilisateur_show', {'id': utilisateur.id}) }}" 
++                     class="btn btn-sm btn-outline-info me-1" 
++                     title="View"
++                     data-bs-toggle="tooltip">
++                     <i class="bi bi-eye"></i>
++                  </a>
++                  
++                  <!-- MODIFI├ë: Edit button triggers modal instead of page navigation -->
++                  <button type="button"
++                     class="btn btn-sm btn-outline-primary me-1" 
++                     title="Edit"
++                     data-bs-toggle="modal"
++                     data-bs-target="#editInstructorModal{{ utilisateur.id }}">
++                    <i class="bi bi-pencil"></i>
++                  </button>
++                  
++                  <button type="button" 
++                          class="btn btn-sm btn-outline-danger" 
++                          data-bs-toggle="modal" 
++                          data-bs-target="#deleteModal{{ utilisateur.id }}" 
++                          title="Delete">
++                    <i class="bi bi-trash"></i>
++                  </button>
++                </td>
++              </tr>
++              
++              <!-- NOUVEAU: Edit Instructor Modal -->
++              <div class="modal fade" id="editInstructorModal{{ utilisateur.id }}" tabindex="-1" aria-labelledby="editInstructorModalLabel{{ utilisateur.id }}" aria-hidden="true" data-bs-backdrop="static">
++                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
++                  <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
++                    <!-- Modal Header -->
++                    <div class="modal-header border-0" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 1.5rem 2rem;">
++                      <div>
++                        <h4 class="modal-title text-white fw-bold mb-1" id="editInstructorModalLabel{{ utilisateur.id }}">
++                          <i class="bi bi-pencil-square me-2"></i>
++                          Modifier le membre
++                        </h4>
++                        <p class="text-white-50 mb-0 small">Mettre ├á jour les informations de {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
++                      </div>
++                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
++                    </div>
++
++                   <!-- Modal Body -->
++<div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
++  <form method="post" action="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}" id="editInstructorForm{{ utilisateur.id }}" enctype="multipart/form-data">
++    <input type="hidden" name="_method" value="POST">
++    
++    <div class="row g-4">
++      <!-- Pr├®nom -->
++      <div class="col-md-6">
++        <label class="form-label fw-semibold">
++          <i class="bi bi-person me-1 text-primary"></i>
++          Pr├®nom <span class="text-danger">*</span>
++        </label>
++        <input type="text"
++               name="utilisateur[prenom]"
++               class="form-control form-control-lg"
++               value="{{ utilisateur.prenom }}"
++               placeholder="Entrez le pr├®nom"
++               required>
++      </div>
++
++      <!-- Nom -->
++      <div class="col-md-6">
++        <label class="form-label fw-semibold">
++          <i class="bi bi-person-badge me-1 text-primary"></i>
++          Nom <span class="text-danger">*</span>
++        </label>
++        <input type="text"
++               name="utilisateur[nom]"
++               class="form-control form-control-lg"
++               value="{{ utilisateur.nom }}"
++               placeholder="Entrez le nom"
++               required>
++      </div>
++
++      <!-- Email -->
++      <div class="col-12">
++        <label class="form-label fw-semibold">
++          <i class="bi bi-envelope me-1 text-primary"></i>
++          Adresse e-mail <span class="text-danger">*</span>
++        </label>
++        <input type="email"
++               name="utilisateur[email]"
++               class="form-control form-control-lg"
++               value="{{ utilisateur.email }}"
++               placeholder="membre@exemple.com"
++               required>
++        <small class="text-muted">
++          <i class="bi bi-info-circle me-1"></i>
++          Cet e-mail sera utilis├® pour la connexion
++        </small>
++      </div>
++
++      <!-- Mot de passe -->
++      <div class="col-12">
++        <label class="form-label fw-semibold">
++          <i class="bi bi-lock me-1 text-primary"></i>
++          Nouveau mot de passe
++          <span class="badge bg-secondary ms-2">Optionnel</span>
++        </label>
++        <div class="input-group">
++          <input type="password"
++                 name="utilisateur[mdp]"
++                 id="editPasswordInput{{ utilisateur.id }}"
++                 class="form-control form-control-lg"
++                 placeholder="Laisser vide pour conserver le mot de passe actuel">
++          <button class="btn btn-outline-secondary" type="button" onclick="toggleEditPassword({{ utilisateur.id }})">
++            <i class="bi bi-eye" id="editToggleIcon{{ utilisateur.id }}"></i>
++          </button>
++        </div>
++        <small class="text-muted">
++          <i class="bi bi-info-circle me-1"></i>
++          Laisser vide pour conserver le mot de passe actuel
++        </small>
++        <div class="password-strength mt-2">
++          <div class="progress" style="height: 6px;">
++            <div class="progress-bar" id="editStrengthBar{{ utilisateur.id }}" role="progressbar" style="width: 0%"></div>
++          </div>
++          <small class="text-muted" id="editStrengthText{{ utilisateur.id }}">Force du mot de passe</small>
++        </div>
++      </div>
++
++      <!-- R├┤le -->
++      <div class="col-md-6">
++        <label class="form-label fw-semibold">
++          <i class="bi bi-shield-check me-1 text-primary"></i>
++          R├┤le <span class="text-danger">*</span>
++        </label>
++        <select name="utilisateur[role]" class="form-select form-select-lg" required>
++          <option value="">Choisir un r├┤le</option>
++          <option value="enseignant" {% if utilisateur.role == 'enseignant' %}selected{% endif %}>Enseignant</option>
++          <option value="administrateur" {% if utilisateur.role == 'administrateur' %}selected{% endif %}>Administrateur</option>
++          <option value="etudiant" {% if utilisateur.role == 'etudiant' %}selected{% endif %}>├ëtudiant</option>
++          <option value="adminm" {% if utilisateur.role == 'adminm' %}selected{% endif %}>Adminm</option>
++        </select>
++      </div>
++
++      <!-- Date d'inscription -->
++      <div class="col-md-6">
++        <label class="form-label fw-semibold">
++          <i class="bi bi-calendar-check me-1 text-primary"></i>
++          Date d'inscription
++        </label>
++        <input type="date"
++               name="utilisateur[date_inscription]"
++               class="form-control form-control-lg"
++               value="{{ utilisateur.dateInscription ? utilisateur.dateInscription|date('Y-m-d') : '' }}">
++      </div>
++
++      <!-- Photo de profil -->
++      <div class="col-12">
++        <label class="form-label fw-semibold">
++          <i class="bi bi-image me-1 text-primary"></i>
++          Photo de profil
++          <span class="badge bg-secondary ms-2">Optionnel</span>
++        </label>
++        {% if utilisateur.pdpUrl %}
++          <div class="mb-2 d-flex align-items-center gap-2">
++            <img src="{{ asset('uploads/pdp/' ~ utilisateur.pdpUrl) }}"
++                 alt="Photo actuelle"
++                 style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid #e5e7eb;">
++            <small class="text-muted">Photo actuelle ÔÇö choisir un fichier pour la remplacer</small>
++          </div>
++        {% endif %}
++        <input type="file"
++               name="utilisateur[pdp_url]"
++               accept="image/jpeg,image/png,image/webp"
++               class="form-control form-control-lg"
++               onchange="previewEditAdminPhoto(this, {{ utilisateur.id }})">
++        <img id="editAdminPhotoPreview{{ utilisateur.id }}" src="" alt="Preview"
++             style="display:none;margin-top:8px;width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #e5e7eb;">
++      </div>
++
++      <!-- CSRF Token -->
++      <input type="hidden" name="utilisateur[_token]" value="{{ csrf_token('utilisateur') }}">
++    </div>
++
++    <!-- Info Alert -->
++    <div class="alert alert-info border-0 mt-4" style="background: rgba(99, 102, 241, 0.1);">
++      <h6 class="fw-semibold mb-2">
++        <i class="bi bi-info-circle me-2"></i>
++        Informations de mise ├á jour
++      </h6>
++      <ul class="mb-0 small">
++        <li>Ne remplissez le champ mot de passe que si vous souhaitez le modifier</li>
++        <li>Les modifications seront enregistr├®es imm├®diatement apr├¿s avoir cliqu├® sur "Modifier"</li>
++        <li>Assurez-vous que l'adresse e-mail est valide pour les notifications</li>
++      </ul>
++    </div>
++  </form>
++</div>
++                    <!-- Modal Footer -->
++                    <div class="modal-footer border-0 bg-light p-3">
++                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
++                        <i class="bi bi-x-circle me-1"></i> Annuler
++                      </button>
++                      <button type="submit" form="editInstructorForm{{ utilisateur.id }}" class="btn btn-primary">
++                        <i class="bi bi-check-circle me-1"></i>  modifier 
++                      </button>
++                    </div>
++                  </div>
++                </div>
++              </div>
++              
++              <!-- Delete Modal -->
++              <div class="modal fade" id="deleteModal{{ utilisateur.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ utilisateur.id }}" aria-hidden="true">
++                <div class="modal-dialog modal-dialog-centered">
++                  <div class="modal-content">
++                    <div class="modal-header">
++                      <h5 class="modal-title" id="deleteModalLabel{{ utilisateur.id }}">
++                        <i class="bi bi-person-slash text-warning me-2"></i>
++                        D├®sactiver le compte
++                      </h5>
++                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
++                    </div>
++                    <div class="modal-body">
++                      <div class="alert alert-danger border-0">
++                        <i class="bi bi-exclamation-circle me-2"></i>
++                        <strong>Attention :</strong> Cette action d├®sactivera l'acc├¿s au compte.
++                      </div>
++                      <p class="mb-0">
++                        Tu veux d├®sactiver le compte <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong> ??
++                      </p>
++                    </div>
++                    <div class="modal-footer">
++                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
++                        <i class="bi bi-x-circle me-1"></i> Annuler
++                      </button>
++                      <form method="post" action="{{ path('app_utilisateur_delete', {'id': utilisateur.id}) }}" style="display: inline;">
++                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.id) }}">
++                        <button type="submit" class="btn btn-danger">
++                          <i class="bi bi-person-slash me-1"></i> D├®sactiver
++                        </button>
++                      </form>
++                    </div>
++                  </div>
++                </div>
++              </div>
++              {% else %}
++              <tr class="no-data-row">
++                <td colspan="7" class="text-center text-muted py-4">
++                  <i class="bi bi-inbox" style="font-size: 3rem;"></i>
++                  <p class="mt-2">No instructors found</p>
++                </td>
++              </tr>
++              {% endfor %}
++            </tbody>
++          </table>
++        </div>
++      </div>
++    </div>
++    
++    <!-- User Statistics Charts -->
++    <div class="row mt-4 mb-4">
++        <!-- Status Pie Chart -->
++        <div class="col-lg-6 mb-4 mb-lg-0">
++            <div class="card shadow-sm border-0 h-100">
++                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
++                    <h5 class="card-title text-center text-primary fw-bold">Statut des utilisateurs</h5>
++                </div>
++                <div class="card-body">
++                    <div style="max-height: 300px; display: flex; justify-content: center;">
++                        <canvas id="userStatusChart"></canvas>
++                    </div>
++                </div>
++            </div>
++        </div>
++
++        <!-- Registration Line Chart -->
++        <div class="col-lg-6">
++            <div class="card shadow-sm border-0 h-100">
++                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
++                    <h5 class="card-title text-center text-primary fw-bold">Inscriptions par date</h5>
++                </div>
++                <div class="card-body">
++                    <div style="height: 300px;">
++                        <canvas id="registrationChart"></canvas>
++                    </div>
++                </div>
++            </div>
++        </div>
++    </div>
++
++    <!-- Footer info -->
++    <div class="d-flex justify-content-between align-items-center mt-3">
++      <p class="text-muted mb-0">
++        Total: <strong>{{ utilisateurs|length }}</strong> instructor(s)
++      </p>
++    </div>
++    
++  </div>
++</section>
++
++<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
++<script>
++document.addEventListener('DOMContentLoaded', function() {
++    const ctx = document.getElementById('userStatusChart').getContext('2d');
++    
++    const countActif = {{ countActif|default(0) }};
++    const countInactif = {{ countInactif|default(0) }};
++    
++    new Chart(ctx, {
++        type: 'pie',
++        data: {
++            labels: ['Actif', 'D├®sactiv├®'],
++            datasets: [{
++                data: [countActif, countInactif],
++                backgroundColor: [
++                    '#102c59', // Active
++                    '#9dbbce'  // Inactive
++                ],
++                borderColor: [
++                    '#ffffff',
++                    '#ffffff'
++                ],
++                borderWidth: 2
++            }]
++        },
++        options: {
++            responsive: true,
++            plugins: {
++                legend: {
++                    position: 'bottom',
++                    labels: {
++                        padding: 20,
++                        font: {
++                            size: 14
++                        }
++                    }
++                },
++                tooltip: {
++                    callbacks: {
++                        label: function(context) {
++                            let label = context.label || '';
++                            if (label) {
++                                label += ': ';
++                            }
++                            let value = context.raw;
++                            let total = context.chart._metasets[context.datasetIndex].total;
++                            let percentage = Math.round((value / total) * 100) + '%';
++                            return label + value + ' (' + percentage + ')';
++                        }
++                    }
++                }
++            }
++        }
++    });
++
++    // Registration Line Chart
++    const ctxReg = document.getElementById('registrationChart').getContext('2d');
++    const registrationDates = {{ registrationDates|json_encode|raw }};
++    const registrationCounts = {{ registrationCounts|json_encode|raw }};
++
++    new Chart(ctxReg, {
++        type: 'line',
++        data: {
++            labels: registrationDates,
++            datasets: [{
++                label: 'Nouvelles Inscriptions',
++                data: registrationCounts,
++                borderColor: '#102c59',
++                backgroundColor: 'rgba(16, 44, 89, 0.1)',
++                borderWidth: 2,
++                fill: true,
++                tension: 0.4, // Smooth curves
++                pointBackgroundColor: '#102c59',
++                pointRadius: 4
++            }]
++        },
++        options: {
++            responsive: true,
++            maintainAspectRatio: false,
++            plugins: {
++                legend: {
++                    position: 'bottom'
++                },
++                tooltip: {
++                    mode: 'index',
++                    intersect: false,
++                }
++            },
++            scales: {
++                y: {
++                    beginAtZero: true,
++                    ticks: {
++                        stepSize: 1
++                    },
++                    grid: {
++                        color: 'rgba(0, 0, 0, 0.05)'
++                    }
++                },
++                x: {
++                    grid: {
++                        display: false
++                    }
++                }
++            }
++        }
++    });
++
++});
++</script>
++
++<!-- Add Instructor Modal -->
++<div class="modal fade" id="addInstructorModal" tabindex="-1" aria-labelledby="addInstructorModalLabel" aria-hidden="true" data-bs-backdrop="static">
++  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
++    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
++      <!-- Modal Header -->
++      <div class="modal-header border-0" style="background: linear-gradient(135deg, #7A9AAD, #7A9AAD); padding: 1.5rem 2rem;">
++        <div>
++          <h4 class="modal-title text-white fw-bold mb-1" id="addInstructorModalLabel">
++            <i class="bi bi-person-plus-fill me-2"></i>
++            Ajouter un nouveau membre
++          </h4>
++          <p class="text-white-50 mb-0 small">Remplissez les informations pour cr├®er un nouveau compte</p>
++        </div>
++        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
++      </div>
++
++      <!-- Modal Body -->
++      <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
++        <form method="post" action="{{ path('app_utilisateur_new') }}" id="addInstructorForm" enctype="multipart/form-data">
++          <div class="row g-4">
++            <!-- Pr├®nom -->
++            <div class="col-md-6">
++              <label class="form-label fw-semibold">
++                <i class="bi bi-person me-1 text-primary"></i>
++                Pr├®nom <span class="text-danger">*</span>
++              </label>
++              <input type="text" name="utilisateur[prenom]" class="form-control form-control-lg" placeholder="Entrez le pr├®nom" required>
++            </div>
++
++            <!-- Nom -->
++            <div class="col-md-6">
++              <label class="form-label fw-semibold">
++                <i class="bi bi-person-badge me-1 text-primary"></i>
++                Nom <span class="text-danger">*</span>
++              </label>
++              <input type="text" name="utilisateur[nom]" class="form-control form-control-lg" placeholder="Entrez le nom" required>
++            </div>
++
++            <!-- Email -->
++            <div class="col-12">
++              <label class="form-label fw-semibold">
++                <i class="bi bi-envelope me-1 text-primary"></i>
++                Adresse e-mail <span class="text-danger">*</span>
++              </label>
++              <input type="email" name="utilisateur[email]" class="form-control form-control-lg" placeholder="membre@exemple.com" required>
++              <small class="text-muted">
++                <i class="bi bi-info-circle me-1"></i>
++                Cet e-mail sera utilis├® pour la connexion
++              </small>
++            </div>
++
++            <!-- Mot de passe -->
++            <div class="col-12">
++              <label class="form-label fw-semibold">
++                <i class="bi bi-lock me-1 text-primary"></i>
++                Mot de passe <span class="text-danger">*</span>
++              </label>
++              <div class="input-group">
++                <input type="password" name="utilisateur[mdp]" id="modalPasswordInput" class="form-control form-control-lg" placeholder="Minimum 8 caract├¿res" required>
++                <button class="btn btn-outline-secondary" type="button" onclick="toggleModalPassword()">
++                  <i class="bi bi-eye" id="modalToggleIcon"></i>
++                </button>
++              </div>
++              <div class="password-strength mt-2">
++                <div class="progress" style="height: 6px;">
++                  <div class="progress-bar" id="modalStrengthBar" role="progressbar" style="width: 0%"></div>
++                </div>
++                <small class="text-muted" id="modalStrengthText">Force du mot de passe</small>
++              </div>
++            </div>
++
++            <!-- R├┤le -->
++            <div class="col-md-6">
++              <label class="form-label fw-semibold">
++                <i class="bi bi-shield-check me-1 text-primary"></i>
++                R├┤le <span class="text-danger">*</span>
++              </label>
++              <select name="utilisateur[role]" class="form-select form-select-lg" required>
++                <option value="">Choisir un r├┤le</option>
++                <option value="enseignant">Enseignant</option>
++                <option value="administrateur">Administrateur</option>
++                <option value="etudiant">├ëtudiant</option>
++                <option value="adminm">Adminm</option>
++              </select>
++            </div>
++
++            <!-- Date d'inscription -->
++            <div class="col-md-6">
++              <label class="form-label fw-semibold">
++                <i class="bi bi-calendar-check me-1 text-primary"></i>
++                Date d'inscription
++                <span class="badge bg-info ms-2">Auto</span>
++              </label>
++              <input type="date" name="utilisateur[date_inscription]" class="form-control form-control-lg" value="{{ 'now'|date('Y-m-d') }}">
++              <small class="text-muted">
++                <i class="bi bi-info-circle me-1"></i>
++                Par d├®faut : Aujourd'hui
++              </small>
++            </div>
++
++            <!-- Photo de profil -->
++            <div class="col-12">
++              <label class="form-label fw-semibold">
++                <i class="bi bi-image me-1 text-primary"></i>
++                Photo de profil
++                <span class="badge bg-secondary ms-2">Optionnel</span>
++              </label>
++              <input type="file" name="utilisateur[pdp_url]" accept="image/jpeg,image/png,image/webp"
++                     class="form-control form-control-lg"
++                     onchange="previewAddAdminPhoto(this)">
++              <img id="addAdminPhotoPreview" src="" alt="Preview"
++                   style="display:none;margin-top:8px;width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #e5e7eb;">
++            </div>
++
++            <!-- CSRF Token (important!) -->
++            <input type="hidden" name="utilisateur[_token]" value="{{ csrf_token('utilisateur') }}">
++            <!-- Cl├® obligatoire pour que le controller traite la soumission -->
++            <input type="hidden" name="submission_secret" value="STRICT_MANUAL_v4_GOLD">
++          </div>
++
++          <!-- Conseils de s├®curit├® -->
++          <div class="alert alert-info border-0 mt-4" style="background: rgba(99, 102, 241, 0.1);">
++            <h6 class="fw-semibold mb-2">
++              <i class="bi bi-shield-check me-2"></i>
++              Conseils de s├®curit├®
++            </h6>
++            <ul class="mb-0 small">
++              <li>Utilisez un mot de passe fort (8+ caract├¿res avec majuscules, minuscules et chiffres)</li>
++              <li>N'attribuez que les permissions n├®cessaires selon le r├┤le de l'utilisateur</li>
++              <li>Assurez-vous que l'adresse e-mail est valide pour les notifications</li>
++            </ul>
++          </div>
++        </form>
++      </div>
++
++      <!-- Modal Footer -->
++      <div class="modal-footer border-0 bg-light p-3">
++        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
++          <i class="bi bi-x-circle me-1"></i> Annuler
++        </button>
++        <button type="submit" form="addInstructorForm" class="btn btn-danger">
++          <i class="bi bi-check-circle me-1"></i> Cr├®er le membre
++        </button>
++      </div>
++    </div>
++  </div>
++</div>
++
++<!-- Include libraries for export functionality -->
++<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
++<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
++<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
++
++<!-- Search, Sort and Filter Script -->
++<script>
++document.addEventListener('DOMContentLoaded', function() {
++  const searchInput = document.getElementById('searchInput');
++  const sortSelect = document.getElementById('sortSelect');
++  const resetBtn = document.getElementById('resetBtn');
++  const tableBody = document.getElementById('tableBody');
++  const resultCount = document.getElementById('resultCount');
++  const exportExcelBtn = document.getElementById('exportExcelBtn');
++  const exportPdfBtn = document.getElementById('exportPdfBtn');
++  
++  // Get all data rows (excluding modals and no-data-row)
++  const allRows = Array.from(document.querySelectorAll('.data-row'));
++  const totalRows = allRows.length;
++  
++  // Search functionality - INSTANT SEARCH
++  if (searchInput) {
++    searchInput.addEventListener('keyup', function() {
++      const searchTerm = this.value.toLowerCase().trim();
++      filterAndDisplay(searchTerm);
++    });
++  }
++  
++  // Sort functionality
++  if (sortSelect) {
++    sortSelect.addEventListener('change', function() {
++      const sortBy = this.value;
++      sortRows(sortBy);
++    });
++  }
++  
++  // Reset button
++  if (resetBtn) {
++    resetBtn.addEventListener('click', function() {
++      searchInput.value = '';
++      sortSelect.value = '';
++      filterAndDisplay('');
++      
++      // Reset to original order
++      allRows.forEach(row => tableBody.appendChild(row));
++      
++      // Show success message
++      showNotification('Filters reset successfully', 'success');
++    });
++  }
++  
++  // Export to Excel functionality
++  if (exportExcelBtn) {
++    exportExcelBtn.addEventListener('click', function() {
++      exportToExcel();
++    });
++  }
++  
++  // Export to PDF functionality
++  if (exportPdfBtn) {
++    exportPdfBtn.addEventListener('click', function() {
++      exportToPDF();
++    });
++  }
++  
++  // Filter and display rows
++  function filterAndDisplay(searchTerm) {
++    let visibleCount = 0;
++    
++    allRows.forEach(row => {
++      const text = row.textContent.toLowerCase();
++      const isVisible = text.includes(searchTerm);
++      
++      row.style.display = isVisible ? '' : 'none';
++      if (isVisible) visibleCount++;
++    });
++    
++    // Update result count
++    if (resultCount) {
++      resultCount.textContent = visibleCount;
++    }
++    
++    // Show/hide "no results" message
++    showNoResultsMessage(visibleCount);
++  }
++  
++  // Sort rows
++  function sortRows(sortBy) {
++    if (!sortBy) return;
++    
++    const sortedRows = [...allRows].sort((a, b) => {
++      let aValue, bValue;
++      
++      switch(sortBy) {
++        case 'name':
++          // Column index 1 (Instructor name)
++          aValue = a.cells[1].textContent.trim().toLowerCase();
++          bValue = b.cells[1].textContent.trim().toLowerCase();
++          break;
++        case 'email':
++          // Column index 2 (Email)
++          aValue = a.cells[2].textContent.trim().toLowerCase();
++          bValue = b.cells[2].textContent.trim().toLowerCase();
++          break;
++        case 'role':
++          // Column index 3 (Role)
++          aValue = a.cells[3].textContent.trim().toLowerCase();
++          bValue = b.cells[3].textContent.trim().toLowerCase();
++          break;
++        case 'date':
++          // Column index 4 (Registration Date)
++          const dateA = a.cells[4].textContent.trim();
++          const dateB = b.cells[4].textContent.trim();
++          aValue = dateA === 'N/A' ? '0000-00-00' : dateA;
++          bValue = dateB === 'N/A' ? '0000-00-00' : dateB;
++          // Sort descending (most recent first)
++          return bValue.localeCompare(aValue);
++        default:
++          return 0;
++      }
++      
++      return aValue.localeCompare(bValue);
++    });
++    
++    // Re-append rows in sorted order
++    sortedRows.forEach(row => tableBody.appendChild(row));
++    
++    showNotification(`Tri├® par ${sortBy}`, 'info');
++  }
++  
++  // Export to Excel function
++  function exportToExcel() {
++    try {
++      // Get visible rows only
++      const visibleRows = allRows.filter(row => row.style.display !== 'none');
++      
++      if (visibleRows.length === 0) {
++        showNotification('Aucune donn├®e ├á exporter', 'warning');
++        return;
++      }
++
++      // Prepare data for Excel
++      const data = [];
++
++      // Add headers
++      data.push(['ID', 'Membre', 'E-mail', 'R├┤le', "Date d'inscription", 'Statut']);
++      
++      // Add data rows
++      visibleRows.forEach(row => {
++        const cells = row.cells;
++        const id = cells[0].textContent.trim();
++        const name = cells[1].textContent.trim().replace(/ID:\s*\d+/g, '').trim();
++        const email = cells[2].textContent.trim();
++        const role = cells[3].textContent.trim();
++        const date = cells[4].textContent.trim().replace(/\s+/g, ' ');
++        const status = cells[5].textContent.trim();
++        
++        data.push([id, name, email, role, date, status]);
++      });
++      
++      // Create workbook and worksheet
++      const wb = XLSX.utils.book_new();
++      const ws = XLSX.utils.aoa_to_sheet(data);
++      
++      // Set column widths
++      ws['!cols'] = [
++        { wch: 8 },  // ID
++        { wch: 25 }, // Name
++        { wch: 30 }, // Email
++        { wch: 15 }, // Role
++        { wch: 20 }, // Date
++        { wch: 12 }  // Status
++      ];
++      
++      // Add worksheet to workbook
++      XLSX.utils.book_append_sheet(wb, ws, 'Membres');
++
++      // Generate filename with timestamp
++      const timestamp = new Date().toISOString().slice(0, 10);
++      const filename = `membres_${timestamp}.xlsx`;
++
++      // Save file
++      XLSX.writeFile(wb, filename);
++
++      showNotification('Fichier Excel export├® avec succ├¿s !', 'success');
++    } catch (error) {
++      console.error('Export error:', error);
++      showNotification("Erreur lors de l'export Excel", 'danger');
++    }
++  }
++  
++  // Export to PDF function
++  function exportToPDF() {
++    try {
++      // Get visible rows only
++      const visibleRows = allRows.filter(row => row.style.display !== 'none');
++      
++      if (visibleRows.length === 0) {
++        showNotification('Aucune donn├®e ├á exporter', 'warning');
++        return;
++      }
++
++      const { jsPDF } = window.jspdf;
++      const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
++
++      // Add title
++      doc.setFontSize(18);
++      doc.setTextColor(40, 40, 40);
++      doc.text('Rapport de gestion des membres', 14, 15);
++
++      // Add date
++      doc.setFontSize(10);
++      doc.setTextColor(100, 100, 100);
++      doc.text(`G├®n├®r├® le : ${new Date().toLocaleDateString('fr-FR')}`, 14, 22);
++
++      // Prepare data for PDF table
++      const headers = [['ID', 'Membre', 'E-mail', 'R├┤le', "Date d'inscription", 'Statut']];
++      const data = [];
++      
++      visibleRows.forEach(row => {
++        const cells = row.cells;
++        const id = cells[0].textContent.trim();
++        const name = cells[1].textContent.trim().replace(/ID:\s*\d+/g, '').trim();
++        const email = cells[2].textContent.trim();
++        const role = cells[3].textContent.trim();
++        const date = cells[4].textContent.trim().replace(/\s+/g, ' ');
++        const status = cells[5].textContent.trim();
++        
++        data.push([id, name, email, role, date, status]);
++      });
++      
++      // Add table
++      doc.autoTable({
++        head: headers,
++        body: data,
++        startY: 28,
++        theme: 'striped',
++        headStyles: {
++          fillColor: [41, 128, 185],
++          textColor: 255,
++          fontSize: 10,
++          fontStyle: 'bold',
++          halign: 'left'
++        },
++        bodyStyles: {
++          fontSize: 9,
++          textColor: 50
++        },
++        alternateRowStyles: {
++          fillColor: [245, 245, 245]
++        },
++        columnStyles: {
++          0: { cellWidth: 15, halign: 'center' },  // ID
++          1: { cellWidth: 50 },  // Name
++          2: { cellWidth: 65 },  // Email
++          3: { cellWidth: 30, halign: 'center' },  // Role
++          4: { cellWidth: 40, halign: 'center' },  // Date
++          5: { cellWidth: 25, halign: 'center' }   // Status
++        },
++        margin: { top: 28, left: 14, right: 14 },
++        didDrawPage: function (data) {
++          // Add footer with page number
++          const pageCount = doc.internal.getNumberOfPages();
++          doc.setFontSize(8);
++          doc.setTextColor(150);
++          doc.text(
++            `Page ${data.pageNumber} sur ${pageCount}`,
++            doc.internal.pageSize.width / 2,
++            doc.internal.pageSize.height - 10,
++            { align: 'center' }
++          );
++        }
++      });
++      
++      // Add summary at the bottom
++      const finalY = doc.lastAutoTable.finalY + 10;
++      doc.setFontSize(10);
++      doc.setTextColor(60, 60, 60);
++      doc.text(`Total membres : ${visibleRows.length}`, 14, finalY);
++
++      // Generate filename with timestamp
++      const timestamp = new Date().toISOString().slice(0, 10);
++      const filename = `membres_${timestamp}.pdf`;
++
++      // Save PDF
++      doc.save(filename);
++
++      showNotification('Fichier PDF export├® avec succ├¿s !', 'success');
++    } catch (error) {
++      console.error('Export error:', error);
++      showNotification("Erreur lors de l'export PDF", 'danger');
++    }
++  }
++  
++  // Show/hide "no results" message
++  function showNoResultsMessage(count) {
++    let noResultsRow = document.querySelector('.no-results-row');
++    
++    if (count === 0 && totalRows > 0) {
++      if (!noResultsRow) {
++        noResultsRow = document.createElement('tr');
++        noResultsRow.className = 'no-results-row';
++        noResultsRow.innerHTML = `
++          <td colspan="7" class="text-center text-muted py-5">
++            <i class="bi bi-search" style="font-size: 3rem; opacity: 0.3;"></i>
++            <p class="mt-3 mb-0 fw-semibold">Aucun r├®sultat trouv├®</p>
++            <small class="text-muted">Essayez d'ajuster vos termes de recherche</small>
++          </td>
++        `;
++        tableBody.appendChild(noResultsRow);
++      }
++      noResultsRow.style.display = '';
++    } else {
++      if (noResultsRow) {
++        noResultsRow.style.display = 'none';
++      }
++    }
++  }
++  
++  // Show notification (toast-like)
++  function showNotification(message, type = 'info') {
++    // Create notification element
++    const notification = document.createElement('div');
++    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
++    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
++    notification.innerHTML = `
++      ${message}
++      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
++    `;
++    
++    document.body.appendChild(notification);
++    
++    // Auto remove after 3 seconds
++    setTimeout(() => {
++      notification.remove();
++    }, 3000);
++  }
++  
++  // Initialize tooltips
++  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
++  tooltipTriggerList.map(function (tooltipTriggerEl) {
++    return new bootstrap.Tooltip(tooltipTriggerEl);
++  });
++});
++</script>
++
++<!-- Modal Scripts for Add and Edit -->
++<script>
++// Toggle password visibility in ADD modal
++function toggleModalPassword() {
++  const passwordInput = document.getElementById('modalPasswordInput');
++  const toggleIcon = document.getElementById('modalToggleIcon');
++  
++  if (passwordInput.type === 'password') {
++    passwordInput.type = 'text';
++    toggleIcon.classList.remove('bi-eye');
++    toggleIcon.classList.add('bi-eye-slash');
++  } else {
++    passwordInput.type = 'password';
++    toggleIcon.classList.remove('bi-eye-slash');
++    toggleIcon.classList.add('bi-eye');
++  }
++}
++
++// Toggle password visibility in EDIT modal
++function toggleEditPassword(userId) {
++  const passwordInput = document.getElementById('editPasswordInput' + userId);
++  const toggleIcon = document.getElementById('editToggleIcon' + userId);
++  
++  if (passwordInput.type === 'password') {
++    passwordInput.type = 'text';
++    toggleIcon.classList.remove('bi-eye');
++    toggleIcon.classList.add('bi-eye-slash');
++  } else {
++    passwordInput.type = 'password';
++    toggleIcon.classList.remove('bi-eye-slash');
++    toggleIcon.classList.add('bi-eye');
++  }
++}
++
++// Check password strength in ADD modal
++function checkModalPasswordStrength(password) {
++  let strength = 0;
++  
++  if (password.length >= 8) strength += 25;
++  if (password.length >= 12) strength += 25;
++  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
++  if (/[0-9]/.test(password)) strength += 15;
++  if (/[^a-zA-Z0-9]/.test(password)) strength += 10;
++
++  const strengthBar = document.getElementById('modalStrengthBar');
++  const strengthText = document.getElementById('modalStrengthText');
++
++  strengthBar.style.width = strength + '%';
++
++  if (strength < 40) {
++    strengthBar.className = 'progress-bar bg-danger';
++    strengthText.textContent = 'Mot de passe faible';
++    strengthText.style.color = '#dc3545';
++  } else if (strength < 70) {
++    strengthBar.className = 'progress-bar bg-warning';
++    strengthText.textContent = 'Mot de passe moyen';
++    strengthText.style.color = '#ffc107';
++  } else {
++    strengthBar.className = 'progress-bar bg-success';
++    strengthText.textContent = 'Mot de passe fort';
++    strengthText.style.color = '#198754';
++  }
++}
++
++// Check password strength in EDIT modal
++function checkEditPasswordStrength(password, userId) {
++  let strength = 0;
++  
++  if (password.length >= 8) strength += 25;
++  if (password.length >= 12) strength += 25;
++  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
++  if (/[0-9]/.test(password)) strength += 15;
++  if (/[^a-zA-Z0-9]/.test(password)) strength += 10;
++
++  const strengthBar = document.getElementById('editStrengthBar' + userId);
++  const strengthText = document.getElementById('editStrengthText' + userId);
++
++  if (!strengthBar || !strengthText) return;
++
++  strengthBar.style.width = strength + '%';
++
++  if (password.length === 0) {
++    strengthBar.style.width = '0%';
++    strengthText.textContent = 'Force du mot de passe';
++    strengthText.style.color = '#6c757d';
++    return;
++  }
++
++  if (strength < 40) {
++    strengthBar.className = 'progress-bar bg-danger';
++    strengthText.textContent = 'Mot de passe faible';
++    strengthText.style.color = '#dc3545';
++  } else if (strength < 70) {
++    strengthBar.className = 'progress-bar bg-warning';
++    strengthText.textContent = 'Mot de passe moyen';
++    strengthText.style.color = '#ffc107';
++  } else {
++    strengthBar.className = 'progress-bar bg-success';
++    strengthText.textContent = 'Mot de passe fort';
++    strengthText.style.color = '#198754';
++  }
++}
++
++// Initialize modal events
++document.addEventListener('DOMContentLoaded', function() {
++    // Mise ├á jour de l'aper├ºu en temps r├®el
++    function updatePreview() {
++        // ... (existing code for preview) ...
++    }
++  });
++
++  // Gestion de la soumission du formulaire modal via AJAX
++  function previewEditAdminPhoto(input, userId) {
++    const preview = document.getElementById('editAdminPhotoPreview' + userId);
++    if (preview && input.files && input.files[0]) {
++      const reader = new FileReader();
++      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
++      reader.readAsDataURL(input.files[0]);
++    }
++  }
++
++  function previewAddAdminPhoto(input) {
++    const preview = document.getElementById('addAdminPhotoPreview');
++    if (preview && input.files && input.files[0]) {
++      const reader = new FileReader();
++      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
++      reader.readAsDataURL(input.files[0]);
++    }
++  }
++
++  document.addEventListener('submit', function(event) {
++    if (event.target && event.target.id && event.target.id.startsWith('editInstructorForm')) {
++      event.preventDefault();
++      const form = event.target;
++      const formData = new FormData(form);
++      // Fix: Button is outside the form, linked via 'form' attribute
++      const submitBtn = document.querySelector('button[type="submit"][form="' + form.id + '"]') || form.querySelector('button[type="submit"]');
++      
++      if (!submitBtn) {
++         // Fallback if button not found (unexpected)
++         return;
++      }
++
++      const originalBtnText = submitBtn.innerHTML;
++
++      // D├®sactiver le bouton pour ├®viter double soumission
++      submitBtn.disabled = true;
++      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
++
++      fetch(form.action, {
++        method: 'POST',
++        body: formData,
++        headers: {
++            'X-Requested-With': 'XMLHttpRequest'
++        }
++      })
++      .then(response => response.json())
++      .then(data => {
++        if (data.status === 'success') {
++           // Fermer le modal
++           const modalElement = form.closest('.modal');
++           const modalInstance = bootstrap.Modal.getInstance(modalElement);
++           if (modalInstance) {
++               modalInstance.hide();
++           }
++           
++           // Recharger la page pour afficher les changements et le flash message
++           window.location.reload(); 
++        } else {
++           alert('Error: ' + (data.message || 'An error occurred'));
++           submitBtn.disabled = false;
++           submitBtn.innerHTML = originalBtnText;
++        }
++      })
++      .catch(error => {
++        console.error('Error:', error);
++        alert('A network error occurred');
++        submitBtn.disabled = false;
++        submitBtn.innerHTML = originalBtnText;
++      });
++    }
++  });
++  // ADD modal password strength
++  const modalPasswordInput = document.getElementById('modalPasswordInput');
++  if (modalPasswordInput) {
++    modalPasswordInput.addEventListener('keyup', function() {
++      checkModalPasswordStrength(this.value);
++    });
++  }
++
++  // EDIT modals password strength - attach to all edit password inputs
++  document.querySelectorAll('[id^="editPasswordInput"]').forEach(input => {
++    const userId = input.id.replace('editPasswordInput', '');
++    input.addEventListener('keyup', function() {
++      checkEditPasswordStrength(this.value, userId);
++    });
++  });
++
++  // Reset ADD form when modal is closed
++  const addInstructorModal = document.getElementById('addInstructorModal');
++  if (addInstructorModal) {
++    addInstructorModal.addEventListener('hidden.bs.modal', function () {
++      document.getElementById('addInstructorForm').reset();
++      checkModalPasswordStrength('');
++    });
++  }
++  
++
++    </script>
++
++<style>
++/* Custom styles for search */
++.input-group-text {
++  background-color: white !important;
++  border-right: 0 !important;
++}
++
++.form-control.border-start-0:focus {
++  border-left: 0 !important;
++  box-shadow: none;
++}
++
++/* Smooth transitions for table rows */
++.data-row {
++  transition: opacity 0.3s ease, transform 0.3s ease;
++}
++
++.data-row:hover {
++  background-color: #f8f9fa;
++  transform: scale(1.01);
++}
++
++/* Badge animations */
++.badge {
++  animation: fadeIn 0.3s ease;
++}
++
++@keyframes fadeIn {
++  from {
++    opacity: 0;
++    transform: scale(0.9);
++  }
++  to {
++    opacity: 1;
++    transform: scale(1);
++  }
++}
++
++/* Export button styling */
++#exportExcelBtn, #exportPdfBtn {
++  transition: all 0.3s ease;
++}
++
++#exportExcelBtn:hover {
++  transform: translateY(-2px);
++  box-shadow: 0 4px 8px #818cf8;
++}
++
++#exportPdfBtn:hover {
++  transform: translateY(-2px);
++  box-shadow: 0 4px 8px#818cf8;
++}
++
++/* Modal backdrop blur effect */
++.modal-backdrop.show {
++  backdrop-filter: blur(8px);
++  background-color: rgba(0, 0, 0, 0.6);
++}
++
++/* Modal animation */
++.modal.fade .modal-dialog {
++  transform: scale(0.8);
++  opacity: 0;
++  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
++}
++
++.modal.show .modal-dialog {
++  transform: scale(1);
++  opacity: 1;
++}
++
++/* Form control focus for both modals */
++.modal .form-control:focus,
++.modal .form-select:focus {
++  border-color: #6366f1;
++  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
++}
++
++/* Scrollbar styling for modals */
++.modal .modal-body::-webkit-scrollbar {
++  width: 8px;
++}
++
++.modal .modal-body::-webkit-scrollbar-track {
++  background: #f1f1f1;
++  border-radius: 10px;
++}
++
++.modal .modal-body::-webkit-scrollbar-thumb {
++  background: #6366f1;
++  border-radius: 10px;
++}
++
++.modal .modal-body::-webkit-scrollbar-thumb:hover {
++  background: #4f46e5;
++}
++</style>
++
++{% endblock %}
+\ No newline at end of file

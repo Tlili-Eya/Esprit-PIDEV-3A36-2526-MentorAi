@@ -1,0 +1,392 @@
+﻿diff --git a/templates/front/admin/dashboard.html.twig b/templates/front/admin/dashboard.html.twig
+deleted file mode 100644
+index 601a7f1..0000000
+--- a/templates/front/admin/dashboard.html.twig
++++ /dev/null
+@@ -1,385 +0,0 @@
+-{% extends 'front/admin/basem.html.twig' %}
+-
+-{% block title %}Tableau de bord | MentorAI{% endblock %}
+-
+-{% block body %}
+-<div class="container-fluid" style="background-color: #f8f9fa; min-height: 100vh;">
+-    <!-- Header avec bouton rafra├«chir -->
+-    <div class="d-flex justify-content-between align-items-center mb-4 pt-4 px-4">
+-        <h1 class="h3 mb-0" style="color: #102c59;">Tableau de bord Admin</h1>
+-        <a href="{{ path('app_admin_dashboard') }}" class="btn" style="background-color: #9dbbce; border-color: #9dbbce; color: #102c59;">
+-            <i class="bi bi-arrow-clockwise"></i> Rafra├«chir
+-        </a>
+-    </div>
+-
+-    <div class="px-4">
+-        <div class="row">
+-            <!-- Stats Cards -->
+-            <div class="col-md-3 mb-4">
+-                <div class="card shadow border-0" style="border-top: 4px solid #102c59;">
+-                    <div class="card-body">
+-                        <div class="d-flex justify-content-between align-items-center">
+-                            <div>
+-                                <h6 class="card-title mb-0" style="color: #102c59;">Articles P├®dagogiques</h6>
+-                                <h2 class="mb-0" style="color: #102c59;">{{ total_articles|default(0) }}</h2>
+-                                <small style="color: #666;">Articles publi├®s</small>
+-                            </div>
+-                            <i class="bi bi-journal-text fs-1" style="color: #9dbbce;"></i>
+-                        </div>
+-                        <a href="{{ path('app_admin_articles') }}" class="stretched-link text-decoration-none">
+-                            <small style="color: #102c59;">Voir tous <i class="bi bi-arrow-right"></i></small>
+-                        </a>
+-                    </div>
+-                </div>
+-            </div>
+-            
+-            <div class="col-md-3 mb-4">
+-                <div class="card shadow border-0" style="border-top: 4px solid #102c59;">
+-                    <div class="card-body">
+-                        <div class="d-flex justify-content-between align-items-center">
+-                            <div>
+-                                <h6 class="card-title mb-0" style="color: #102c59;">Plans P├®dagogiques</h6>
+-                                <h2 class="mb-0" style="color: #102c59;">{{ plans_pedagogiques|default(0) }}</h2>
+-                                <small style="color: #666;">Plans d'action</small>
+-                            </div>
+-                            <i class="bi bi-clipboard-check fs-1" style="color: #9dbbce;"></i>
+-                        </div>
+-                        <a href="{{ path('app_admin_plans') }}?categorie=PEDAGOGIQUE" class="stretched-link text-decoration-none">
+-                            <small style="color: #102c59;">Voir tous <i class="bi bi-arrow-right"></i></small>
+-                        </a>
+-                    </div>
+-                </div>
+-            </div>
+-            
+-            <div class="col-md-3 mb-4">
+-                <div class="card shadow border-0" style="border-top: 4px solid #102c59;">
+-                    <div class="card-body">
+-                        <div class="d-flex justify-content-between align-items-center">
+-                            <div>
+-                                <h6 class="card-title mb-0" style="color: #102c59;">Plans Administratifs</h6>
+-                                <h2 class="mb-0" style="color: #102c59;">{{ plans_administratifs|default(0) }}</h2>
+-                                <small style="color: #666;">Plans administratifs</small>
+-                            </div>
+-                            <i class="bi bi-folder-check fs-1" style="color: #9dbbce;"></i>
+-                        </div>
+-                        <a href="{{ path('app_admin_plans') }}?categorie=ADMINISTRATIVE" class="stretched-link text-decoration-none">
+-                            <small style="color: #102c59;">Voir tous <i class="bi bi-arrow-right"></i></small>
+-                        </a>
+-                    </div>
+-                </div>
+-            </div>
+-            
+-            <div class="col-md-3 mb-4">
+-                <div class="card shadow border-0" style="border-top: 4px solid #d52e28;">
+-                    <div class="card-body">
+-                        <div class="d-flex justify-content-between align-items-center">
+-                            <div>
+-                                <h6 class="card-title mb-0" style="color: #102c59;">Total Plans</h6>
+-                                <h2 class="mb-0" style="color: #d52e28;">{{ (plans_pedagogiques|default(0) + plans_administratifs|default(0)) }}</h2>
+-                                <small style="color: #666;">Tous les plans</small>
+-                            </div>
+-                            <i class="bi bi-files fs-1" style="color: #d52e28;"></i>
+-                        </div>
+-                        <a href="{{ path('app_admin_plans') }}" class="stretched-link text-decoration-none">
+-                            <small style="color: #102c59;">Voir tous <i class="bi bi-arrow-right"></i></small>
+-                        </a>
+-                    </div>
+-                </div>
+-            </div>
+-        </div>
+-
+-        <!-- Graphiques et tableaux -->
+-        <div class="row">
+-            <div class="col-md-6">
+-                <div class="card shadow border-0">
+-                    <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background-color: #f8f9fa; border-bottom: 2px solid #9dbbce;">
+-                        <h5 class="mb-0" style="color: #102c59;">R├®partition des Plans d'Actions</h5>
+-                        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-sm" style="background-color: #9dbbce; border-color: #9dbbce; color: #102c59;">
+-                            <i class="bi bi-arrow-clockwise"></i>
+-                        </a>
+-                    </div>
+-                    <div class="card-body">
+-                        <canvas id="plansChart"></canvas>
+-                    </div>
+-                </div>
+-            </div>
+-            
+-            <div class="col-md-6">
+-                <div class="card shadow border-0">
+-                    <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background-color: #f8f9fa; border-bottom: 2px solid #9dbbce;">
+-                        <h5 class="mb-0" style="color: #102c59;">Navigation Rapide</h5>
+-                        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-sm" style="background-color: #9dbbce; border-color: #9dbbce; color: #102c59;">
+-                            <i class="bi bi-house"></i>
+-                        </a>
+-                    </div>
+-                    <div class="card-body p-0">
+-                        <div class="list-group list-group-flush">
+-                            <a href="{{ path('app_admin_articles') }}" class="list-group-item list-group-item-action border-0 py-3">
+-                                <div class="d-flex align-items-center">
+-                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; background-color: #102c59;">
+-                                        <i class="bi bi-journal-text text-white"></i>
+-                                    </div>
+-                                    <div class="flex-grow-1">
+-                                        <h6 class="mb-1" style="color: #102c59;">G├®rer les articles</h6>
+-                                        <small style="color: #666;">Cr├®er, modifier ou publier des articles</small>
+-                                    </div>
+-                                    <i class="bi bi-arrow-right" style="color: #9dbbce;"></i>
+-                                </div>
+-                            </a>
+-                            
+-                            <a href="{{ path('app_admin_plans') }}" class="list-group-item list-group-item-action border-0 py-3">
+-                                <div class="d-flex align-items-center">
+-                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; background-color: #9dbbce;">
+-                                        <i class="bi bi-clipboard-check" style="color: #102c59;"></i>
+-                                    </div>
+-                                    <div class="flex-grow-1">
+-                                        <h6 class="mb-1" style="color: #102c59;">Voir les plans d'action</h6>
+-                                        <small style="color: #666;">Consulter tous les plans p├®dagogiques et administratifs</small>
+-                                    </div>
+-                                    <i class="bi bi-arrow-right" style="color: #9dbbce;"></i>
+-                                </div>
+-                            </a>
+-                            
+-                            <a href="{{ path('app_admin_chat_ia') }}" class="list-group-item list-group-item-action border-0 py-3">
+-                                <div class="d-flex align-items-center">
+-                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; background-color: #d52e28;">
+-                                        <i class="bi bi-robot text-white"></i>
+-                                    </div>
+-                                    <div class="flex-grow-1">
+-                                        <h6 class="mb-1" style="color: #102c59;">Assistant IA</h6>
+-                                        <small style="color: #666;">Obtenir de l'aide pour cr├®er des plans ou articles</small>
+-                                    </div>
+-                                    <i class="bi bi-arrow-right" style="color: #9dbbce;"></i>
+-                                </div>
+-                            </a>
+-                            
+-                            <a href="{{ path('app_admin_reclamations') }}" class="list-group-item list-group-item-action border-0 py-3">
+-                                <div class="d-flex align-items-center">
+-                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; background-color: #102c59;">
+-                                        <i class="bi bi-megaphone text-white"></i>
+-                                    </div>
+-                                    <div class="flex-grow-1">
+-                                        <h6 class="mb-1" style="color: #102c59;">R├®clamations & Feedback</h6>
+-                                        <small style="color: #666;">Consulter les retours et suggestions</small>
+-                                    </div>
+-                                    <i class="bi bi-arrow-right" style="color: #9dbbce;"></i>
+-                                </div>
+-                            </a>
+-                        </div>
+-                    </div>
+-                </div>
+-            </div>
+-        </div>
+-
+-        <!-- Informations suppl├®mentaires -->
+-        <div class="row mt-4">
+-            <div class="col-12">
+-                <div class="card shadow border-0">
+-                    <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background-color: #f8f9fa; border-bottom: 2px solid #9dbbce;">
+-                        <h5 class="mb-0" style="color: #102c59;">R├®sum├® des Statistiques</h5>
+-                        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-sm" style="background-color: #102c59; border-color: #102c59; color: white;">
+-                            <i class="bi bi-graph-up"></i> Vue d├®taill├®e
+-                        </a>
+-                    </div>
+-                    <div class="card-body">
+-                        <div class="row text-center">
+-                            <div class="col-md-4 mb-3">
+-                                <div class="p-3 border rounded" style="border-color: #9dbbce !important;">
+-                                    <h3 style="color: #102c59;">{{ total_articles|default(0) }}</h3>
+-                                    <p class="mb-0" style="color: #666;">Articles P├®dagogiques</p>
+-                                    <a href="{{ path('app_admin_articles') }}" class="btn btn-sm mt-2" style="background-color: #9dbbce; border-color: #9dbbce; color: #102c59;">
+-                                        Voir <i class="bi bi-arrow-right"></i>
+-                                    </a>
+-                                </div>
+-                            </div>
+-                            <div class="col-md-4 mb-3">
+-                                <div class="p-3 border rounded" style="border-color: #9dbbce !important;">
+-                                    <h3 style="color: #102c59;">{{ plans_pedagogiques|default(0) }}</h3>
+-                                    <p class="mb-0" style="color: #666;">Plans P├®dagogiques</p>
+-                                    <a href="{{ path('app_admin_plans') }}?categorie=PEDAGOGIQUE" class="btn btn-sm mt-2" style="background-color: #9dbbce; border-color: #9dbbce; color: #102c59;">
+-                                        Voir <i class="bi bi-arrow-right"></i>
+-                                    </a>
+-                                </div>
+-                            </div>
+-                            <div class="col-md-4 mb-3">
+-                                <div class="p-3 border rounded" style="border-color: #9dbbce !important;">
+-                                    <h3 style="color: #102c59;">{{ plans_administratifs|default(0) }}</h3>
+-                                    <p class="mb-0" style="color: #666;">Plans Administratifs</p>
+-                                    <a href="{{ path('app_admin_plans') }}?categorie=ADMINISTRATIVE" class="btn btn-sm mt-2" style="background-color: #9dbbce; border-color: #9dbbce; color: #102c59;">
+-                                        Voir <i class="bi bi-arrow-right"></i>
+-                                    </a>
+-                                </div>
+-                            </div>
+-                        </div>
+-                        
+-                        <!-- Pied de page avec lien de retour au dashboard -->
+-                        <div class="text-center mt-4 pt-3 border-top" style="border-color: #9dbbce !important;">
+-                            <p class="mb-2" style="color: #666;">
+-                                <i class="bi bi-info-circle me-1" style="color: #102c59;"></i>
+-                                Derni├¿re mise ├á jour: {{ "now"|date("d/m/Y H:i") }}
+-                            </p>
+-                            <a href="{{ path('app_admin_dashboard') }}" class="btn" style="background-color: #102c59; border-color: #102c59; color: white;">
+-                                <i class="bi bi-arrow-clockwise me-1"></i> Actualiser le tableau de bord
+-                            </a>
+-                        </div>
+-                    </div>
+-                </div>
+-            </div>
+-        </div>
+-    </div>
+-</div>
+-
+-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+-<script>
+-    // Graphique des plans avec la charte de couleurs
+-    const ctx = document.getElementById('plansChart').getContext('2d');
+-    new Chart(ctx, {
+-        type: 'pie',
+-        data: {
+-            labels: ['Plans P├®dagogiques', 'Plans Administratifs'],
+-            datasets: [{
+-                data: [
+-                    {{ plans_pedagogiques|default(0) }},
+-                    {{ plans_administratifs|default(0) }}
+-                ],
+-                backgroundColor: [
+-                    '#102c59', // Bleu marine pour p├®dagogique
+-                    '#9dbbce'  // Bleu clair pour administratif
+-                ],
+-                borderColor: '#ffffff',
+-                borderWidth: 2,
+-                hoverOffset: 10
+-            }]
+-        },
+-        options: {
+-            responsive: true,
+-            maintainAspectRatio: true,
+-            plugins: {
+-                legend: {
+-                    position: 'bottom',
+-                    labels: {
+-                        color: '#102c59',
+-                        font: {
+-                            size: 14,
+-                            weight: '500'
+-                        },
+-                        padding: 20
+-                    }
+-                },
+-                tooltip: {
+-                    backgroundColor: 'rgba(16, 44, 89, 0.9)',
+-                    titleColor: '#ffffff',
+-                    bodyColor: '#ffffff',
+-                    callbacks: {
+-                        label: function(context) {
+-                            let label = context.label || '';
+-                            if (label) {
+-                                label += ': ';
+-                            }
+-                            label += context.raw;
+-                            label += ' plans';
+-                            return label;
+-                        }
+-                    }
+-                }
+-            }
+-        }
+-    });
+-
+-    // Auto-refresh optionnel toutes les 5 minutes
+-    setTimeout(function() {
+-        window.location.href = "{{ path('app_admin_dashboard') }}";
+-    }, 300000); // 5 minutes = 300000 ms
+-
+-    // Animation des cartes
+-    document.addEventListener('DOMContentLoaded', function() {
+-        const cards = document.querySelectorAll('.card');
+-        
+-        cards.forEach(card => {
+-            card.addEventListener('mouseenter', function() {
+-                this.style.transform = 'translateY(-5px)';
+-                this.style.boxShadow = '0 15px 30px rgba(16, 44, 89, 0.15)';
+-            });
+-            
+-            card.addEventListener('mouseleave', function() {
+-                this.style.transform = '';
+-                this.style.boxShadow = '';
+-            });
+-        });
+-
+-        // Animation des liens de navigation
+-        const navLinks = document.querySelectorAll('.list-group-item');
+-        navLinks.forEach(link => {
+-            link.addEventListener('mouseenter', function() {
+-                this.style.backgroundColor = '#f0f4f8';
+-                this.style.borderLeft = '3px solid #102c59';
+-            });
+-            
+-            link.addEventListener('mouseleave', function() {
+-                this.style.backgroundColor = '';
+-                this.style.borderLeft = '';
+-            });
+-        });
+-    });
+-</script>
+-
+-<style>
+-.card {
+-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+-    border-radius: 10px;
+-    overflow: hidden;
+-}
+-
+-.card:hover {
+-    transform: translateY(-5px);
+-    box-shadow: 0 10px 25px rgba(16, 44, 89, 0.15) !important;
+-}
+-
+-.list-group-item {
+-    transition: all 0.3s ease;
+-    border-left: 3px solid transparent;
+-}
+-
+-.list-group-item:hover {
+-    background-color: #f0f4f8 !important;
+-    border-left: 3px solid #102c59;
+-}
+-
+-.stretched-link::after {
+-    position: absolute;
+-    top: 0;
+-    right: 0;
+-    bottom: 0;
+-    left: 0;
+-    z-index: 1;
+-    content: "";
+-}
+-
+-.btn {
+-    transition: all 0.3s ease;
+-    font-weight: 500;
+-}
+-
+-.btn:hover {
+-    transform: translateY(-2px);
+-    box-shadow: 0 5px 15px rgba(16, 44, 89, 0.2);
+-    opacity: 0.95;
+-}
+-
+-.bi {
+-    transition: transform 0.3s ease;
+-}
+-
+-.list-group-item:hover .bi-arrow-right {
+-    transform: translateX(3px);
+-}
+-
+-.rounded-circle {
+-    transition: transform 0.3s ease;
+-}
+-
+-.list-group-item:hover .rounded-circle {
+-    transform: scale(1.1);
+-}
+-</style>
+-{% endblock %}
+\ No newline at end of file
