@@ -39,6 +39,55 @@
 				align-items: center;
 				gap: 0.5rem;
 			}
+  {% block stylesheets %}{% endblock %}
+
+  <style>
+    /* Styles pour les boutons d'authentification */
+    .auth-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .auth-buttons .btn-getstarted {
+      padding: 8px 20px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .auth-buttons .btn-outline-danger {
+      padding: 8px 20px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .auth-buttons .btn-warning {
+      padding: 8px 20px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    /* Responsive pour petits écrans */
+    @media (max-width: 1200px) {
+      .auth-buttons {
+        margin-top: 1rem;
+      }
+    }
+  </style>
+</head>
 
 			.auth-buttons .btn-getstarted {
 				padding: 8px 20px;
@@ -60,6 +109,9 @@
 				align-items: center;
 				white-space: nowrap;
 			}
+<!-- ======= HEADER ======= -->
+<header id="header" class="header d-flex align-items-center sticky-top">
+  <div class="container-fluid container-xl position-relative d-flex align-items-center">
 
 			.auth-buttons .btn-warning {
 				padding: 8px 20px;
@@ -180,6 +232,32 @@
 							<i class="bi bi-person-circle me-1"></i>
 							{{ app.user.prenom|default('Profil') }}
 						</a>
+    <!-- ────────────────────── ZONE AUTHENTIFICATION ────────────────────── -->
+    <div class="auth-buttons ms-3">
+      {% if app.user %}
+        <!-- Utilisateur connecté -->
+        <a href="{{ path('app_profil') }}" class="btn-getstarted me-2">
+          <i class="bi bi-person-circle me-1"></i> 
+          {{ app.user.prenom|default('Profil') }}
+        </a>
+
+       {% if is_granted('ROLE_ADMIN') %}
+          <a href="{{ path('back_administrateur') }}" class="btn btn-warning me-2">
+            <i class="bi bi-gear-fill me-1"></i> Admin
+          </a>
+        {% endif %}
+
+        <a href="{{ path('app_logout') }}" class="btn btn-outline-danger">
+          <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
+        </a>
+      {% else %}
+        <!-- Utilisateur non connecté -->
+        <a href="{{ path('app_login') }}" class="btn-getstarted">
+          <i class="bi bi-box-arrow-in-right me-1"></i> Connexion
+        </a>
+      {% endif %}
+    </div>
+    <!-- ──────────────────────────────────────────────────────────────── -->
 
 						{% if is_granted('ROLE_ADMIN') %}
 							<a href="{{ path('back_administrateur') }}" class="btn btn-warning me-2">
@@ -205,6 +283,26 @@
 			</div>
 		</header>
 		<!-- ======= END HEADER ======= -->
+<main class="main">
+  <!-- Messages flash pour les notifications -->
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  {% block body %}{% endblock %}
+</main>
+
+<!-- ======= FOOTER ======= -->
+<footer id="footer" class="footer accent-background">
+  <div class="container text-center">
+    <p>© {{ "now"|date("Y") }} MentorAI. All Rights Reserved.</p>
+  </div>
+</footer>
 
 		<main
 			class="main">

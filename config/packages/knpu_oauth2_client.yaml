@@ -1,0 +1,17 @@
+knpu_oauth2_client:
+    clients:
+        # configure your clients as described here: https://github.com/knpuniversity/oauth2-client-bundle#configuration
+        google:
+            # must be "google" - it activates that type!
+            type: google
+            # add and configure client_id and client_secret in the env changes below
+            # client_id: '%env(GOOGLE_CLIENT_ID)%'
+            # client_secret: '%env(GOOGLE_CLIENT_SECRET)%'
+            client_id: '222819625196-45gs8t6ma3eb2he3rbcag3g4mvg2arn6.apps.googleusercontent.com'
+            client_secret: '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'
+            # the route that you're redirected to after
+            # see the controller example below
+            redirect_route: connect_google_check
+            redirect_params: {}
+            # whether to check OAuth2 "state": defaults to true
+            # use_state: true

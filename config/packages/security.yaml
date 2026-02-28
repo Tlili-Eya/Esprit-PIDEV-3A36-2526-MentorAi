@@ -18,7 +18,6 @@ security:
         ROLE_ENSEIGNANT: [ROLE_USER]
         ROLE_ADMIN: [ROLE_USER]
 
-
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -40,25 +39,34 @@ security:
                 target: app_login
                 invalidate_session: true
 
+            custom_authenticator:
+                - App\Security\CustomAuthenticator
+                - App\Security\GoogleAuthenticator
+
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800
                 path: /
 
-            entry_point: form_login
+            entry_point: App\Security\CustomAuthenticator
 
-    # ✅ CORRECTION: Règles d'accès réorganisées
+    hide_user_not_found: false
+
     access_control:
-        # Pages publiques (AVANT la règle générale)
+        # Pages publiques
         - { path: ^/login$, roles: PUBLIC_ACCESS }
         - { path: ^/logout$, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/connect/google, roles: PUBLIC_ACCESS }
         - { path: ^/utilisateur/new$, roles: PUBLIC_ACCESS }
-        
-        # Backoffice admin uniquement
-        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/face/login$, roles: PUBLIC_ACCESS }
+
+        # Backoffice
         - { path: ^/adminm, roles: ROLE_ADMINM }
-        # Routes utilisateur connecté
-        - { path: ^/utilisateur, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+
+        # Chat
         - { path: ^/chat, roles: [ROLE_ADMINM, ROLE_ENSEIGNANT] }
 
+        # Routes utilisateur connecté
+        - { path: ^/utilisateur, roles: IS_AUTHENTICATED_FULLY }

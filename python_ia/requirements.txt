@@ -1,0 +1,3 @@
+# Aucune dépendance externe requise.
+# Le script utilise uniquement la bibliothèque standard Python 3.
+# Python >= 3.10 requis (pour l'annotation date | None).

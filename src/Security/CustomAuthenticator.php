@@ -30,6 +30,36 @@ class CustomAuthenticator extends AbstractLoginFormAuthenticator
     {
         $email = $request->request->get('_username', '');
 
+        $hCaptchaResponse = $request->request->get('h-captcha-response');
+
+        // Verify hCaptcha
+        if (empty($hCaptchaResponse)) {
+            throw new \Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException('Veuillez résoudre le captcha.');
+        }
+
+        $verifyUrl = 'https://hcaptcha.com/siteverify';
+        $data = [
+            'secret' => $_ENV['HCAPTCHA_SECRET_KEY'],
+            'response' => $hCaptchaResponse,
+            'remoteip' => $request->getClientIp()
+        ];
+
+        $options = [
+            'http' => [
+                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method'  => 'POST',
+                'content' => http_build_query($data)
+            ]
+        ];
+
+        $context      = stream_context_create($options);
+        $result       = file_get_contents($verifyUrl, false, $context);
+        $responseData = json_decode($result);
+
+        if (!$responseData->success) {
+            throw new \Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException('Captcha invalide. Veuillez réessayer.');
+        }
+
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
 
         return new Passport(

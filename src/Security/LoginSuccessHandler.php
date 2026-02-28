@@ -24,22 +24,22 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 
         // Check roles and redirect accordingly
         
-        // ROLE_ADMIN -> front_home (as requested)
+        // ROLE_ADMIN → backoffice
         if (in_array('ROLE_ADMIN', $roles, true)) {
-             return new RedirectResponse($this->router->generate('front_home'));
+            return new RedirectResponse($this->router->generate('back_home'));
         }
 
-        // ROLE_ADMINM or ROLE_ADMINISTRATEUR -> app_admin_dashboard
+        // ROLE_ADMINM or ROLE_ADMINISTRATEUR → dashboard admin
         if (in_array('ROLE_ADMINM', $roles, true) || in_array('ROLE_ADMINISTRATEUR', $roles, true)) {
-            return new RedirectResponse($this->router->generate('app_admin_dashboard'));
+            return new RedirectResponse($this->router->generate('back_administrateur'));
         }
 
-        // ROLE_ENSEIGNANT -> app_enseignant_dashboard
+        // ROLE_ENSEIGNANT → dashboard enseignant
         if (in_array('ROLE_ENSEIGNANT', $roles, true)) {
             return new RedirectResponse($this->router->generate('app_enseignant_dashboard'));
         }
 
-        // Default behavior for ROLE_ETUDIANT and others
-        return new RedirectResponse($this->router->generate('front_home'));
+        // Default → accueil
+        return new RedirectResponse($this->router->generate('app_home'));
     }
 }

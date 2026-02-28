@@ -6,6 +6,8 @@
 parameters:
     pdp_directory: '%kernel.project_dir%/public/uploads/pdp'
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
+    # Valeur par défaut vide pour PYTHON_PATH (détection automatique)
+    python_path_default: ''
 
 services:
     # default configuration for services in *this* file
@@ -49,9 +51,8 @@ services:
         arguments:
             $logger: '@logger'
 
-security:
-    firewalls:
-        main:
-            form_login:
-                remember_me: false
-    hide_user_not_found: false
+    # Analyseur Python local — aucun appel API externe
+    App\Service\PythonLocalAnalyzer:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $pythonPath: '%env(default:python_path_default:PYTHON_PATH)%'

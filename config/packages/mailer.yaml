@@ -1,3 +1,5 @@
+# config/packages/mailer.yaml
+
 framework:
     mailer:
         dsn: '%env(MAILER_DSN_AMAL)%'
@@ -5,3 +7,4 @@ framework:
             sender: 'amal.mokdad07@gmail.com'
         headers:
             from: 'Mentor Platform <amal.mokdad07@gmail.com>'
+        message_bus: false

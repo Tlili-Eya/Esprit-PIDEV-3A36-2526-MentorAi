@@ -50,6 +50,27 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $preferences = [];
+    // ── AI Risk Monitoring ───────────────────────────────────────────────
+    #[ORM\Column(type: 'float', options: ['default' => 100])]
+    private float $trustScore = 100.0;
+
+    #[ORM\Column(length: 10, options: ['default' => 'LOW'])]
+    private string $riskLevel = 'LOW';
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $flaggedDuplicate = false;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $loginAttempts = 0;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastLogin = null;
+
+    #[ORM\Column(length: 45, nullable: true)]
+    private ?string $registrationIp = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $aiVerdict = null;
 
     /**
      * @var Collection<int, CategorieArticle>
@@ -289,6 +310,31 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->status === 'actif';
     }
+
+    // ── AI Risk Monitoring — Getters/Setters ─────────────────────────────
+
+    public function getTrustScore(): float { return $this->trustScore; }
+    public function setTrustScore(float $v): static { $this->trustScore = $v; return $this; }
+
+    public function getRiskLevel(): string { return $this->riskLevel; }
+    public function setRiskLevel(string $v): static { $this->riskLevel = $v; return $this; }
+
+    public function isFlaggedDuplicate(): bool { return $this->flaggedDuplicate; }
+    public function setFlaggedDuplicate(bool $v): static { $this->flaggedDuplicate = $v; return $this; }
+
+    public function getLoginAttempts(): int { return $this->loginAttempts; }
+    public function setLoginAttempts(int $v): static { $this->loginAttempts = $v; return $this; }
+    public function incrementLoginAttempts(): static { $this->loginAttempts++; return $this; }
+    public function resetLoginAttempts(): static { $this->loginAttempts = 0; return $this; }
+
+    public function getLastLogin(): ?\DateTimeInterface { return $this->lastLogin; }
+    public function setLastLogin(?\DateTimeInterface $v): static { $this->lastLogin = $v; return $this; }
+
+    public function getRegistrationIp(): ?string { return $this->registrationIp; }
+    public function setRegistrationIp(?string $v): static { $this->registrationIp = $v; return $this; }
+
+    public function getAiVerdict(): ?string { return $this->aiVerdict; }
+    public function setAiVerdict(?string $v): static { $this->aiVerdict = $v; return $this; }
 
     // ==================== RELATIONS ====================
 

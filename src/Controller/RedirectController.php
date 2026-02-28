@@ -14,6 +14,7 @@ class RedirectController extends AbstractController
     #[Route('/admin', name: 'front_admin')]
     // Allow ROLE_ADMINM or ROLE_ADMINISTRATEUR
     #[IsGranted(new Expression("is_granted('ROLE_ADMINISTRATEUR') or is_granted('ROLE_ADMINM')"))] 
+    #[IsGranted(new Expression("is_granted('ROLE_ADMINM') or is_granted('ROLE_ADMINISTRATEUR')"))] 
     public function admin(): Response
     {
         return $this->render('front/admin.html.twig');
@@ -32,5 +33,6 @@ class RedirectController extends AbstractController
     public function enseignant(): Response
     {
         return $this->render('front/enseignant/dashboard.html.twig');
+        return $this->render('front/enseignant.html.twig');
     }
 }

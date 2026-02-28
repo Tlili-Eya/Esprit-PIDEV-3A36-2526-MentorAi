@@ -41,6 +41,434 @@
 				display: flex;
 				background-color: #f0f4f8;
 			}
+  <style>
+    /* Styles spécifiques pour la sidebar */
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      background-color: #f0f4f8;
+    }
+    
+    .sidebar {
+      width: 280px;
+      background: linear-gradient(180deg, #102c59 0%, #0a1a36 100%);
+      color: white;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 1000;
+      box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      overflow-y: auto;
+    }
+    
+    .sidebar-content {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 0;
+    }
+    
+    .sidebar-logo {
+      text-align: center;
+      padding: 25px 20px;
+      border-bottom: 1px solid rgba(157, 187, 206, 0.2);
+      background: rgba(16, 44, 89, 0.9);
+    }
+    
+    .sidebar-logo a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .sidebar-logo img {
+      max-width: 180px;
+      height: auto;
+      filter: brightness(0) invert(1);
+    }
+    
+    .sidebar-nav {
+      flex: 1;
+      padding: 20px 0;
+    }
+    
+    .sidebar-nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .sidebar-nav li {
+      margin: 3px 0;
+    }
+    
+    .sidebar-nav a {
+      color: rgba(157, 187, 206, 0.9);
+      text-decoration: none;
+      padding: 14px 25px;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+      font-size: 0.95rem;
+    }
+    
+    .sidebar-nav a:hover {
+      background: rgba(157, 187, 206, 0.15);
+      color: white;
+      border-left-color: #9dbbce;
+    }
+    
+    .sidebar-nav a.active {
+      background: rgba(157, 187, 206, 0.25);
+      color: white;
+      border-left-color: #9dbbce;
+      font-weight: 500;
+    }
+    
+    .sidebar-nav a i {
+      margin-right: 12px;
+      font-size: 1.1rem;
+      width: 24px;
+      text-align: center;
+      color: #9dbbce;
+    }
+    
+    .sidebar-nav a:hover i,
+    .sidebar-nav a.active i {
+      color: white;
+    }
+    
+    .dropdown-toggle::after {
+      margin-left: auto;
+      transition: transform 0.3s ease;
+      color: #9dbbce;
+    }
+    
+    .dropdown-toggle[aria-expanded="true"]::after {
+      transform: rotate(180deg);
+    }
+    
+    .dropdown-menu {
+      background: rgba(10, 26, 54, 0.9);
+      border: none;
+      padding: 5px 0;
+      margin: 0;
+      border-radius: 0;
+      border-left: 4px solid #9dbbce;
+    }
+    
+    .dropdown-item {
+      color: rgba(157, 187, 206, 0.8);
+      padding: 10px 20px 10px 60px;
+      border-left: 4px solid transparent;
+      font-size: 0.9rem;
+    }
+    
+    .dropdown-item:hover {
+      background: rgba(157, 187, 206, 0.15);
+      color: white;
+      border-left-color: #9dbbce;
+    }
+    
+    /* Zone d'authentification dans la sidebar */
+    .sidebar-auth {
+      padding: 20px;
+      border-top: 1px solid rgba(157, 187, 206, 0.2);
+      background: rgba(10, 26, 54, 0.9);
+    }
+    
+    .user-profile {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px;
+      background: rgba(157, 187, 206, 0.1);
+      border-radius: 8px;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: #9dbbce;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      color: #102c59;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    .user-info {
+      flex: 1;
+    }
+    
+    .user-name {
+      font-weight: 500;
+      color: white;
+      margin-bottom: 2px;
+    }
+    
+    .user-role {
+      font-size: 0.8rem;
+      color: #9dbbce;
+    }
+    
+    .auth-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    /* Styles des boutons d'authentification avec les nouvelles couleurs */
+    .auth-buttons .btn-getstarted {
+      padding: 10px 20px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #9dbbce 0%, #7ca0b8 100%);
+      color: #102c59;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .auth-buttons .btn-getstarted:hover {
+      background: linear-gradient(135deg, #7ca0b8 0%, #9dbbce 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(157, 187, 206, 0.4);
+      color: #102c59;
+    }
+    
+    .auth-buttons .btn-outline-danger {
+      padding: 10px 20px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #d52e28;
+      color: #d52e28;
+      background: transparent;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .auth-buttons .btn-outline-danger:hover {
+      background: #d52e28;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(213, 46, 40, 0.3);
+    }
+    
+    .auth-buttons .btn-warning {
+      padding: 10px 20px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #102c59;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .auth-buttons .btn-warning:hover {
+      background: #0a1a36;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 44, 89, 0.4);
+      color: white;
+    }
+    
+    .auth-buttons .bi {
+      margin-right: 8px;
+      font-size: 1rem;
+    }
+    
+    .main-content {
+      flex: 1;
+      margin-left: 280px;
+      min-height: 100vh;
+      background: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .content-area {
+      flex: 1;
+      padding: 30px;
+    }
+    
+    .mobile-sidebar-toggle {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1001;
+      background: #102c59;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 12px rgba(16, 44, 89, 0.3);
+    }
+    
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .mobile-sidebar-toggle {
+        display: block;
+      }
+      
+      .content-area {
+        padding: 25px 20px;
+      }
+    }
+    
+    /* Alertes et notifications */
+    .alert {
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+    
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #d52e28;
+    }
+    
+    .alert-warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .alert-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border-left: 4px solid #9dbbce;
+    }
+    
+    /* Scroll Top */
+    #scroll-top {
+      right: 30px;
+      bottom: 30px;
+      background: #102c59;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(16, 44, 89, 0.3);
+    }
+    
+    #scroll-top:hover {
+      background: #0a1a36;
+      transform: translateY(-3px);
+    }
+    
+    /* Footer */
+    #footer {
+      background: #102c59;
+      color: #9dbbce;
+      padding: 25px;
+      text-align: center;
+      border-top: 2px solid #9dbbce;
+    }
+    
+    #footer p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+    
+    /* Style pour les cartes dans le contenu principal */
+    .content-card {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 15px rgba(16, 44, 89, 0.08);
+      border-left: 4px solid #9dbbce;
+    }
+    
+    .content-card h2 {
+      color: #102c59;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f4f8;
+    }
+    
+    /* Boutons dans le contenu */
+    .btn-primary {
+      background: linear-gradient(135deg, #9dbbce 0%, #7ca0b8 100%);
+      border: none;
+      color: #102c59;
+      font-weight: 500;
+      padding: 10px 25px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #7ca0b8 0%, #9dbbce 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(157, 187, 206, 0.4);
+      color: #102c59;
+    }
+    
+    .btn-danger {
+      background: #d52e28;
+      border: none;
+      color: white;
+      font-weight: 500;
+      padding: 10px 25px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-danger:hover {
+      background: #b82520;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(213, 46, 40, 0.3);
+      color: white;
+    }
+  </style>
 
 			.sidebar {
 				width: 280px;
@@ -75,6 +503,191 @@
 				align-items: center;
 				justify-content: center;
 			}
+<!-- Mobile Sidebar Toggle -->
+<button class="mobile-sidebar-toggle d-xl-none" id="sidebarToggle">
+  <i class="bi bi-list"></i>
+</button>
+
+<!-- ======= SIDEBAR NAVIGATION ======= -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-content">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <a href="{{ path('back_home') }}">
+        <img src="{{ asset('assets/img/123.png') }}" alt="MentorAI Logo">
+      </a>
+    </div>
+    
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="{{ path('back_home') }}" class="{% if app.request.attributes.get('_route') == 'back_home' %}active{% endif %}">
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="{{ path('back_course_details') }}" class="{% if app.request.attributes.get('_route') == 'back_course_details' %}active{% endif %}">
+            <i class="bi bi-book"></i>
+            <span>Etude</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="{{ path('back_blog') }}" class="{% if app.request.attributes.get('_route') == 'back_blog' %}active{% endif %}">
+            <i class="bi bi-journal-text"></i>
+            <span>Note</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="{{ path('back_instructors') }}" class="{% if app.request.attributes.get('_route') == 'back_instructors' %}active{% endif %}">
+            <i class="bi bi-briefcase"></i>
+            <span>Projets</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="{{ path('back_courses') }}" class="{% if app.request.attributes.get('_route') == 'back_courses' %}active{% endif %}">
+            <i class="bi bi-diagram-3"></i>
+            <span>Parcours</span>
+          </a>
+        </li>
+
+        <!-- Productivity Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if app.request.attributes.get('_route') in ['back_blog_details', 'back_events', 'back_instructor_profile'] %}active{% endif %}" 
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-speedometer2"></i>
+            <span>Productivity</span>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="{{ path('back_blog_details') }}" class="dropdown-item">
+                <i class="bi bi-briefcase"></i>
+                <span>Emplois</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ path('back_events') }}" class="dropdown-item">
+                <i class="bi bi-trophy"></i>
+                <span>Défis</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ path('back_instructor_profile') }}" class="dropdown-item">
+                <i class="bi bi-person-badge"></i>
+                <span>Instructor Profile</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+        <li>
+          <a href="{{ path('back_contact') }}" class="{% if app.request.attributes.get('_route') == 'back_contact' %}active{% endif %}">
+            <i class="bi bi-envelope"></i>
+            <span>Contact</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="{{ path('back_pricing') }}" class="{% if app.request.attributes.get('_route') == 'back_pricing' %}active{% endif %}">
+            <i class="bi bi-currency-dollar"></i>
+            <span>Pricing</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="{{ path('back_about') }}" class="{% if app.request.attributes.get('_route') == 'back_about' %}active{% endif %}">
+            <i class="bi bi-info-circle"></i>
+            <span>About</span>
+          </a>
+        </li>
+
+        {% if is_granted('ROLE_ADMIN') %}
+        <li>
+          <a href="{{ path('admin_ai_risk_index') }}"
+             class="{% if app.request.attributes.get('_route') starts with 'admin_ai_risk' %}active{% endif %}">
+            <i class="bi bi-robot"></i>
+            <span>Surveillance des Risques IA</span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    
+    <!-- ────────────────────── ZONE AUTHENTIFICATION ────────────────────── -->
+    <div class="sidebar-auth">
+      {% if app.user %}
+        <!-- Utilisateur connecté -->
+        <div class="user-profile">
+          <div class="user-avatar">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <div class="user-info">
+            <div class="user-name">{{ app.user.prenom|default('Profil') }}</div>
+            <div class="user-role">
+              {% if is_granted('ROLE_ADMIN') %}Administrateur{% else %}Utilisateur{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-buttons">
+          <a href="{{ path('app_profil') }}" class="btn-getstarted">
+            <i class="bi bi-person-circle"></i> 
+            Mon Profil
+          </a>
+
+          {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('back_administrateur') }}" class="btn-warning">
+              <i class="bi bi-gear-fill"></i> Admin
+            </a>
+          {% endif %}
+
+          <a href="{{ path('app_logout') }}" class="btn-outline-danger">
+            <i class="bi bi-box-arrow-right"></i> Déconnexion
+          </a>
+        </div>
+      {% else %}
+        <!-- Utilisateur non connecté -->
+        <div class="auth-buttons">
+          <a href="{{ path('app_login') }}" class="btn-getstarted">
+            <i class="bi bi-box-arrow-in-right"></i> Connexion
+          </a>
+        </div>
+      {% endif %}
+    </div>
+    <!-- ──────────────────────────────────────────────────────────────── -->
+  </div>
+</nav>
+<!-- ======= END SIDEBAR NAVIGATION ======= -->
+
+<!-- ======= MAIN CONTENT ======= -->
+<div class="main-content">
+  <div class="content-area">
+    <!-- Messages flash pour les notifications -->
+    {% for label, messages in app.flashes %}
+      {% for message in messages %}
+        <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endfor %}
+
+    {% block body %}{% endblock %}
+  </div>
+
+  <!-- ======= FOOTER ======= -->
+  <footer id="footer" class="footer accent-background">
+    <div class="container text-center">
+      <p>© {{ "now"|date("Y") }} MentorAI. All Rights Reserved.</p>
+    </div>
+  </footer>
+</div>
+<!-- ======= END MAIN CONTENT ======= -->
 
 			.sidebar-logo img {
 				max-width: 180px;

@@ -14,7 +14,7 @@ use App\Repository\CategorieArticleRepository;
 #[Route('/back')]
 class mBackController extends AbstractController
 {
-    #[Route('/', name: 'back_home')]
+    #[Route('/', name: 'back_m_home')]
     public function dashboard(
         ReferenceArticleRepository $articleRepo,
         PlanActionsRepository $planRepo,
@@ -44,7 +44,7 @@ class mBackController extends AbstractController
         $derniers_plans = $planRepo->findBy([], ['date' => 'DESC'], 5);
         $dernieres_sorties = $sortieRepo->findBy([], ['createdAt' => 'DESC'], 5);
 
-        return $this->render('back/categorie_article/index.html.twig', [
+        return $this->render('back/dashboardm.html.twig', [
             'stats' => $stats,
             'plans_par_statut' => $plans_par_statut,
             'derniers_articles' => $derniers_articles,

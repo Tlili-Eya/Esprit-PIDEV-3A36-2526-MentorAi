@@ -36,6 +36,11 @@
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addInstructorModal">
           <i class="bi bi-plus-circle me-1"></i> Ajouter Membre
         </button>
+
+        <!-- Bouton Surveillance des Risques IA -->
+        <a href="{{ path('admin_users_index') }}" class="btn btn-primary">
+          <i class="bi bi-shield-exclamation me-1"></i> Surveillance des Risques IA
+        </a>
       </div>
     </div>
     
@@ -59,6 +64,11 @@
           <option value="email">Email (A-Z)</option>
           <option value="role">Role</option>
           <option value="date">Registration Date</option>
+          <option value="">Trier par</option>
+          <option value="name">Nom (A-Z)</option>
+          <option value="email">E-mail (A-Z)</option>
+          <option value="role">Rôle</option>
+          <option value="date">Date d'inscription</option>
         </select>
       </div>
       <div class="col-md-2">
@@ -72,6 +82,7 @@
     <div class="mb-2">
       <small class="text-muted">
         Showing <strong id="resultCount">{{ utilisateurs|length }}</strong> of {{ utilisateurs|length }} instructor(s)
+        Affichage de <strong id="resultCount">{{ utilisateurs|length }}</strong> sur {{ utilisateurs|length }} membre(s)
       </small>
     </div>
     
@@ -88,6 +99,11 @@
                 <th>Role</th>
                 <th>Registration Date</th>
                 <th>Status</th>
+                <th>Membre</th>
+                <th>E-mail</th>
+                <th>Rôle</th>
+                <th>Date d'inscription</th>
+                <th>Statut</th>
                 <th class="text-end no-export">Actions</th>
               </tr>
             </thead>
@@ -181,6 +197,9 @@
                           Edit Instructor
                         </h4>
                         <p class="text-white-50 mb-0 small">Update information for {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
+                          Modifier le membre
+                        </h4>
+                        <p class="text-white-50 mb-0 small">Mettre à jour les informations de {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
                       </div>
                       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -188,6 +207,7 @@
                    <!-- Modal Body -->
 <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
   <form method="post" action="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}" id="editInstructorForm{{ utilisateur.id }}">
+  <form method="post" action="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}" id="editInstructorForm{{ utilisateur.id }}" enctype="multipart/form-data">
     <input type="hidden" name="_method" value="POST">
     
     <div class="row g-4">
@@ -202,6 +222,13 @@
                class="form-control form-control-lg" 
                value="{{ utilisateur.prenom }}" 
                placeholder="Enter first name" 
+          Prénom <span class="text-danger">*</span>
+        </label>
+        <input type="text"
+               name="utilisateur[prenom]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.prenom }}"
+               placeholder="Entrez le prénom"
                required>
       </div>
 
@@ -216,6 +243,13 @@
                class="form-control form-control-lg" 
                value="{{ utilisateur.nom }}" 
                placeholder="Enter last name" 
+          Nom <span class="text-danger">*</span>
+        </label>
+        <input type="text"
+               name="utilisateur[nom]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.nom }}"
+               placeholder="Entrez le nom"
                required>
       </div>
 
@@ -234,6 +268,17 @@
         <small class="text-muted">
           <i class="bi bi-info-circle me-1"></i>
           This email will be used for login
+          Adresse e-mail <span class="text-danger">*</span>
+        </label>
+        <input type="email"
+               name="utilisateur[email]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.email }}"
+               placeholder="membre@exemple.com"
+               required>
+        <small class="text-muted">
+          <i class="bi bi-info-circle me-1"></i>
+          Cet e-mail sera utilisé pour la connexion
         </small>
       </div>
 
@@ -250,6 +295,15 @@
                  id="editPasswordInput{{ utilisateur.id }}" 
                  class="form-control form-control-lg" 
                  placeholder="Leave empty to keep current password">
+          Nouveau mot de passe
+          <span class="badge bg-secondary ms-2">Optionnel</span>
+        </label>
+        <div class="input-group">
+          <input type="password"
+                 name="utilisateur[mdp]"
+                 id="editPasswordInput{{ utilisateur.id }}"
+                 class="form-control form-control-lg"
+                 placeholder="Laisser vide pour conserver le mot de passe actuel">
           <button class="btn btn-outline-secondary" type="button" onclick="toggleEditPassword({{ utilisateur.id }})">
             <i class="bi bi-eye" id="editToggleIcon{{ utilisateur.id }}"></i>
           </button>
@@ -257,12 +311,14 @@
         <small class="text-muted">
           <i class="bi bi-info-circle me-1"></i>
           Leave blank to keep the current password
+          Laisser vide pour conserver le mot de passe actuel
         </small>
         <div class="password-strength mt-2">
           <div class="progress" style="height: 6px;">
             <div class="progress-bar" id="editStrengthBar{{ utilisateur.id }}" role="progressbar" style="width: 0%"></div>
           </div>
           <small class="text-muted" id="editStrengthText{{ utilisateur.id }}">Password strength</small>
+          <small class="text-muted" id="editStrengthText{{ utilisateur.id }}">Force du mot de passe</small>
         </div>
       </div>
 
@@ -278,6 +334,14 @@
           <option value="administrateur" {% if utilisateur.role == 'administrateur' %}selected{% endif %}>Administrateur (Admin)</option>
           <option value="etudiant" {% if utilisateur.role == 'etudiant' %}selected{% endif %}>Étudiant (Student)</option>
            <option value="adminm" {% if utilisateur.role == 'adminm' %}selected{% endif %}>Adminm (Adminm)</option>
+          Rôle <span class="text-danger">*</span>
+        </label>
+        <select name="utilisateur[role]" class="form-select form-select-lg" required>
+          <option value="">Choisir un rôle</option>
+          <option value="enseignant" {% if utilisateur.role == 'enseignant' %}selected{% endif %}>Enseignant</option>
+          <option value="administrateur" {% if utilisateur.role == 'administrateur' %}selected{% endif %}>Administrateur</option>
+          <option value="etudiant" {% if utilisateur.role == 'etudiant' %}selected{% endif %}>Étudiant</option>
+          <option value="adminm" {% if utilisateur.role == 'adminm' %}selected{% endif %}>Adminm</option>
         </select>
       </div>
 
@@ -311,6 +375,36 @@
             Current: {{ utilisateur.pdpUrl }}
           </small>
         {% endif %}
+          Date d'inscription
+        </label>
+        <input type="date"
+               name="utilisateur[date_inscription]"
+               class="form-control form-control-lg"
+               value="{{ utilisateur.dateInscription ? utilisateur.dateInscription|date('Y-m-d') : '' }}">
+      </div>
+
+      <!-- Photo de profil -->
+      <div class="col-12">
+        <label class="form-label fw-semibold">
+          <i class="bi bi-image me-1 text-primary"></i>
+          Photo de profil
+          <span class="badge bg-secondary ms-2">Optionnel</span>
+        </label>
+        {% if utilisateur.pdpUrl %}
+          <div class="mb-2 d-flex align-items-center gap-2">
+            <img src="{{ asset('uploads/pdp/' ~ utilisateur.pdpUrl) }}"
+                 alt="Photo actuelle"
+                 style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid #e5e7eb;">
+            <small class="text-muted">Photo actuelle — choisir un fichier pour la remplacer</small>
+          </div>
+        {% endif %}
+        <input type="file"
+               name="utilisateur[pdp_url]"
+               accept="image/jpeg,image/png,image/webp"
+               class="form-control form-control-lg"
+               onchange="previewEditAdminPhoto(this, {{ utilisateur.id }})">
+        <img id="editAdminPhotoPreview{{ utilisateur.id }}" src="" alt="Preview"
+             style="display:none;margin-top:8px;width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #e5e7eb;">
       </div>
 
       <!-- CSRF Token -->
@@ -327,6 +421,12 @@
         <li>Only fill in the password field if you want to change it</li>
         <li>Changes will be saved immediately after clicking "Update"</li>
         <li>Make sure the email address is valid for notifications</li>
+        Informations de mise à jour
+      </h6>
+      <ul class="mb-0 small">
+        <li>Ne remplissez le champ mot de passe que si vous souhaitez le modifier</li>
+        <li>Les modifications seront enregistrées immédiatement après avoir cliqué sur "Modifier"</li>
+        <li>Assurez-vous que l'adresse e-mail est valide pour les notifications</li>
       </ul>
     </div>
   </form>
@@ -392,6 +492,37 @@
       </div>
     </div>
     
+    <!-- User Statistics Charts -->
+    <div class="row mt-4 mb-4">
+        <!-- Status Pie Chart -->
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h5 class="card-title text-center text-primary fw-bold">Statut des utilisateurs</h5>
+                </div>
+                <div class="card-body">
+                    <div style="max-height: 300px; display: flex; justify-content: center;">
+                        <canvas id="userStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration Line Chart -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h5 class="card-title text-center text-primary fw-bold">Inscriptions par date</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="registrationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer info -->
     <div class="d-flex justify-content-between align-items-center mt-3">
       <p class="text-muted mb-0">
@@ -401,6 +532,116 @@
     
   </div>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('userStatusChart').getContext('2d');
+    
+    const countActif = {{ countActif|default(0) }};
+    const countInactif = {{ countInactif|default(0) }};
+    
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Actif', 'Désactivé'],
+            datasets: [{
+                data: [countActif, countInactif],
+                backgroundColor: [
+                    '#102c59', // Active
+                    '#9dbbce'  // Inactive
+                ],
+                borderColor: [
+                    '#ffffff',
+                    '#ffffff'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            let value = context.raw;
+                            let total = context.chart._metasets[context.datasetIndex].total;
+                            let percentage = Math.round((value / total) * 100) + '%';
+                            return label + value + ' (' + percentage + ')';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Registration Line Chart
+    const ctxReg = document.getElementById('registrationChart').getContext('2d');
+    const registrationDates = {{ registrationDates|json_encode|raw }};
+    const registrationCounts = {{ registrationCounts|json_encode|raw }};
+
+    new Chart(ctxReg, {
+        type: 'line',
+        data: {
+            labels: registrationDates,
+            datasets: [{
+                label: 'Nouvelles Inscriptions',
+                data: registrationCounts,
+                borderColor: '#102c59',
+                backgroundColor: 'rgba(16, 44, 89, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4, // Smooth curves
+                pointBackgroundColor: '#102c59',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+});
+</script>
 
 <!-- Add Instructor Modal -->
 <div class="modal fade" id="addInstructorModal" tabindex="-1" aria-labelledby="addInstructorModalLabel" aria-hidden="true" data-bs-backdrop="static">
@@ -414,6 +655,9 @@
             Add New Instructor
           </h4>
           <p class="text-white-50 mb-0 small">Fill in the details to create a new instructor account</p>
+            Ajouter un nouveau membre
+          </h4>
+          <p class="text-white-50 mb-0 small">Remplissez les informations pour créer un nouveau compte</p>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -421,6 +665,7 @@
       <!-- Modal Body -->
       <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
         <form method="post" action="{{ path('app_utilisateur_new') }}" id="addInstructorForm">
+        <form method="post" action="{{ path('app_utilisateur_new') }}" id="addInstructorForm" enctype="multipart/form-data">
           <div class="row g-4">
             <!-- Prénom -->
             <div class="col-md-6">
@@ -429,6 +674,9 @@
                 First Name <span class="text-danger">*</span>
               </label>
               <input type="text" name="utilisateur[prenom]" class="form-control form-control-lg" placeholder="Enter first name" required>
+                Prénom <span class="text-danger">*</span>
+              </label>
+              <input type="text" name="utilisateur[prenom]" class="form-control form-control-lg" placeholder="Entrez le prénom" required>
             </div>
 
             <!-- Nom -->
@@ -438,6 +686,9 @@
                 Last Name <span class="text-danger">*</span>
               </label>
               <input type="text" name="utilisateur[nom]" class="form-control form-control-lg" placeholder="Enter last name" required>
+                Nom <span class="text-danger">*</span>
+              </label>
+              <input type="text" name="utilisateur[nom]" class="form-control form-control-lg" placeholder="Entrez le nom" required>
             </div>
 
             <!-- Email -->
@@ -450,6 +701,12 @@
               <small class="text-muted">
                 <i class="bi bi-info-circle me-1"></i>
                 This email will be used for login
+                Adresse e-mail <span class="text-danger">*</span>
+              </label>
+              <input type="email" name="utilisateur[email]" class="form-control form-control-lg" placeholder="membre@exemple.com" required>
+              <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Cet e-mail sera utilisé pour la connexion
               </small>
             </div>
 
@@ -461,6 +718,10 @@
               </label>
               <div class="input-group">
                 <input type="password" name="utilisateur[mdp]" id="modalPasswordInput" class="form-control form-control-lg" placeholder="Minimum 8 characters" required>
+                Mot de passe <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <input type="password" name="utilisateur[mdp]" id="modalPasswordInput" class="form-control form-control-lg" placeholder="Minimum 8 caractères" required>
                 <button class="btn btn-outline-secondary" type="button" onclick="toggleModalPassword()">
                   <i class="bi bi-eye" id="modalToggleIcon"></i>
                 </button>
@@ -470,6 +731,7 @@
                   <div class="progress-bar" id="modalStrengthBar" role="progressbar" style="width: 0%"></div>
                 </div>
                 <small class="text-muted" id="modalStrengthText">Password strength</small>
+                <small class="text-muted" id="modalStrengthText">Force du mot de passe</small>
               </div>
             </div>
 
@@ -485,6 +747,14 @@
                 <option value="administrateur">Administrateur (Admin)</option>
                 <option value="etudiant">Étudiant (Student)</option>
                 <option value="adminm">Adminm (Adminm)</option>
+                Rôle <span class="text-danger">*</span>
+              </label>
+              <select name="utilisateur[role]" class="form-select form-select-lg" required>
+                <option value="">Choisir un rôle</option>
+                <option value="enseignant">Enseignant</option>
+                <option value="administrateur">Administrateur</option>
+                <option value="etudiant">Étudiant</option>
+                <option value="adminm">Adminm</option>
               </select>
             </div>
 
@@ -493,6 +763,7 @@
               <label class="form-label fw-semibold">
                 <i class="bi bi-calendar-check me-1 text-primary"></i>
                 Registration Date
+                Date d'inscription
                 <span class="badge bg-info ms-2">Auto</span>
               </label>
               <input type="date" name="utilisateur[date_inscription]" class="form-control form-control-lg" value="{{ 'now'|date('Y-m-d') }}">
@@ -510,6 +781,22 @@
                 <span class="badge bg-secondary ms-2">Optional</span>
               </label>
               <input type="text" name="utilisateur[pdp_url]" class="form-control form-control-lg" placeholder="photo.jpg or leave empty">
+                Par défaut : Aujourd'hui
+              </small>
+            </div>
+
+            <!-- Photo de profil -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-image me-1 text-primary"></i>
+                Photo de profil
+                <span class="badge bg-secondary ms-2">Optionnel</span>
+              </label>
+              <input type="file" name="utilisateur[pdp_url]" accept="image/jpeg,image/png,image/webp"
+                     class="form-control form-control-lg"
+                     onchange="previewAddAdminPhoto(this)">
+              <img id="addAdminPhotoPreview" src="" alt="Preview"
+                   style="display:none;margin-top:8px;width:70px;height:70px;object-fit:cover;border-radius:10px;border:2px solid #e5e7eb;">
             </div>
 
             <!-- CSRF Token (important!) -->
@@ -526,6 +813,20 @@
               <li>Use a strong password (8+ characters with uppercase, lowercase, and numbers)</li>
               <li>Assign only necessary permissions based on the user's role</li>
               <li>Ensure the email address is valid for notifications</li>
+            <!-- Clé obligatoire pour que le controller traite la soumission -->
+            <input type="hidden" name="submission_secret" value="STRICT_MANUAL_v4_GOLD">
+          </div>
+
+          <!-- Conseils de sécurité -->
+          <div class="alert alert-info border-0 mt-4" style="background: rgba(99, 102, 241, 0.1);">
+            <h6 class="fw-semibold mb-2">
+              <i class="bi bi-shield-check me-2"></i>
+              Conseils de sécurité
+            </h6>
+            <ul class="mb-0 small">
+              <li>Utilisez un mot de passe fort (8+ caractères avec majuscules, minuscules et chiffres)</li>
+              <li>N'attribuez que les permissions nécessaires selon le rôle de l'utilisateur</li>
+              <li>Assurez-vous que l'adresse e-mail est valide pour les notifications</li>
             </ul>
           </div>
         </form>
@@ -538,6 +839,10 @@
         </button>
         <button type="submit" form="addInstructorForm" class="btn btn-danger">
           <i class="bi bi-check-circle me-1"></i> Create Instructor
+          <i class="bi bi-x-circle me-1"></i> Annuler
+        </button>
+        <button type="submit" form="addInstructorForm" class="btn btn-danger">
+          <i class="bi bi-check-circle me-1"></i> Créer le membre
         </button>
       </div>
     </div>
@@ -672,6 +977,7 @@ document.addEventListener('DOMContentLoaded', function() {
     sortedRows.forEach(row => tableBody.appendChild(row));
     
     showNotification(`Sorted by ${sortBy}`, 'info');
+    showNotification(`Trié par ${sortBy}`, 'info');
   }
   
   // Export to Excel function
@@ -690,6 +996,15 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Add headers
       data.push(['ID', 'Instructor Name', 'Email', 'Role', 'Registration Date', 'Status']);
+        showNotification('Aucune donnée à exporter', 'warning');
+        return;
+      }
+
+      // Prepare data for Excel
+      const data = [];
+
+      // Add headers
+      data.push(['ID', 'Membre', 'E-mail', 'Rôle', "Date d'inscription", 'Statut']);
       
       // Add data rows
       visibleRows.forEach(row => {
@@ -732,6 +1047,19 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
       console.error('Export error:', error);
       showNotification('Error exporting to Excel', 'danger');
+      XLSX.utils.book_append_sheet(wb, ws, 'Membres');
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `membres_${timestamp}.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, filename);
+
+      showNotification('Fichier Excel exporté avec succès !', 'success');
+    } catch (error) {
+      console.error('Export error:', error);
+      showNotification("Erreur lors de l'export Excel", 'danger');
     }
   }
   
@@ -761,6 +1089,25 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Prepare data for PDF table
       const headers = [['ID', 'Instructor Name', 'Email', 'Role', 'Registration Date', 'Status']];
+        showNotification('Aucune donnée à exporter', 'warning');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
+
+      // Add title
+      doc.setFontSize(18);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Rapport de gestion des membres', 14, 15);
+
+      // Add date
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Généré le : ${new Date().toLocaleDateString('fr-FR')}`, 14, 22);
+
+      // Prepare data for PDF table
+      const headers = [['ID', 'Membre', 'E-mail', 'Rôle', "Date d'inscription", 'Statut']];
       const data = [];
       
       visibleRows.forEach(row => {
@@ -811,6 +1158,7 @@ document.addEventListener('DOMContentLoaded', function() {
           doc.setTextColor(150);
           doc.text(
             `Page ${data.pageNumber} of ${pageCount}`,
+            `Page ${data.pageNumber} sur ${pageCount}`,
             doc.internal.pageSize.width / 2,
             doc.internal.pageSize.height - 10,
             { align: 'center' }
@@ -835,6 +1183,19 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
       console.error('Export error:', error);
       showNotification('Error exporting to PDF', 'danger');
+      doc.text(`Total membres : ${visibleRows.length}`, 14, finalY);
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `membres_${timestamp}.pdf`;
+
+      // Save PDF
+      doc.save(filename);
+
+      showNotification('Fichier PDF exporté avec succès !', 'success');
+    } catch (error) {
+      console.error('Export error:', error);
+      showNotification("Erreur lors de l'export PDF", 'danger');
     }
   }
   
@@ -851,6 +1212,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <i class="bi bi-search" style="font-size: 3rem; opacity: 0.3;"></i>
             <p class="mt-3 mb-0 fw-semibold">No results found</p>
             <small class="text-muted">Try adjusting your search terms</small>
+            <p class="mt-3 mb-0 fw-semibold">Aucun résultat trouvé</p>
+            <small class="text-muted">Essayez d'ajuster vos termes de recherche</small>
           </td>
         `;
         tableBody.appendChild(noResultsRow);
@@ -950,6 +1313,15 @@ function checkModalPasswordStrength(password) {
   } else {
     strengthBar.className = 'progress-bar bg-success';
     strengthText.textContent = 'Strong password';
+    strengthText.textContent = 'Mot de passe faible';
+    strengthText.style.color = '#dc3545';
+  } else if (strength < 70) {
+    strengthBar.className = 'progress-bar bg-warning';
+    strengthText.textContent = 'Mot de passe moyen';
+    strengthText.style.color = '#ffc107';
+  } else {
+    strengthBar.className = 'progress-bar bg-success';
+    strengthText.textContent = 'Mot de passe fort';
     strengthText.style.color = '#198754';
   }
 }
@@ -974,6 +1346,7 @@ function checkEditPasswordStrength(password, userId) {
   if (password.length === 0) {
     strengthBar.style.width = '0%';
     strengthText.textContent = 'Password strength';
+    strengthText.textContent = 'Force du mot de passe';
     strengthText.style.color = '#6c757d';
     return;
   }
@@ -989,6 +1362,15 @@ function checkEditPasswordStrength(password, userId) {
   } else {
     strengthBar.className = 'progress-bar bg-success';
     strengthText.textContent = 'Strong password';
+    strengthText.textContent = 'Mot de passe faible';
+    strengthText.style.color = '#dc3545';
+  } else if (strength < 70) {
+    strengthBar.className = 'progress-bar bg-warning';
+    strengthText.textContent = 'Mot de passe moyen';
+    strengthText.style.color = '#ffc107';
+  } else {
+    strengthBar.className = 'progress-bar bg-success';
+    strengthText.textContent = 'Mot de passe fort';
     strengthText.style.color = '#198754';
   }
 }
@@ -1002,6 +1384,24 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Gestion de la soumission du formulaire modal via AJAX
+  function previewEditAdminPhoto(input, userId) {
+    const preview = document.getElementById('editAdminPhotoPreview' + userId);
+    if (preview && input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function previewAddAdminPhoto(input) {
+    const preview = document.getElementById('addAdminPhotoPreview');
+    if (preview && input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
   document.addEventListener('submit', function(event) {
     if (event.target && event.target.id && event.target.id.startsWith('editInstructorForm')) {
       event.preventDefault();

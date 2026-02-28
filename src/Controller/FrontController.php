@@ -9,14 +9,24 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+
 #[Route('/', name: 'front_')]
 class FrontController extends AbstractController
 {
     #[Route('affiche', name: 'affiche')]
+
+    #[Route('affiche', name: 'affiche')]
+    
     public function affiche(): Response
     {
         return $this->render('front/affiche.html.twig');
     }
+
+    
+    
+
 
     #[Route('home', name: 'home')]
     public function home(): Response

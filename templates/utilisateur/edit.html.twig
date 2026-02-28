@@ -86,6 +86,7 @@
                 
                 <div class="card-body p-4">
                     {{ form_start(form, {'attr': {'class': 'modern-form', 'id': 'editForm'}}) }}
+                    {{ form_start(form, {'attr': {'class': 'modern-form', 'id': 'editForm', 'enctype': 'multipart/form-data'}}) }}
                     
                     <div class="row g-4">
                         <!-- Prénom -->
@@ -197,6 +198,7 @@
                         </div>
 
                         <!-- Photo de profil URL -->
+                        <!-- Photo de profil -->
                         <div class="col-12">
                             <div class="form-group-modern">
                                 <label class="form-label-modern">
@@ -210,6 +212,25 @@
                                     }
                                 }) }}
                                 {{ form_errors(form.pdp_url) }}
+                                    Photo de profil
+                                </label>
+                                {% if utilisateur.pdpUrl %}
+                                    <div class="mb-2" style="display:flex; align-items:center; gap:12px;">
+                                        <img src="{{ asset('uploads/pdp/' ~ utilisateur.pdpUrl) }}"
+                                             alt="Photo actuelle"
+                                             style="width:60px; height:60px; object-fit:cover; border-radius:10px; border:2px solid #e5e7eb;">
+                                        <small class="text-muted">Photo actuelle — choisir un fichier pour la remplacer</small>
+                                    </div>
+                                {% endif %}
+                                {{ form_widget(form.pdp_url, {
+                                    'attr': {
+                                        'class': 'form-control-modern',
+                                        'accept': 'image/jpeg,image/png,image/webp',
+                                        'onchange': 'previewEditPhoto(this)'
+                                    }
+                                }) }}
+                                {{ form_errors(form.pdp_url) }}
+                                <img id="editPhotoPreview" src="" alt="Aperçu" style="display:none; margin-top:10px; width:80px; height:80px; object-fit:cover; border-radius:12px; border:2px solid #e5e7eb;">
                             </div>
                         </div>
                     </div>
@@ -660,6 +681,15 @@
 </style>
 
 <script>
+    function previewEditPhoto(input) {
+        const preview = document.getElementById('editPhotoPreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
     // Mise à jour de l'aperçu en temps réel
     function updatePreview() {
         const prenom = document.querySelector('input[name*="prenom"]')?.value || '';

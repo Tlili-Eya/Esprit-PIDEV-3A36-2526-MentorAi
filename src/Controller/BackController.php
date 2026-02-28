@@ -16,6 +16,12 @@ final class BackController extends AbstractController
         return $this->render('back/dashboard.html.twig');
     }
 
+    #[Route('/', name: 'home')]
+    public function home(): Response
+    {
+        return $this->render('back/dashboard.html.twig');
+    }
+
     #[Route('/about', name: 'about')]
     public function about(): Response
     {
@@ -34,8 +40,6 @@ final class BackController extends AbstractController
         return $this->render('back/instructor-profile.html.twig');
     }
 
-    
-
     #[Route('/pricing', name: 'pricing')]
     public function pricing(): Response
     {
@@ -45,17 +49,16 @@ final class BackController extends AbstractController
         if ($stripeSecretKey) {
             \Stripe\Stripe::setApiKey($stripeSecretKey);
             try {
-                // Fetch PaymentIntents as they represent modern transactions
                 $paymentIntents = \Stripe\PaymentIntent::all(['limit' => 100]);
                 foreach ($paymentIntents->data as $intent) {
                     $transactions[] = [
-                        'id' => $intent->id,
-                        'amount' => $intent->amount / 100, // Stripe uses cents
-                        'currency' => strtoupper($intent->currency),
-                        'status' => $intent->status,
-                        'email' => $intent->receipt_email ?? ($intent->customer ? 'Customer ID: ' . $intent->customer : 'N/A'),
-                        'created' => (new \DateTime())->setTimestamp($intent->created)->format('d/m/Y H:i'),
-                        'description' => $intent->description ?? 'No description'
+                        'id'          => $intent->id,
+                        'amount'      => $intent->amount / 100,
+                        'currency'    => strtoupper($intent->currency),
+                        'status'      => $intent->status,
+                        'email'       => $intent->receipt_email ?? ($intent->customer ? 'Customer ID: ' . $intent->customer : 'N/A'),
+                        'created'     => (new \DateTime())->setTimestamp($intent->created)->format('d/m/Y H:i'),
+                        'description' => $intent->description ?? 'No description',
                     ];
                 }
             } catch (\Exception $e) {
@@ -91,8 +94,38 @@ final class BackController extends AbstractController
     #[Route('/administrateur', name: 'administrateur')]
     public function administrateur(UtilisateurRepository $utilisateurRepository): Response
     {
+        $utilisateurs = $utilisateurRepository->findAll();
+
+        $countActif   = 0;
+        $countInactif = 0;
+        $registrations = [];
+
+        foreach ($utilisateurs as $user) {
+            $status = strtolower($user->getStatus() ?? '');
+            if ($status === 'actif') {
+                $countActif++;
+            } elseif ($status === 'desactiver' || $status === 'blocked') {
+                $countInactif++;
+            }
+
+            $date = $user->getDateInscription();
+            if ($date) {
+                $dateString = $date->format('Y-m-d');
+                if (!isset($registrations[$dateString])) {
+                    $registrations[$dateString] = 0;
+                }
+                $registrations[$dateString]++;
+            }
+        }
+
+        ksort($registrations);
+
         return $this->render('back/administrateur.html.twig', [
-            'utilisateurs' => $utilisateurRepository->findAll(),
+            'utilisateurs'       => $utilisateurs,
+            'countActif'         => $countActif,
+            'countInactif'       => $countInactif,
+            'registrationDates'  => array_keys($registrations),
+            'registrationCounts' => array_values($registrations),
         ]);
     }
 }
