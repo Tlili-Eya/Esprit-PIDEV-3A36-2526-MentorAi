@@ -5,6 +5,8 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     pdp_directory: '%kernel.project_dir%/public/uploads/pdp'
+    # Valeur par défaut vide pour PYTHON_PATH (détection automatique)
+    python_path_default: ''
 
 services:
     # default configuration for services in *this* file
@@ -24,20 +26,8 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    App\Service\OpenAiRiskAnalyzer:
+    # Analyseur Python local — aucun appel API externe
+    App\Service\PythonLocalAnalyzer:
         arguments:
-            $openAiApiKey: '%env(OPENAI_API_KEY)%'
-
-    App\Service\HuggingFaceRiskAnalyzer:
-        arguments:
-            $huggingFaceApiKey: '%env(HUGGINGFACE_API_KEY)%'
-
-security:
-    firewalls:
-        main:
-            form_login:
-                # ... autres configs ...
-                remember_me: false   # optionnel
-
-    # Ajoute cette ligne (attention : réduit la sécurité)
-    hide_user_not_found: false
+            $projectDir: '%kernel.project_dir%'
+            $pythonPath: '%env(default:python_path_default:PYTHON_PATH)%'

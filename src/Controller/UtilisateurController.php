@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Form\UtilisateurType;
 use App\Repository\UtilisateurRepository;
+use App\Service\UserRiskAnalyzer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,7 @@ final class UtilisateurController extends AbstractController
 {
     public function __construct(
         private readonly UtilisateurRepository $utilisateurRepository,
+        private readonly UserRiskAnalyzer      $userRiskAnalyzer,
     ) {}
 
     /**
@@ -115,9 +117,17 @@ final class UtilisateurController extends AbstractController
                 $utilisateur->setPdpUrl($newFilename);
             }
 
+            // Capture de l'IP d'inscription avant l'analyse de risque
+            $utilisateur->setRegistrationIp($request->getClientIp());
+
+            // Premier flush pour obtenir l'ID (nécessaire pour la détection doublon IP)
             $entityManager->persist($utilisateur);
             $entityManager->flush();
             file_put_contents(__DIR__ . '/../../var/log/mentor_debug.log', sprintf("[%s] FLUSH COMPLETED. User ID: %s\n", date('H:i:s'), $utilisateur->getId()), FILE_APPEND);
+
+            // Calcul automatique du score de risque (email suspect, photo manquante, IP doublon…)
+            $this->userRiskAnalyzer->analyze($utilisateur);
+            $entityManager->flush();
 
             // ✅ MODIFIÉ: Message de succès et redirection vers administrateur
             $this->addFlash('success', 'Instructor created successfully!');
@@ -226,6 +236,8 @@ final class UtilisateurController extends AbstractController
                 $utilisateur->setPdpUrl($newFilename);
             }
 
+            // Recalcul du risque après modification (email, photo, etc.)
+            $this->userRiskAnalyzer->analyze($utilisateur);
             $entityManager->flush();
             $this->addFlash('success', 'Instructor updated successfully!');
 

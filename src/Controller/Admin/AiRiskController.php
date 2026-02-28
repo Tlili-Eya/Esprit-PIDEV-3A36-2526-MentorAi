@@ -3,7 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Repository\UtilisateurRepository;
-use App\Service\HuggingFaceRiskAnalyzer;
+use App\Service\PythonLocalAnalyzer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,12 +14,12 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AiRiskController extends AbstractController
 {
     public function __construct(
-        private readonly UtilisateurRepository  $utilisateurRepository,
-        private readonly HuggingFaceRiskAnalyzer $analyzer,
-        private readonly EntityManagerInterface  $em,
+        private readonly UtilisateurRepository $utilisateurRepository,
+        private readonly PythonLocalAnalyzer   $analyzer,
+        private readonly EntityManagerInterface $em,
     ) {}
 
-    /** Page principale : liste des utilisateurs */
+    /** Page principale : liste des utilisateurs avec verdicts IA */
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(): Response
     {
@@ -28,13 +28,20 @@ final class AiRiskController extends AbstractController
         ]);
     }
 
-    /** Analyse IA d'un utilisateur (AJAX POST) */
+    /**
+     * Analyse IA d'un utilisateur unique (AJAX POST).
+     * Retourne le verdict textuel à afficher dans la cellule.
+     */
     #[Route('/analyze/{id}', name: 'analyze', methods: ['POST'])]
     public function analyze(int $id): JsonResponse
     {
         $user = $this->utilisateurRepository->find($id);
+
         if (!$user) {
-            return new JsonResponse(['success' => false, 'message' => 'Utilisateur introuvable'], 404);
+            return new JsonResponse(
+                ['success' => false, 'message' => 'Utilisateur introuvable (id=' . $id . ')'],
+                404
+            );
         }
 
         try {
@@ -54,7 +61,11 @@ final class AiRiskController extends AbstractController
         }
     }
 
-    /** Analyse IA de TOUS les utilisateurs (AJAX POST) */
+    /**
+     * Analyse IA de TOUS les utilisateurs (AJAX POST).
+     * Exécution séquentielle (un script Python à la fois) pour éviter
+     * la surcharge du serveur.
+     */
     #[Route('/analyze-all', name: 'analyze_all', methods: ['POST'])]
     public function analyzeAll(): JsonResponse
     {
@@ -65,12 +76,19 @@ final class AiRiskController extends AbstractController
             try {
                 $verdict = $this->analyzer->analyze($user);
                 $user->setAiVerdict($verdict);
-                $results[$user->getId()] = ['success' => true, 'verdict' => $verdict];
+                $results[$user->getId()] = [
+                    'success' => true,
+                    'verdict' => $verdict,
+                ];
             } catch (\Throwable $e) {
-                $results[$user->getId()] = ['success' => false, 'message' => $e->getMessage()];
+                $results[$user->getId()] = [
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ];
             }
         }
 
+        // Persistance groupée après toutes les analyses
         $this->em->flush();
 
         $successCount = count(array_filter($results, fn($r) => $r['success']));
