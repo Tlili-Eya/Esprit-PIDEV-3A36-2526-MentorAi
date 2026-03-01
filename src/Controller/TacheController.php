@@ -66,7 +66,7 @@ class TacheController extends AbstractController
     #[Route('/{id}', name: 'delete', methods: ['POST'])]
     public function delete(Request $request, Tache $tache, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$tache->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$tache->getId(), (string) $request->request->get('_token'))) {
             $programmeId = $tache->getProgramme()->getId();
             $entityManager->remove($tache);
             $entityManager->flush();

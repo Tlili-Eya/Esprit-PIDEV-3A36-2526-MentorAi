@@ -47,6 +47,18 @@
             "./migrations/.gitignore"
         ]
     },
+    "knpuniversity/oauth2-client-bundle": {
+        "version": "2.20",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.20",
+            "ref": "1ff300d8c030f55c99219cc55050b97a695af3f6"
+        },
+        "files": [
+            "./config/packages/knpu_oauth2_client.yaml"
+        ]
+    },
     "php-http/discovery": {
         "version": "1.20",
         "recipe": {
@@ -57,6 +69,18 @@
         },
         "files": [
             "./config/packages/http_discovery.yaml"
+        ]
+    },
+    "phpstan/phpstan": {
+        "version": "2.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.0",
+            "ref": "5e490cc197fb6bb1ae22e5abbc531ddc633b6767"
+        },
+        "files": [
+            "./phpstan.dist.neon"
         ]
     },
     "phpunit/phpunit": {
@@ -72,6 +96,18 @@
             "./phpunit.dist.xml",
             "./tests/bootstrap.php",
             "./bin/phpunit"
+        ]
+    },
+    "shipmonk/doctrine-entity-preloader": {
+        "version": "1.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.0",
+            "ref": "6bee147a5ee0ca3cc07b24c1d3c28a67710d090c"
+        },
+        "files": [
+            "./config/packages/doctrine_entity_preloader.yaml"
         ]
     },
     "stripe/stripe-php": {

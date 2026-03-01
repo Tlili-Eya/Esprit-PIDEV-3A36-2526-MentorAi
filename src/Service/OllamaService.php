@@ -16,7 +16,8 @@ class OllamaService
         $this->model = 'mistral:7b'; // Modèle qui fonctionne
     }
 
-    public function sendMessage(string $message): array
+   /** @return array{success: bool, response: string} */
+public function sendMessage(string $message): array
     {
         try {
             $this->logger->info('🔍 Envoi à Ollama', ['message' => $message]);
@@ -35,17 +36,17 @@ class OllamaService
             
             // Exécuter la commande
             $output = shell_exec($command);
-            
-            if ($output === null) {
-                throw new \Exception("La commande Ollama a échoué");
-            }
+
+if ($output === null || $output === false) {
+    throw new \Exception("La commande Ollama a échoué");
+}
             
             $this->logger->info('✅ Réponse reçue', ['response' => substr($output, 0, 200)]);
-            
-            return [
-                'success' => true,
-                'response' => trim($output)
-            ];
+
+return [
+    'success' => true,
+    'response' => trim($output)
+];
 
         } catch (\Exception $e) {
             $this->logger->error('❌ Erreur Ollama', [
@@ -74,7 +75,8 @@ class OllamaService
         return $context . "\n\nQuestion: " . $message . "\n\nRéponse:";
     }
 
-    private function getDemoResponse(string $message): array
+    /** @return array{success: bool, response: string} */
+private function getDemoResponse(string $message): array
     {
         $messageLower = strtolower($message);
         

@@ -165,7 +165,7 @@ public function show(
         EntityManagerInterface $em,
         Request $request
     ): Response {
-        if (!$this->isCsrfTokenValid('generate_ai_' . $programme->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('generate_ai_' . $programme->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Token invalide.');
             return $this->redirectToRoute('front_programme_show', ['id' => $programme->getId()]);
         }

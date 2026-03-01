@@ -24,7 +24,7 @@ class ObjectifStatusService
             return;
         }
 
-        $score = $programme->getScorePourcentage() ?? 0;
+       $score = $programme->getScorePourcentage();
 
         $newStatus = match (true) {
             $score === 0    => Statutobj::Abandonner,
