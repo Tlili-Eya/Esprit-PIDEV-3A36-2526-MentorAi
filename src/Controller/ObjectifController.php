@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Objectif;
 use App\Entity\Programme;
+use App\Entity\Utilisateur;
 use App\Enum\Statutobj;
 use App\Form\ObjectifType;
 use App\Repository\ObjectifRepository;
@@ -37,16 +38,13 @@ class ObjectifController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response
     {
-        // Récupérer l'utilisateur connecté
         $utilisateur = $this->getUser();
-        if (!$utilisateur) {
+        if (!$utilisateur instanceof Utilisateur) {
             return $this->redirectToRoute('app_login');
         }
 
-        // Filtrage par titre
-        $titre = trim($request->query->get('titre', ''));
+        $titre = trim((string) $request->query->get('titre', ''));
 
-        // Filtrer les objectifs par utilisateur connecté
         $queryBuilder = $objectifRepository->createQueryBuilder('o')
             ->where('o.utilisateur = :utilisateur')
             ->setParameter('utilisateur', $utilisateur);
@@ -56,7 +54,6 @@ class ObjectifController extends AbstractController
                          ->setParameter('titre', '%' . $titre . '%');
         }
 
-        // Tri
         $sort = $request->query->get('sort', 'datedebut');
         $orderBy = match ($sort) {
             'titre'     => 'titre',
@@ -69,7 +66,6 @@ class ObjectifController extends AbstractController
 
         $objectifs = $queryBuilder->getQuery()->getResult();
 
-        // Compteurs pour le cercle
         $total = count($objectifs);
         $atteints = 0;
         $enCours = 0;
@@ -86,16 +82,13 @@ class ObjectifController extends AbstractController
             }
         }
 
-        // Créer le formulaire modal
         $objectif = new Objectif();
         $objectif->setUtilisateur($utilisateur);
         
         $form = $this->createForm(ObjectifType::class, $objectif);
         $form->handleRequest($request);
 
-        // Traitement de la soumission
         if ($form->isSubmitted() && $form->isValid()) {
-            // Création du programme associé
             $programme = new Programme();
             $programme->setTitre($objectif->getTitre() ?? 'Programme auto ' . date('Y-m-d'));
             $programme->setDategeneration(new \DateTime());
@@ -104,7 +97,6 @@ class ObjectifController extends AbstractController
             $entityManager->persist($programme);
             $objectif->setProgramme($programme);
 
-            // Définir le statut par défaut
             if (!$objectif->getStatut()) {
                 $objectif->setStatut(Statutobj::EnCours);
             }
@@ -112,7 +104,6 @@ class ObjectifController extends AbstractController
             $entityManager->persist($objectif);
             $entityManager->flush();
 
-            // Mise à jour statut objectif basé sur score programme
             $this->objectifStatusService->updateStatusFromProgrammeScore($objectif);
 
             $this->addFlash('success', 'Objectif créé avec succès !');
@@ -163,7 +154,7 @@ class ObjectifController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cet objectif.');
         }
 
-        if ($this->isCsrfTokenValid('delete' . $objectif->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $objectif->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($objectif);
             $entityManager->flush();
 
@@ -215,7 +206,7 @@ class ObjectifController extends AbstractController
     public function reset(EntityManagerInterface $entityManager): Response
     {
         $utilisateur = $this->getUser();
-        if (!$utilisateur) {
+        if (!$utilisateur instanceof Utilisateur) {
             return $this->redirectToRoute('app_login');
         }
 
@@ -231,7 +222,7 @@ class ObjectifController extends AbstractController
     public function exportExcel(ObjectifRepository $repo): Response
     {
         $utilisateur = $this->getUser();
-        if (!$utilisateur) {
+        if (!$utilisateur instanceof Utilisateur) {
             return $this->redirectToRoute('app_login');
         }
 
@@ -274,7 +265,7 @@ class ObjectifController extends AbstractController
     public function exportWord(ObjectifRepository $repo): Response
     {
         $utilisateur = $this->getUser();
-        if (!$utilisateur) {
+        if (!$utilisateur instanceof Utilisateur) {
             return $this->redirectToRoute('app_login');
         }
 
@@ -298,7 +289,7 @@ class ObjectifController extends AbstractController
         $i = 1;
         foreach ($objectifs as $objectif) {
             $table->addRow();
-            $table->addCell(2000)->addText($i++);
+            $table->addCell(2000)->addText((string) $i++);
             $table->addCell(3000)->addText('PPD' . $objectif->getId());
             $table->addCell(5000)->addText($objectif->getTitre());
             $table->addCell(3000)->addText($objectif->getDatedebut() ? $objectif->getDatedebut()->format('d/m/Y') : '');

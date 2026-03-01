@@ -30,7 +30,7 @@ class BackObjectifController extends AbstractController
         UtilisateurRepository $utilisateurRepo,
         Request $request
     ): Response {
-        $titre = trim($request->query->get('titre', ''));
+        $titre = trim((string) $request->query->get('titre', ''));
         $utilisateurId = $request->query->getInt('utilisateurId', 0);
 
         $queryBuilder = $objectifRepo->createQueryBuilder('o');
@@ -117,7 +117,7 @@ class BackObjectifController extends AbstractController
             $sheet->setCellValue('C'.$row, $objectif->getTitre());
             $sheet->setCellValue('D'.$row, $objectif->getDatedebut()?->format('d/m/Y') ?? '');
             $sheet->setCellValue('E'.$row, $objectif->getDatefin()?->format('d/m/Y') ?? '');
-            $sheet->setCellValue('F'.$row, $objectif->getStatut()?->value ?? '');
+            $sheet->setCellValue('F'.$row, $objectif->getStatut()->value);
             $row++;
         }
 
@@ -158,12 +158,12 @@ class BackObjectifController extends AbstractController
         $i = 1;
         foreach ($objectifs as $objectif) {
             $table->addRow();
-            $table->addCell(2000)->addText($i++);
+            $table->addCell(2000)->addText((string) $i++);
             $table->addCell(3000)->addText('PPD' . $objectif->getId());
             $table->addCell(5000)->addText($objectif->getTitre());
             $table->addCell(3000)->addText($objectif->getDatedebut()?->format('d/m/Y') ?? '');
             $table->addCell(3000)->addText($objectif->getDatefin()?->format('d/m/Y') ?? '');
-            $table->addCell(2500)->addText($objectif->getStatut()?->value ?? '');
+            $table->addCell(2500)->addText($objectif->getStatut()->value);
         }
 
         $writer = IOFactory::createWriter($phpWord, 'Word2007');

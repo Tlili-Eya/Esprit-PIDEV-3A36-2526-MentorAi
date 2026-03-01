@@ -12,6 +12,8 @@
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6",
         "dompdf/dompdf": "^3.1",
+        "knpuniversity/oauth2-client-bundle": "*",
+        "league/oauth2-google": "^4.1",
         "phpdocumentor/reflection-docblock": "5.2",
         "phpoffice/phpspreadsheet": "^5.4",
         "phpoffice/phpword": "^1.4",
@@ -101,7 +103,9 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^4.3",
+        "phpstan/phpstan": "*",
         "phpunit/phpunit": "^11.5",
+        "shipmonk/doctrine-entity-preloader": "^1.4",
         "symfony/browser-kit": "6.4.*",
         "symfony/css-selector": "6.4.*",
         "symfony/debug-bundle": "6.4.*",
