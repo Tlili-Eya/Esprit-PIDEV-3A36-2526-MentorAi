@@ -111,6 +111,8 @@ final class PythonLocalAnalyzer
     /**
      * Construit le tableau de données à passer au script Python.
      * Toutes les valeurs sont normalisées pour éviter les erreurs côté Python.
+     *
+     * @return array<string, int|float|string|bool|null>
      */
     private function construirePayload(Utilisateur $user): array
     {
@@ -126,10 +128,10 @@ final class PythonLocalAnalyzer
             'derniere_connexion'  => $user->getLastLogin()
                                         ? $user->getLastLogin()->format('Y-m-d H:i:s')
                                         : 'jamais',
-            'tentatives_echouees' => $user->getLoginAttempts() ?? 0,
+            'tentatives_echouees' => $user->getLoginAttempts(),
             'ip'                  => $user->getRegistrationIp() ?? '',
-            'trust_score'         => $user->getTrustScore()     ?? 50.0,
-            'risk_level'          => $user->getRiskLevel()      ?? 'MEDIUM',
+            'trust_score'         => $user->getTrustScore(),
+            'risk_level'          => $user->getRiskLevel(),
             'doublon_ip'          => (bool) $user->isFlaggedDuplicate(),
             'a_photo'             => (bool) $user->getPdpUrl(),
         ];

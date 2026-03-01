@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -63,8 +64,11 @@ class ProjetController extends AbstractController
         
         if ($resourceId) {
             $resource = $ressourceRepository->findOneBy(['id' => $resourceId]);
-            if ($resource && $activeProject && $resource->getProjet()->getId() !== $activeProject->getId()) {
-                $resource = null;
+            if ($resource) {
+                $resourceProject = $resource->getProjet();
+                if (!$activeProject || !$resourceProject || $resourceProject->getId() !== $activeProject->getId()) {
+                    $resource = null;
+                }
             }
         }
         
@@ -78,18 +82,23 @@ class ProjetController extends AbstractController
             $resourceForm->handleRequest($request);
 
             if ($resourceForm->isSubmitted() && $resourceForm->isValid()) {
-                /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
+                /** @var UploadedFile|null $file */
                 $file = $resourceForm->get('fichier')->getData();
                 
-                if ($file) {
+                if ($file instanceof UploadedFile) {
                     $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = bin2hex(random_bytes(6)) . '-' . $originalFilename;
                     $extension = $file->guessExtension() ?: $file->getClientOriginalExtension();
                     $newFilename = $safeFilename . '.' . $extension;
 
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    if (!is_string($projectDir)) {
+                        throw new \RuntimeException('Paramètre kernel.project_dir invalide.');
+                    }
+
                     try {
                         $file->move(
-                            $this->getParameter('kernel.project_dir') . '/public/uploads/ressources',
+                            $projectDir . '/public/uploads/ressources',
                             $newFilename
                         );
                         $resource->setUrlRessource('/uploads/ressources/' . $newFilename);
@@ -136,13 +145,18 @@ class ProjetController extends AbstractController
     #[Route('/projets/ressource/delete/{id}', name: 'front_delete_ressource')]
     public function deleteRessource(Ressource $ressource, EntityManagerInterface $entityManager): Response
     {
-         if ($ressource->getProjet()->getUtilisateur() !== $this->getUser()) {
+         $project = $ressource->getProjet();
+         if (!$project || $project->getUtilisateur() !== $this->getUser()) {
              throw $this->createAccessDeniedException();
          }
 
-         $projectId = $ressource->getProjet()->getId();
+         $projectId = $project->getId();
          $entityManager->remove($ressource);
          $entityManager->flush();
+
+         if ($projectId === null) {
+             return $this->redirectToRoute('front_mes_projets');
+         }
 
          return $this->redirectToRoute('front_projets', ['id' => $projectId]);
     }
