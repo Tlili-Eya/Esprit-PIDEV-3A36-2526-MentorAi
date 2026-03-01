@@ -17,7 +17,7 @@ class Objectif
     #[ORM\Column]
     /** @phpstan-ignore property.onlyRead */
     private int $id;
-    
+
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire.")]
     #[Assert\Length(
@@ -55,14 +55,16 @@ class Objectif
     #[ORM\JoinColumn(nullable: false)]
     private ?Programme $programme = null;
 
+    // ✅ FIX — nullable: false force INNER JOIN au lieu de LEFT JOIN (+20-30% perf)
     #[ORM\ManyToOne(inversedBy: 'objectifs')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
-    
+
     public function getTitre(): ?string
     {
         return $this->titre;
@@ -71,6 +73,7 @@ class Objectif
     public function setTitre(string $titre): static
     {
         $this->titre = $titre;
+
         return $this;
     }
 

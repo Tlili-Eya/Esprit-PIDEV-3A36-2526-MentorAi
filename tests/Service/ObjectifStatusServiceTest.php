@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 class ObjectifStatusServiceTest extends TestCase
 {
     private ObjectifStatusService $service;
-    private EntityManagerInterface $entityManager;
+    private \Doctrine\ORM\EntityManagerInterface&\PHPUnit\Framework\MockObject\MockObject $entityManager;
 
     protected function setUp(): void
     {
@@ -101,4 +101,21 @@ class ObjectifStatusServiceTest extends TestCase
 
         $this->assertSame(Statutobj::EnCours, $objectif->getStatut());
     }
+    // Test 6 : score = 1 (limite basse) → statut doit être EnCours
+    public function testScoreUnSetStatutEnCours(): void
+    {
+        $programme = new Programme();
+        $programme->setScorePourcentage(1);
+
+        $objectif = new Objectif();
+        $objectif->setProgramme($programme);
+        $objectif->setStatut(Statutobj::Abandonner);
+
+        $this->entityManager->expects($this->once())->method('flush');
+
+        $this->service->updateStatusFromProgrammeScore($objectif);
+
+        $this->assertSame(Statutobj::EnCours, $objectif->getStatut());
+    }
+
 }
