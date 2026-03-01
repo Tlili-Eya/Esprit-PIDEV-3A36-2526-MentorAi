@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ConversationRepository::class)]
 class Conversation
 {
+    /** @var int|null */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -28,6 +29,9 @@ class Conversation
     #[ORM\ManyToOne(inversedBy: 'conversations')]
     private ?Utilisateur $user = null;
 
+    /**
+     * @var Collection<int, Message>
+     */
     #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: Message::class, orphanRemoval: true)]
     private Collection $messages;
 
@@ -37,6 +41,9 @@ class Conversation
         $this->messages = new ArrayCollection();
     }
 
+    /**
+     * @return Collection<int, Message>
+     */
     public function getMessages(): Collection
     {
         return $this->messages;

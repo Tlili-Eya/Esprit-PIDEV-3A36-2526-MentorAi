@@ -17,6 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: SortieAIRepository::class)]
 class SortieAI
 {
+    /** @var int|null */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -49,6 +50,9 @@ class SortieAI
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $updatedAt = null;
 
+    /**
+     * @var Collection<int, PlanActions>
+     */
     #[ORM\OneToMany(targetEntity: PlanActions::class, mappedBy: 'sortieAI', orphanRemoval: true)]
     private Collection $planActions;
 
@@ -86,6 +90,9 @@ class SortieAI
     public function setCreatedAt(\DateTime $createdAt): static { $this->createdAt = $createdAt; return $this; }
     public function getUpdatedAt(): ?\DateTime { return $this->updatedAt; }
     public function setUpdatedAt(?\DateTime $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
+    /**
+     * @return Collection<int, PlanActions>
+     */
     public function getPlanActions(): Collection { return $this->planActions; }
     public function addPlanAction(PlanActions $planAction): static {
         if (!$this->planActions->contains($planAction)) {
@@ -126,7 +133,7 @@ class SortieAI
         return sprintf(
             'Sortie AI #%d (%s)',
             $this->id ?? 0,
-            $this->typeSortie ? $this->typeSortie->value : 'Inconnu'
+            $this->typeSortie->value
         );
     }
 }
