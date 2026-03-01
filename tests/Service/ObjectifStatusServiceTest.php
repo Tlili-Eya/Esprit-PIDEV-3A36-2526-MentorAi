@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 class ObjectifStatusServiceTest extends TestCase
 {
     private ObjectifStatusService $service;
-    private EntityManagerInterface $entityManager;
+    private \Doctrine\ORM\EntityManagerInterface&\PHPUnit\Framework\MockObject\MockObject $entityManager;
 
     protected function setUp(): void
     {
@@ -117,5 +117,5 @@ class ObjectifStatusServiceTest extends TestCase
 
         $this->assertSame(Statutobj::EnCours, $objectif->getStatut());
     }
-    
+
 }
