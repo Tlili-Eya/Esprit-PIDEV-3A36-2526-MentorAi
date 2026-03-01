@@ -88,13 +88,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Projet>
      */
-    #[ORM\OneToMany(targetEntity: Projet::class, mappedBy: 'utilisateur', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Projet::class, mappedBy: 'utilisateur')]
     private Collection $projets;
 
     /**
      * @var Collection<int, Parcours>
      */
-    #[ORM\OneToMany(targetEntity: Parcours::class, mappedBy: 'utilisateur', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Parcours::class, mappedBy: 'utilisateur')]
     private Collection $parcours;
 
     /**
