@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 
 #[ORM\Entity(repositoryClass: PlanActionsRepository::class)]
+#[ORM\Table(name: 'plan_actions')]
 class PlanActions
 {
     /** @var int|null */
@@ -43,29 +44,30 @@ class PlanActions
     )]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Assert\NotBlank(message: "La date est obligatoire")]
     private ?\DateTimeInterface $date = null;
 
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
     
-    #[ORM\Column(type: 'string', enumType: Statut::class)]
+    #[ORM\Column(enumType: Statut::class)]
     #[Assert\NotNull(message: "Le statut est obligatoire")] 
     private ?Statut $statut = null;
 
-    #[ORM\Column(type: 'string', enumType: CategorieSortie::class, nullable: true)]
+    #[ORM\Column(enumType: CategorieSortie::class, nullable: true)]
     #[Assert\NotNull(message: "La catégorie est obligatoire")]
     private ?CategorieSortie $categorie = null;
 
     #[ORM\ManyToOne(inversedBy: 'planActions')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?SortieAI $sortieAI = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $feedbackEnseignant = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeInterface $feedbackDate = null;
 
     #[ORM\ManyToOne]
@@ -83,7 +85,7 @@ class PlanActions
 
     public function __construct()
     {
-        $this->date = new \DateTime();
+        $this->date = new \DateTimeImmutable();
         $this->statut = null;
         $this->categorie = null;
         $this->articles = new ArrayCollection(); 
@@ -131,12 +133,6 @@ class PlanActions
     public function getDate(): ?\DateTimeInterface
     {
         return $this->date;
-    }
-
-    public function setDate(\DateTimeInterface $date): static
-    {
-        $this->date = $date;
-        return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface
@@ -192,7 +188,7 @@ class PlanActions
     {
         $this->feedbackEnseignant = $feedbackEnseignant;
         if ($feedbackEnseignant) {
-            $this->feedbackDate = new \DateTime();
+            $this->feedbackDate = new \DateTimeImmutable();
         }
         return $this;
     }

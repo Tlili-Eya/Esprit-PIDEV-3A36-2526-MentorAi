@@ -26,34 +26,34 @@ class SortieAI
     #[ORM\ManyToOne]
     private ?Utilisateur $etudiant = null;
 
-    #[ORM\Column(type: 'string', length: 20, enumType: StatutSortie::class, options: ["default" => StatutSortie::Nouveau])]
+    #[ORM\Column(length: 20, enumType: StatutSortie::class, options: ["default" => 'Nouveau'])]
     private StatutSortie $statut = StatutSortie::Nouveau;
 
-    #[ORM\Column(type: 'string', length: 20, enumType: Cible::class, nullable: false)]
+    #[ORM\Column(length: 20, enumType: Cible::class, nullable: false)]
     private Cible $cible;
 
-    #[ORM\Column(type: 'string', length: 20, enumType: TypeSortie::class, nullable: false)]
+    #[ORM\Column(length: 20, enumType: TypeSortie::class, nullable: false)]
     private TypeSortie $typeSortie;
 
-    #[ORM\Column(type: 'string', length: 20, enumType: Criticite::class, nullable: false)]
+    #[ORM\Column(length: 20, enumType: Criticite::class, nullable: false)]
     private Criticite $criticite;
 
-    #[ORM\Column(type: 'string', length: 20, enumType: CategorieSortie::class, nullable: false)]
+    #[ORM\Column(length: 20, enumType: CategorieSortie::class, nullable: false)]
     private CategorieSortie $categorieSortie;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $contenu = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $createdAt = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTime $updatedAt = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     /**
      * @var Collection<int, PlanActions>
      */
-    #[ORM\OneToMany(targetEntity: PlanActions::class, mappedBy: 'sortieAI', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: PlanActions::class, mappedBy: 'sortieAI', orphanRemoval: true, cascade: ['persist'])]
     private Collection $planActions;
 
     /**
@@ -67,7 +67,7 @@ class SortieAI
     {
         $this->planActions = new ArrayCollection();
         $this->articles = new ArrayCollection();
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     // GETTERS ET SETTERS
@@ -86,10 +86,9 @@ class SortieAI
     public function setCategorieSortie(CategorieSortie $categorieSortie): static { $this->categorieSortie = $categorieSortie; return $this; }
     public function getContenu(): ?string { return $this->contenu; }
     public function setContenu(string $contenu): static { $this->contenu = $contenu; return $this; }
-    public function getCreatedAt(): ?\DateTime { return $this->createdAt; }
-    public function setCreatedAt(\DateTime $createdAt): static { $this->createdAt = $createdAt; return $this; }
-    public function getUpdatedAt(): ?\DateTime { return $this->updatedAt; }
-    public function setUpdatedAt(?\DateTime $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
+    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
+    public function getUpdatedAt(): ?\DateTimeImmutable { return $this->updatedAt; }
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
     /**
      * @return Collection<int, PlanActions>
      */
