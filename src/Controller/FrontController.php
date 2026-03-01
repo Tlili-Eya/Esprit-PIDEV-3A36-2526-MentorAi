@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+
 #[Route('/', name: 'front_')]
 class FrontController extends AbstractController
 {
@@ -30,7 +31,6 @@ class FrontController extends AbstractController
         return $this->render('front/about.html.twig');
     }
 
-
     #[Route('course-details', name: 'course_details')]
     public function courseDetails(): Response
     {
@@ -43,8 +43,6 @@ class FrontController extends AbstractController
         return $this->render('front/instructor-profile.html.twig');
     }
 
-    
-
     #[Route('pricing', name: 'pricing')]
     public function pricing(): Response
     {
@@ -54,14 +52,18 @@ class FrontController extends AbstractController
     #[Route('checkout/{plan}', name: 'checkout')]
     public function checkout(string $plan, UrlGeneratorInterface $generator): Response
     {
-        \Stripe\Stripe::setApiKey($this->getParameter('stripe_secret_key'));
-
-        $price = 7500;
-        if ($plan === 'business') {
-            $price = 13500;
-        } elseif ($plan === 'plus') {
-            $price = 7500;
+        $stripeKey = $this->getParameter('stripe_secret_key');
+        if (!is_string($stripeKey)) {
+            throw new \RuntimeException('Stripe secret key is not configured correctly.');
         }
+
+        \Stripe\Stripe::setApiKey($stripeKey);
+
+        $price = match ($plan) {
+            'business' => 13500,
+            'plus' => 7500,
+            default => 7500,
+        };
 
         $session = \Stripe\Checkout\Session::create([
             'payment_method_types' => ['card'],
@@ -76,9 +78,21 @@ class FrontController extends AbstractController
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
-            'success_url' => $generator->generate('front_checkout_success', [], UrlGeneratorInterface::ABSOLUTE_URL) . '?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => $generator->generate('front_pricing', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'success_url' => $generator->generate(
+                'front_checkout_success',
+                [],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            ) . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => $generator->generate(
+                'front_pricing',
+                [],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            ),
         ]);
+
+        if (!is_string($session->url)) {
+            throw new \RuntimeException('Stripe session URL is missing.');
+        }
 
         return $this->redirect($session->url, 303);
     }
@@ -88,25 +102,41 @@ class FrontController extends AbstractController
     {
         $sessionId = $request->query->get('session_id');
 
-        if ($sessionId) {
-            \Stripe\Stripe::setApiKey($this->getParameter('stripe_secret_key'));
-            
-            try {
-                $session = \Stripe\Checkout\Session::retrieve($sessionId);
-                $customerEmail = $session->customer_details->email;
-                $amountTotal = $session->amount_total / 100;
+        if (!is_string($sessionId) || $sessionId === '') {
+            return $this->render('front/checkout_success.html.twig');
+        }
 
-                if ($customerEmail) {
-                    $email = (new Email())
-                        ->from('MentorAI <hejerh666@gmail.com>')
-                        ->to($customerEmail)
-                        ->subject('Confirmation de votre paiement')
-                        ->html('<p>Merci beaucoup pour votre paiement de ' . $amountTotal . ' dt pour l\'abonnement.</p><p>Votre transaction a &eacute;t&eacute; effectu&eacute;e avec succ&egrave;s.</p>');
+        $stripeKey = $this->getParameter('stripe_secret_key');
+        if (!is_string($stripeKey)) {
+            throw new \RuntimeException('Stripe secret key is not configured correctly.');
+        }
 
-                    $mailer->send($email);
-                }
-            } catch (\Exception $e) {
+        \Stripe\Stripe::setApiKey($stripeKey);
+
+        try {
+            $session = \Stripe\Checkout\Session::retrieve($sessionId);
+
+            $customerEmail = $session->customer_details?->email;
+            $amountTotal = is_int($session->amount_total)
+                ? $session->amount_total / 100
+                : null;
+
+            if (is_string($customerEmail) && $amountTotal !== null) {
+                $email = (new Email())
+                    ->from('MentorAI <hejerh666@gmail.com>')
+                    ->to($customerEmail)
+                    ->subject('Confirmation de votre paiement')
+                    ->html(
+                        '<p>Merci beaucoup pour votre paiement de '
+                        . $amountTotal
+                        . ' dt pour l\'abonnement.</p>
+                        <p>Votre transaction a été effectuée avec succès.</p>'
+                    );
+
+                $mailer->send($email);
             }
+        } catch (\Throwable $e) {
+            // log possible ici
         }
 
         return $this->render('front/checkout_success.html.twig');
@@ -158,30 +188,23 @@ class FrontController extends AbstractController
     public function error404(): Response
     {
         return $this->render('front/404.html.twig');
-    
     }
 
     #[Route('ai-embauche', name: 'ai_embauche')]
     public function aiEmbauche(): Response
     {
         return $this->render('front/ai-embauche.html.twig');
-    
     }
 
     #[Route('jeux', name: 'jeux')]
     public function jeux(): Response
     {
         return $this->render('front/jeux.html.twig');
-    
     }
 
-  #[Route('preferences', name: 'preferences')]
+    #[Route('preferences', name: 'preferences')]
     public function preferences(): Response
     {
         return $this->render('front/preferences.html.twig');
     }
-
-
-
-
 }
