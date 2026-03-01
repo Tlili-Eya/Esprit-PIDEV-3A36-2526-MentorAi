@@ -154,12 +154,13 @@ h6 {
 # Global Header #9dbbce
 --------------------------------------------------------------*/
 .header {
-  --background-color: #7a9aad;
+  --background-color: rgba(50, 75, 116, 0.85);
   --default-color: #ffffff;
   --heading-color: #ffffff;
   --accent-color: #d52e28;
   color: var(--default-color);
   background-color: var(--background-color);
+  backdrop-filter: blur(10px);
   padding: 15px 0;
   transition: all 0.5s;
   z-index: 997;

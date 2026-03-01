@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Carnet;
 use App\Repository\CarnetRepository;
+use Cloudinary\Configuration\Configuration;
+use Cloudinary\Uploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,6 +15,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class CarnetController extends AbstractController
 {
+    private bool $cloudinaryConfigured = false;
+
     #[Route('/blog', name: 'front_blog', methods: ['GET'])]
     public function blog(Request $request, CarnetRepository $carnetRepository): Response
     {
@@ -158,6 +162,21 @@ final class CarnetController extends AbstractController
 
             $mimeType = $attachment->getMimeType() ?? 'application/octet-stream';
             $filename = $attachment->getClientOriginalName() ?: 'fichier';
+            $uploaded = $this->uploadFileToCloudinary(
+                $attachment->getPathname(),
+                $filename,
+                $mimeType
+            );
+
+            if ($uploaded) {
+                $attachmentsMeta[] = [
+                    'name' => $uploaded['name'],
+                    'mime' => $uploaded['mime'],
+                    'path' => $uploaded['path'],
+                ];
+                continue;
+            }
+
             $ext = pathinfo($filename, PATHINFO_EXTENSION) ?: $this->guessExtension($mimeType);
             $safeName = uniqid('carnet_', true) . ($ext ? '.' . $ext : '');
             $attachment->move($uploadDir, $safeName);
@@ -266,6 +285,11 @@ final class CarnetController extends AbstractController
             return null;
         }
 
+        $cloudinaryUpload = $this->uploadDataUrlToCloudinary($dataUrl, $mime);
+        if ($cloudinaryUpload) {
+            return $cloudinaryUpload;
+        }
+
         $ext = $this->guessExtension($mime);
         $safeName = uniqid('carnet_', true) . ($ext ? '.' . $ext : '');
         file_put_contents($uploadDir . '/' . $safeName, $data);
@@ -303,6 +327,19 @@ final class CarnetController extends AbstractController
 
         $mimeType = $file->getMimeType() ?? 'audio/webm';
         $ext = $this->guessExtension($mimeType) ?: 'webm';
+
+        $cloudinaryUpload = $this->uploadFileToCloudinary(
+            $file->getPathname(),
+            'carnet_audio.' . $ext,
+            $mimeType
+        );
+        if ($cloudinaryUpload) {
+            return new JsonResponse([
+                'url' => $cloudinaryUpload['path'],
+                'mime' => $cloudinaryUpload['mime'],
+            ]);
+        }
+
         $projectDir = $this->getParameter('kernel.project_dir');
         $uploadDir = $projectDir . '/public/uploads/carnet';
         if (!is_dir($uploadDir)) {
@@ -316,5 +353,134 @@ final class CarnetController extends AbstractController
             'url' => '/uploads/carnet/' . $safeName,
             'mime' => $mimeType,
         ]);
+    }
+
+    #[Route('/blog/upload-ckeditor', name: 'front_blog_upload_ckeditor', methods: ['POST'])]
+    public function uploadCkeditor(Request $request): JsonResponse
+    {
+        $file = $request->files->get('upload') ?? $request->files->get('file');
+        if (!$file) {
+            return new JsonResponse([
+                'error' => ['message' => 'Fichier manquant.']
+            ], 422);
+        }
+
+        $mimeType = $file->getMimeType() ?? 'application/octet-stream';
+        $filename = $file->getClientOriginalName() ?: 'fichier';
+
+        $cloudinaryUpload = $this->uploadFileToCloudinary(
+            $file->getPathname(),
+            $filename,
+            $mimeType
+        );
+
+        if ($cloudinaryUpload) {
+            return new JsonResponse([
+                'url' => $cloudinaryUpload['path']
+            ]);
+        }
+
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $uploadDir = $projectDir . '/public/uploads/carnet';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+
+        $ext = pathinfo($filename, PATHINFO_EXTENSION) ?: $this->guessExtension($mimeType);
+        $safeName = uniqid('carnet_ck_', true) . ($ext ? '.' . $ext : '');
+        $file->move($uploadDir, $safeName);
+
+        return new JsonResponse([
+            'url' => '/uploads/carnet/' . $safeName,
+        ]);
+    }
+
+    private function uploadFileToCloudinary(string $filePath, string $filename, string $mimeType): ?array
+    {
+        if (!$this->configureCloudinary()) {
+            return null;
+        }
+
+        try {
+            $response = Uploader::upload($filePath, [
+                'resource_type' => 'auto',
+                'folder' => 'mentorai/carnet',
+                'public_id' => pathinfo($filename, PATHINFO_FILENAME) . '_' . uniqid(),
+                'use_filename' => true,
+                'unique_filename' => true,
+            ]);
+
+            if (empty($response['secure_url'])) {
+                return null;
+            }
+
+            return [
+                'name' => $filename,
+                'mime' => $mimeType,
+                'path' => (string) $response['secure_url'],
+            ];
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function uploadDataUrlToCloudinary(string $dataUrl, string $mimeType): ?array
+    {
+        if (!$this->configureCloudinary()) {
+            return null;
+        }
+
+        try {
+            $response = Uploader::upload($dataUrl, [
+                'resource_type' => 'auto',
+                'folder' => 'mentorai/carnet',
+                'public_id' => 'carnet_inline_' . uniqid(),
+            ]);
+
+            if (empty($response['secure_url'])) {
+                return null;
+            }
+
+            $ext = $this->guessExtension($mimeType);
+            $name = 'carnet_inline_' . uniqid() . ($ext ? '.' . $ext : '');
+
+            return [
+                'name' => $name,
+                'mime' => $mimeType,
+                'path' => (string) $response['secure_url'],
+            ];
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function configureCloudinary(): bool
+    {
+        if ($this->cloudinaryConfigured) {
+            return true;
+        }
+
+        $cloudName = (string) $this->getParameter('cloudinary_cloud_name');
+        $apiKey = (string) $this->getParameter('cloudinary_api_key');
+        $apiSecret = (string) $this->getParameter('cloudinary_api_secret');
+
+        if ($cloudName === '' || $apiKey === '' || $apiSecret === '') {
+            return false;
+        }
+
+        Configuration::instance([
+            'cloud' => [
+                'cloud_name' => $cloudName,
+                'api_key' => $apiKey,
+                'api_secret' => $apiSecret,
+            ],
+            'url' => [
+                'secure' => true,
+            ],
+        ]);
+
+        $this->cloudinaryConfigured = true;
+
+        return true;
     }
 }

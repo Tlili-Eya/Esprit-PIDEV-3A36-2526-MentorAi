@@ -6,7 +6,8 @@
 parameters:
     pdp_directory: '%kernel.project_dir%/public/uploads/pdp'
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
-    groq_api_key: '%env(GROQ_API_KEY)%'
+    groq_api_key_empty: ''
+    groq_api_key: '%env(default:groq_api_key_empty:GROQ_API_KEY)%'
     groq_model: '%env(GROQ_MODEL)%'
     elevenlabs_api_key: '%env(ELEVENLABS_API_KEY)%'
     elevenlabs_voice_id: '%env(ELEVENLABS_VOICE_ID)%'
@@ -30,6 +31,7 @@ services:
     App\Controller\CourController:
         arguments:
             $groqApiKey: '%groq_api_key%'
+            $groqModel: '%groq_model%'
             $elevenLabsApiKey: '%elevenlabs_api_key%'
             $cloudName: '%cloudinary_cloud_name%'
             $cloudApiKey: '%cloudinary_api_key%'

@@ -79,7 +79,7 @@ class HumeurRepository extends ServiceEntityRepository
         $moods = $this->createQueryBuilder('h')
             ->andWhere('h.profilApprentissage = :profil')
             ->setParameter('profil', $profilApprentissage)
-            ->orderBy('h.creeLe', 'DESC')
+            ->orderBy('h.creeLe', 'ASC')
             ->getQuery()
             ->getResult();
 
@@ -87,26 +87,40 @@ class HumeurRepository extends ServiceEntityRepository
             return 0;
         }
 
+        // Count total days with entries
+        $totalDays = count($moods);
+        
+        // Group moods by date to handle multiple entries per day
+        $dateMap = [];
+        foreach ($moods as $humeur) {
+            $dateKey = $humeur->getCreeLe()->format('Y-m-d');
+            if (!isset($dateMap[$dateKey])) {
+                $dateMap[$dateKey] = true;
+            }
+        }
+        
+        $dates = array_keys($dateMap);
+        sort($dates);
+        
+        if (count($dates) === 0) {
+            return 0;
+        }
+        
         $maxStreak = 1;
         $currentStreak = 1;
-        $previousDate = null;
-
-        foreach ($moods as $humeur) {
-            if ($previousDate === null) {
-                $previousDate = $humeur->getCreeLe();
-                continue;
-            }
-
-            $daysDiff = $previousDate->diff($humeur->getCreeLe())->days;
-
+        
+        for ($i = 1; $i < count($dates); $i++) {
+            $prevDate = new \DateTime($dates[$i - 1]);
+            $currDate = new \DateTime($dates[$i]);
+            
+            $daysDiff = $prevDate->diff($currDate)->days;
+            
             if ($daysDiff === 1) {
                 $currentStreak++;
                 $maxStreak = max($maxStreak, $currentStreak);
             } else {
                 $currentStreak = 1;
             }
-
-            $previousDate = $humeur->getCreeLe();
         }
 
         return $maxStreak;

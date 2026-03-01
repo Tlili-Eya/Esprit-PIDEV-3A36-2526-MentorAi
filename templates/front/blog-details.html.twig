@@ -4,6 +4,22 @@
 
 {% block stylesheets %}
   <style>
+    :root {
+      --color-deep-navy: #102c59;
+      --color-steel-blue: #324b74ff;
+      --color-accent-red: #d52e28;
+      --primary-gradient: linear-gradient(135deg, var(--color-deep-navy) 0%, #1a3c78 100%);
+      --accent-gradient: linear-gradient(135deg, var(--color-accent-red) 0%, #a0231e 100%);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+      background: radial-gradient(circle at top right, rgba(213, 46, 40, 0.08), transparent),
+                  radial-gradient(circle at bottom left, rgba(16, 44, 89, 0.25), transparent),
+                  #324b74ff;
+    }
+
     .planning-layout {
       display: grid;
       grid-template-columns: minmax(260px, 320px) 1fr;
@@ -12,9 +28,11 @@
     }
 
     .planning-panel {
-      background: #ffffff;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+      border: 1px solid rgba(50, 75, 116, 0.1);
       padding: 20px;
     }
 
@@ -60,13 +78,14 @@
     }
 
     .calendar-cell.is-selected {
-      background: #0f172a;
+      background: var(--primary-gradient);
       color: #ffffff;
-      border-color: #0f172a;
+      border-color: var(--color-steel-blue);
+      box-shadow: 0 4px 12px rgba(50, 75, 116, 0.3);
     }
 
     .calendar-cell.is-today {
-      border-color: #334155;
+      border-color: var(--color-steel-blue);
       font-weight: 600;
     }
 
@@ -97,7 +116,7 @@
     }
 
     .week-header .is-selected {
-      background: #0f172a;
+      background: var(--primary-gradient);
       color: #ffffff;
     }
 
@@ -157,7 +176,7 @@
       width: calc(100% - 12px);
       border-radius: 8px;
       padding: 6px 8px;
-      color: #0f172a;
+      color: var(--color-deep-navy);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -165,6 +184,14 @@
       cursor: pointer;
       border: 2px solid transparent;
       box-sizing: border-box;
+      background: rgba(157, 187, 206, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .activity-card:hover {
+      background: rgba(157, 187, 206, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(50, 75, 116, 0.2);
     }
 
     .activity-card.is-done {
@@ -177,12 +204,13 @@
     }
 
     .activity-card.is-selected {
-      border-color: #0f172a;
+      border-color: var(--color-steel-blue);
+      box-shadow: 0 0 0 3px rgba(50, 75, 116, 0.2);
     }
 
     .activity-card.is-skipped {
-      border-color: #f97316;
-      box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.25);
+      border-color: var(--color-accent-red);
+      box-shadow: inset 0 0 0 1px rgba(213, 46, 40, 0.25);
       opacity: 0.7;
     }
 
