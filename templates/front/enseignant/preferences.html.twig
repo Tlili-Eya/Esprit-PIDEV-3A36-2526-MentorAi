@@ -46,15 +46,15 @@
         <div class="card-body p-4">
             <form id="preferences-form">
                 <div class="row">
-                    <!-- Colonne gauche - TOUTES les fonctionnalités sont là -->
+                    <!-- Colonne gauche -->
                     <div class="col-md-6">
                         <!-- SECTION TEXTE ET POLICE -->
                         <div class="mb-4 p-3 rounded" style="background-color: #f8fafc; border: 1px solid #9dbbce;">
                             <h5 class="mb-3" style="color: #102c59;">
-                                <i class="bi bi-fonts me-2" style="color: #d52e28;"></i>Texte et police
+                                <i class="bi bi-fonts me-2" style="color: #d52e28;"></i>Texte et affichage
                             </h5>
                             
-                            <!-- Taille de la police - 4 niveaux -->
+                            <!-- Taille de la police -->
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="color: #102c59;">Taille de la police</label>
                                 <select id="font-size" class="form-select">
@@ -63,23 +63,9 @@
                                     <option value="large">Grande</option>
                                     <option value="x-large">Très grande</option>
                                 </select>
-                                <div class="form-text text-muted small">Ajustez la taille du texte selon vos besoins</div>
                             </div>
                             
-                            <!-- Police d'écriture - Arial, Verdana, OpenDyslexic, Times New Roman -->
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: #102c59;">Police d'écriture</label>
-                                <select id="font-family" class="form-select">
-                                    <option value="default" selected>Par défaut</option>
-                                    <option value="Arial, sans-serif">Arial</option>
-                                    <option value="Verdana, sans-serif">Verdana</option>
-                                    <option value="'OpenDyslexic', sans-serif">OpenDyslexic</option>
-                                    <option value="'Times New Roman', serif">Times New Roman</option>
-                                </select>
-                                <div class="form-text text-muted small">La police OpenDyslexic aide à la lecture pour les personnes dyslexiques</div>
-                            </div>
-                            
-                            <!-- Espacement des lignes - réglable de 1.0 à 3.0 -->
+                            <!-- Espacement des lignes -->
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="color: #102c59;">Espacement des lignes</label>
                                 <input type="range" id="line-height" class="form-range" min="1" max="3" step="0.1" value="1.5">
@@ -88,33 +74,6 @@
                                     <span id="line-height-value">1.5</span>
                                     <span>3.0</span>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- SECTION COULEURS -->
-                        <div class="mb-4 p-3 rounded" style="background-color: #f8fafc; border: 1px solid #9dbbce;">
-                            <h5 class="mb-3" style="color: #102c59;">
-                                <i class="bi bi-palette me-2" style="color: #d52e28;"></i>Couleurs
-                            </h5>
-                            
-                            <!-- Couleurs personnalisées principales et secondaires -->
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: #102c59;">Couleur principale</label>
-                                <input type="color" id="primary-color" class="form-control form-control-color" value="#102c59">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: #102c59;">Couleur secondaire</label>
-                                <input type="color" id="secondary-color" class="form-control form-control-color" value="#d52e28">
-                            </div>
-                            
-                            <!-- Contraste élevé -->
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    <input type="checkbox" id="high-contrast" class="form-check-input">
-                                    <label class="form-check-label fw-bold" for="high-contrast" style="color: #102c59;">Contraste élevé</label>
-                                </div>
-                                <div class="form-text text-muted small">Augmente le contraste pour une meilleure lisibilité</div>
                             </div>
                             
                             <!-- Mode sombre -->
@@ -128,15 +87,15 @@
                         </div>
                     </div>
                     
-                    <!-- Colonne droite - TOUTES les fonctionnalités sont là aussi -->
+                    <!-- Colonne droite -->
                     <div class="col-md-6">
-                        <!-- SECTION AFFICHAGE ET ACCESSIBILITÉ -->
+                        <!-- SECTION ACCESSIBILITÉ -->
                         <div class="mb-4 p-3 rounded" style="background-color: #f8fafc; border: 1px solid #9dbbce;">
                             <h5 class="mb-3" style="color: #102c59;">
-                                <i class="bi bi-eye me-2" style="color: #d52e28;"></i>Affichage et accessibilité
+                                <i class="bi bi-eye me-2" style="color: #d52e28;"></i>Accessibilité
                             </h5>
                             
-                            <!-- Zoom de 50% à 200% -->
+                            <!-- Zoom -->
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="color: #102c59;">Zoom (%)</label>
                                 <input type="range" id="zoom" class="form-range" min="50" max="200" step="10" value="100">
@@ -147,41 +106,12 @@
                                 </div>
                             </div>
                             
-                            <!-- Largeur du conteneur : Normale, Large, Pleine largeur -->
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: #102c59;">Largeur du conteneur</label>
-                                <select id="container-width" class="form-select">
-                                    <option value="normal" selected>Normale</option>
-                                    <option value="wide">Large</option>
-                                    <option value="full">Pleine largeur</option>
-                                </select>
-                            </div>
-                            
                             <!-- Mode dyslexique -->
                             <div class="mb-3">
                                 <div class="form-check form-switch">
                                     <input type="checkbox" id="dyslexic-mode" class="form-check-input">
                                     <label class="form-check-label fw-bold" for="dyslexic-mode" style="color: #102c59;">Mode dyslexique</label>
                                 </div>
-                                <div class="form-text text-muted small">Active des optimisations pour les personnes dyslexiques</div>
-                            </div>
-                            
-                            <!-- Mode lecture -->
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    <input type="checkbox" id="reading-mode" class="form-check-input">
-                                    <label class="form-check-label fw-bold" for="reading-mode" style="color: #102c59;">Mode lecture</label>
-                                </div>
-                                <div class="form-text text-muted small">Mode lecture simplifié sans distractions</div>
-                            </div>
-                            
-                            <!-- Réduction des animations -->
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    <input type="checkbox" id="reduced-motion" class="form-check-input">
-                                    <label class="form-check-label fw-bold" for="reduced-motion" style="color: #102c59;">Réduire les animations</label>
-                                </div>
-                                <div class="form-text text-muted small">Réduit ou supprime les animations</div>
                             </div>
                         </div>
                         
@@ -627,9 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Événements pour l'aperçu en direct
     const inputs = [
-        fontSize, fontFamily, lineHeight, primaryColor, 
-        secondaryColor, highContrast, darkMode, zoom, 
-        containerWidth, dyslexicMode, readingMode, reducedMotion
+        fontSize, lineHeight, darkMode, zoom, dyslexicMode
     ];
     
     inputs.forEach(input => {
@@ -654,3 +582,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+

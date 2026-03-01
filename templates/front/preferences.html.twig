@@ -1,0 +1,318 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Mes Préférences{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="margin-top: 100px;">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 style="color: #102c59;">Mes Préférences</h1>
+            <p class="text-muted" style="color: #9dbbce;">Personnalisez votre expérience utilisateur sur MentorAI</p>
+        </div>
+    </div>
+    
+    <!-- Modal de confirmation de réinitialisation -->
+    <div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-header border-0 bg-light" style="border-radius: 15px 15px 0 0;">
+                    <h5 class="modal-title fw-bold" id="resetModalLabel" style="color: #102c59;">
+                        <i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i>Confirmation
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="mb-0 fs-5" style="color: #1a3a73;">Êtes-vous sûr de vouloir réinitialiser toutes vos préférences ?</p>
+                    <p class="text-muted small mt-2">Cette action remettra tous les paramètres par défaut.</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 10px;">Annuler</button>
+                    <button type="button" id="confirm-reset-btn" class="btn btn-danger px-4" style="border-radius: 10px; background-color: #d52e28;">Réinitialiser</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages flash -->
+    <div id="flash-message" class="alert d-none" role="alert"></div>
+    
+    <!-- Formulaire de préférences -->
+    <div class="card border-0 shadow-lg" style="border-radius: 12px; overflow: hidden; border-top: 5px solid #102c59;">
+        <div class="card-header" style="background: linear-gradient(135deg, #102c59 0%, #1a3a73 100%); color: white; border: none;">
+            <h3 class="mb-0"><i class="bi bi-sliders2 me-2"></i>Options d'accessibilité et d'affichage</h3>
+        </div>
+        
+        <div class="card-body p-4">
+            <form id="preferences-form">
+                <div class="row">
+                    <!-- Colonne gauche -->
+                    <div class="col-md-6">
+                        <!-- SECTION TEXTE ET POLICE -->
+                        <div class="mb-4 p-3 rounded" style="background-color: #f8fafc; border: 1px solid #9dbbce;">
+                            <h5 class="mb-3" style="color: #102c59;">
+                                <i class="bi bi-fonts me-2" style="color: #d52e28;"></i>Texte et affichage
+                            </h5>
+                            
+                            <!-- Taille de la police -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #102c59;">Taille de la police</label>
+                                <select id="font-size" class="form-select">
+                                    <option value="small">Petite</option>
+                                    <option value="medium" selected>Normale</option>
+                                    <option value="large">Grande</option>
+                                    <option value="x-large">Très grande</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Espacement des lignes -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #102c59;">Espacement des lignes</label>
+                                <input type="range" id="line-height" class="form-range" min="1" max="3" step="0.1" value="1.5">
+                                <div class="d-flex justify-content-between">
+                                    <span>1.0</span>
+                                    <span id="line-height-value">1.5</span>
+                                    <span>3.0</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Mode sombre -->
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" id="dark-mode" class="form-check-input">
+                                    <label class="form-check-label fw-bold" for="dark-mode" style="color: #102c59;">Mode sombre</label>
+                                </div>
+                                <div class="form-text text-muted small">Active le mode sombre pour réduire la fatigue oculaire</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonne droite -->
+                    <div class="col-md-6">
+                        <!-- SECTION ACCESSIBILITÉ -->
+                        <div class="mb-4 p-3 rounded" style="background-color: #f8fafc; border: 1px solid #9dbbce;">
+                            <h5 class="mb-3" style="color: #102c59;">
+                                <i class="bi bi-eye me-2" style="color: #d52e28;"></i>Accessibilité
+                            </h5>
+                            
+                            <!-- Zoom -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #102c59;">Zoom (%)</label>
+                                <input type="range" id="zoom" class="form-range" min="50" max="200" step="10" value="100">
+                                <div class="d-flex justify-content-between">
+                                    <span>50%</span>
+                                    <span id="zoom-value">100%</span>
+                                    <span>200%</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Mode dyslexique -->
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" id="dyslexic-mode" class="form-check-input">
+                                    <label class="form-check-label fw-bold" for="dyslexic-mode" style="color: #102c59;">Mode dyslexique</label>
+                                </div>
+                                <div class="form-text text-muted small">Utilise une police adaptée aux personnes dyslexiques</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Aperçu en direct -->
+                        <div class="mb-4 p-3 rounded" style="background-color: #f8fafc; border: 2px solid #9dbbce;">
+                            <h5 class="mb-3" style="color: #102c59;">
+                                <i class="bi bi-eye-fill me-2" style="color: #d52e28;"></i>Aperçu en direct
+                            </h5>
+                            
+                            <div id="live-preview" class="p-3" style="border-radius: 8px; background-color: white; border: 1px solid #9dbbce;">
+                                <p class="fw-bold mb-2" style="color: #102c59;">Texte d'exemple</p>
+                                <p class="mb-1">Ceci est un exemple de texte avec vos préférences.</p>
+                                <p class="mb-0">Voici comment s'affichera le contenu sur le site.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between mt-4 pt-3 border-top" style="border-color: #9dbbce !important;">
+                    <a href="{{ path('front_home') }}" 
+                       class="btn btn-lg" style="border: 2px solid #9dbbce; color: #102c59; border-radius: 10px; padding: 12px 30px; font-weight: 500;">
+                        <i class="bi bi-arrow-left me-2"></i> Retour
+                    </a>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="button" id="reset-btn" class="btn btn-lg" style="border: 2px solid #d52e28; color: #d52e28; border-radius: 10px; padding: 12px 30px; font-weight: 500;">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i> Réinitialiser
+                        </button>
+                        
+                        <button type="submit" class="btn btn-lg" style="background-color: #102c59; color: white; border: none; border-radius: 10px; padding: 12px 40px; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 44, 89, 0.3);">
+                            <i class="bi bi-save me-2"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+#live-preview {
+    transition: all 0.3s ease;
+    min-height: 100px;
+    padding: 1rem !important;
+}
+
+#live-preview.dyslexic-mode,
+.dyslexic-mode #live-preview {
+    font-family: 'OpenDyslexic', sans-serif !important;
+}
+
+#live-preview.dark-mode,
+.dark-mode #live-preview {
+    background-color: #222 !important;
+    color: #eee !important;
+}
+
+#live-preview.dark-mode p:first-child,
+.dark-mode #live-preview p:first-child {
+    color: #9dbbce !important;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+body.dark-mode .card,
+body.dark-mode .mb-4.p-3.rounded,
+body.dark-mode .modal-content {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode label,
+body.dark-mode .card-header h3,
+body.dark-mode .mb-4.p-3.rounded h5,
+body.dark-mode h1 {
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .form-select,
+body.dark-mode .form-control {
+    background-color: #0c111d !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('preferences-form');
+    const fontSize = document.getElementById('font-size');
+    const lineHeight = document.getElementById('line-height');
+    const lineHeightValue = document.getElementById('line-height-value');
+    const darkMode = document.getElementById('dark-mode');
+    const zoom = document.getElementById('zoom');
+    const zoomValue = document.getElementById('zoom-value');
+    const dyslexicMode = document.getElementById('dyslexic-mode');
+    const resetBtn = document.getElementById('reset-btn');
+    const confirmResetBtn = document.getElementById('confirm-reset-btn');
+    const resetModal = new bootstrap.Modal(document.getElementById('resetModal'));
+    const preview = document.getElementById('live-preview');
+    const flashMessage = document.getElementById('flash-message');
+
+    function updatePreview() {
+        if (!preview) return;
+        
+        const sizes = {
+            'small': '0.875rem',
+            'medium': '1rem',
+            'large': '1.125rem',
+            'x-large': '1.25rem'
+        };
+        preview.style.fontSize = sizes[fontSize.value] || '1rem';
+        preview.style.lineHeight = lineHeight.value;
+        
+        preview.classList.toggle('dark-mode', darkMode.checked);
+        preview.classList.toggle('dyslexic-mode', dyslexicMode.checked);
+        
+        document.body.style.zoom = zoom.value + '%';
+    }
+
+    function updateValues() {
+        if (lineHeightValue) lineHeightValue.textContent = lineHeight.value;
+        if (zoomValue) zoomValue.textContent = zoom.value + '%';
+    }
+
+    function savePreferences() {
+        const preferences = {
+            fontSize: fontSize.value,
+            lineHeight: lineHeight.value,
+            darkMode: darkMode.checked,
+            zoom: zoom.value,
+            dyslexicMode: dyslexicMode.checked
+        };
+        
+        localStorage.setItem('userPreferences', JSON.stringify(preferences));
+        
+        fetch('{{ path('app_preferences_save') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(preferences)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                flashMessage.className = 'alert alert-success alert-dismissible fade show';
+                flashMessage.innerHTML = '<i class="bi bi-check-circle me-2"></i>Préférences enregistrées ! <button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                flashMessage.classList.remove('d-none');
+                setTimeout(() => flashMessage.classList.add('d-none'), 3000);
+                
+                // Trigger global application
+                if (window.applyGlobalPreferences) {
+                    window.applyGlobalPreferences(preferences);
+                }
+            }
+        });
+    }
+
+    function loadPreferences() {
+        const serverPrefs = {{ app.user.preferences|json_encode|raw }};
+        const localPrefs = JSON.parse(localStorage.getItem('userPreferences'));
+        const prefs = serverPrefs && Object.keys(serverPrefs).length > 0 ? serverPrefs : localPrefs;
+        
+        if (prefs) {
+            if (fontSize) fontSize.value = prefs.fontSize || 'medium';
+            if (lineHeight) lineHeight.value = prefs.lineHeight || '1.5';
+            if (darkMode) darkMode.checked = prefs.darkMode || false;
+            if (zoom) zoom.value = prefs.zoom || '100';
+            if (dyslexicMode) dyslexicMode.checked = prefs.dyslexicMode || false;
+        }
+        
+        updateValues();
+        updatePreview();
+    }
+
+    form.addEventListener('submit', e => { e.preventDefault(); savePreferences(); });
+    resetBtn.addEventListener('click', () => resetModal.show());
+    confirmResetBtn.addEventListener('click', () => {
+        localStorage.removeItem('userPreferences');
+        location.reload();
+    });
+
+    [fontSize, lineHeight, darkMode, zoom, dyslexicMode].forEach(input => {
+        const eventType = input.type === 'range' ? 'input' : 'change';
+        input.addEventListener(eventType, () => {
+            updateValues();
+            updatePreview();
+        });
+    });
+
+    loadPreferences();
+});
+</script>
+{% endblock %}
+
+

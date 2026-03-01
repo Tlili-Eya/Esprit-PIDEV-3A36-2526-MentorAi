@@ -487,6 +487,37 @@
 
 		<!-- Main JS -->
 		<script src="{{ asset('assets/js/main.js') }}"></script>
+	<script>
+        // Preferences Application Script
+        (function() {
+            try {
+                const prefs = {{ app.user ? app.user.preferences|json_encode|raw : '{}' }};
+                window.applyGlobalPreferences = function(p) {
+                    if (!p || Object.keys(p).length === 0) return;
+                    const root = document.documentElement;
+                    const body = document.body;
+                    
+                    if (p.darkMode) { body.classList.add('dark-mode'); root.classList.add('dark-mode'); }
+                    else { body.classList.remove('dark-mode'); root.classList.remove('dark-mode'); }
+                    
+                    if (p.dyslexicMode) body.classList.add('dyslexic-mode');
+                    else body.classList.remove('dyslexic-mode');
+
+                    if (p.fontSize) {
+                        const sizes = { 'small': '14px', 'medium': '16px', 'large': '18px', 'x-large': '20px' };
+                        root.style.setProperty('--main-font-size', sizes[p.fontSize] || '16px');
+                    }
+                    if (p.lineHeight) root.style.setProperty('--main-line-height', p.lineHeight);
+                    if (p.zoom) body.style.zoom = p.zoom + '%';
+                };
+                
+                // Load from storage as fallback
+                const localPrefs = JSON.parse(localStorage.getItem('userPreferences'));
+                const finalPrefs = prefs && Object.keys(prefs).length > 0 ? prefs : localPrefs;
+                applyGlobalPreferences(finalPrefs);
+            } catch (e) { console.error("Error applying user preferences:", e); }
+        })();
+        </script>
 
 		{% block javascripts %}{% endblock %}
 		
