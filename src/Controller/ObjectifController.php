@@ -64,7 +64,8 @@ class ObjectifController extends AbstractController
 
         $queryBuilder->orderBy('o.' . $orderBy, 'ASC');
 
-        $objectifs = $queryBuilder->getQuery()->getResult();
+        $queryBuilder->setMaxResults(50); // adapte selon ton besoin
+$objectifs = $queryBuilder->getQuery()->getResult();
 
         $total = count($objectifs);
         $atteints = 0;
