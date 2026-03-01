@@ -11,6 +11,7 @@
         "deepseek-php/deepseek-php-client": "^2.0",
         "doctrine/doctrine-bundle": "^2.18",
         "doctrine/doctrine-migrations-bundle": "^3.7",
+        "doctrine/instantiator": ">=2.0.0 <2.1.0",
         "doctrine/orm": "^3.6",
         "dompdf/dompdf": "^3.1",
         "knpuniversity/oauth2-client-bundle": "*",
@@ -60,7 +61,10 @@
             "symfony/flex": true,
             "symfony/runtime": true
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "php": "8.2.12"
+        }
     },
     "autoload": {
         "psr-4": {
