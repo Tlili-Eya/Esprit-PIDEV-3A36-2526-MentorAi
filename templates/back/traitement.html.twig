@@ -146,6 +146,36 @@
                   {% endif %}
                 </div>
                 
+                {# ✨ NEW: Problèmes techniques détectés #}
+                {% if emotionAnalysis.technical_issues is defined and emotionAnalysis.technical_issues|length > 0 %}
+                  <div class="alert alert-danger mb-3" style="border-radius: 15px;">
+                    <h6 class="mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Problèmes Techniques Détectés</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                      {% for issue in emotionAnalysis.technical_issues %}
+                        <span class="badge 
+                          {% if issue.priority == 'critical' %}bg-danger
+                          {% elseif issue.priority == 'high' %}bg-warning text-dark
+                          {% else %}bg-info{% endif %} 
+                          px-3 py-2">
+                          {{ issue.icon }} {{ issue.type }}: {{ issue.keyword }}
+                        </span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+                
+                {# ✨ NEW: Phrases clés extraites #}
+                {% if emotionAnalysis.key_phrases is defined and emotionAnalysis.key_phrases|length > 0 %}
+                  <div class="mb-3 p-3 bg-light rounded">
+                    <h6 class="mb-2"><i class="bi bi-tags me-2"></i>Phrases Clés</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                      {% for phrase in emotionAnalysis.key_phrases|slice(0, 8) %}
+                        <span class="badge bg-secondary bg-opacity-50 text-dark px-2 py-1">{{ phrase }}</span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+                
                 {# Scores détaillés avec barres de progression #}
                 <div class="row g-3 mb-3">
                   <div class="col-4">
@@ -179,6 +209,19 @@
                     </div>
                   </div>
                 </div>
+                
+                {# ✨ NEW: Insights émotionnels profonds #}
+                {% if emotionAnalysis.emotional_insights is defined %}
+                  <div class="alert alert-light mb-3" style="border-radius: 15px; border-left: 4px solid #ffc107;">
+                    <div class="d-flex align-items-start">
+                      <i class="bi bi-lightbulb-fill fs-4 me-3 text-warning"></i>
+                      <div>
+                        <strong>Insights Émotionnels :</strong><br>
+                        <span>{{ emotionAnalysis.emotional_insights }}</span>
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
                 
                 {# Recommandation #}
                 <div class="alert alert-info mb-0" style="border-radius: 15px;">

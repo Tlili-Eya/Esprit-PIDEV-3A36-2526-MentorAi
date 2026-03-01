@@ -247,6 +247,17 @@
                             {% endif %}
                           </div>
                           
+                          {# ✨ NEW: Problèmes techniques détectés #}
+                          {% if emotion.technical_issues is defined and emotion.technical_issues|length > 0 %}
+                            <div class="mb-2">
+                              {% for issue in emotion.technical_issues|slice(0, 3) %}
+                                <span class="badge bg-danger bg-opacity-75 d-inline-flex align-items-center gap-1 mb-1" style="font-size: 0.7rem;">
+                                  {{ issue.icon }} {{ issue.type }}
+                                </span>
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+                          
                           {# Scores avec barres de progression #}
                           <div class="emotion-scores" style="font-size: 0.75rem;">
                             <div class="mb-1">
@@ -268,6 +279,14 @@
                               </div>
                             </div>
                           </div>
+                          
+                          {# ✨ NEW: Insights émotionnels #}
+                          {% if emotion.emotional_insights is defined %}
+                            <div class="mt-2 p-2 bg-light rounded" style="font-size: 0.7rem;">
+                              <i class="bi bi-lightbulb text-warning me-1"></i>
+                              <small class="text-dark">{{ emotion.emotional_insights }}</small>
+                            </div>
+                          {% endif %}
                           
                           {# Recommandation #}
                           <div class="mt-2">
