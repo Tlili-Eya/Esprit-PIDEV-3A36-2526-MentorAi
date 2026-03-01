@@ -888,6 +888,37 @@
 
 		<script>
 		
+			// Toggle sidebar on mobile
+document.getElementById('sidebarToggle').addEventListener('click', function () {
+document.getElementById('sidebar').classList.toggle('open');
+});
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function (event) {
+const sidebar = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('sidebarToggle');
+
+if (window.innerWidth<= 992 && 
+        sidebar.classList.contains('open') &&
+        !sidebar.contains(event.target) &&
+        !toggleBtn.contains(event.target)) {
+      sidebar.classList.remove('open');
+    }
+  });
+  
+  // Add active class to current page link
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentUrl = window.location.pathname;
+    const navLinks = document.querySelectorAll('.sidebar-nav a');
+    
+    navLinks.forEach(link => {
+if (link.getAttribute('href') === currentUrl) {
+link.classList.add('active');
+}
+}) 
+
+});
+
   // Preferences Application Script
   // Preferences Application Script
   (function() {
@@ -927,41 +958,6 @@
     }
   })();
 
-
-			// Toggle sidebar on mobile
-document.getElementById('sidebarToggle').addEventListener('click', function () {
-document.getElementById('sidebar').classList.toggle('open');
-});
-
-// Close sidebar when clicking outside on mobile
-document.addEventListener('click', function (event) {
-const sidebar = document.getElementById('sidebar');
-const toggleBtn = document.getElementById('sidebarToggle');
-
-if (window.innerWidth<= 992 && 
-        sidebar.classList.contains('open') &&
-        !sidebar.contains(event.target) &&
-        !toggleBtn.contains(event.target)) {
-      sidebar.classList.remove('open');
-    }
-  });
-  
-  // Add active class to current page link
-  document.addEventListener('DOMContentLoaded', function() {
-    const currentUrl = window.location.pathname;
-    const navLinks = document.querySelectorAll('.sidebar-nav a');
-    
-    navLinks.forEach(link => {
-if (link.getAttribute('href') === currentUrl) {
-link.classList.add('active');
-}
-}) 
-
-
-
-
-
-});
 		</script>
 
 		{% block javascripts %}{% endblock %}
