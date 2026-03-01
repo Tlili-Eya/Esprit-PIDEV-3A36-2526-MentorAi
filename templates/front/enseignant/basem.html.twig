@@ -57,13 +57,78 @@
       color: var(--default-color) !important;
     }
 
-    body.dark-mode .card, 
-    body.dark-mode .header, 
-    body.dark-mode .footer,
-    body.dark-mode .section,
-    body.dark-mode section {
-      background-color: var(--surface-color) !important;
-      color: var(--default-color) !important;
+    /* Complete Dark Mode Overrides */
+    body.dark-mode .bg-white,
+    body.dark-mode .bg-light,
+    body.dark-mode .bg-light-chat,
+    body.dark-mode .card,
+    body.dark-mode .card-header,
+    body.dark-mode .card-body,
+    body.dark-mode .card-footer,
+    body.dark-mode .list-group-item,
+    body.dark-mode .table,
+    body.dark-mode .message-assistant,
+    body.dark-mode .glass-card,
+    body.dark-mode .toast,
+    body.dark-mode .modal-content,
+    body.dark-mode [style*="background-color: white"],
+    body.dark-mode [style*="background-color: #f8fafc"],
+    body.dark-mode [style*="background-color: #f1f5f9"],
+    body.dark-mode [style*="background: rgba(255, 255, 255"] {
+        background-color: var(--surface-color) !important;
+        background: var(--surface-color) !important;
+        color: var(--default-color) !important;
+    }
+
+    /* Target specific nested text that shouldn't disappear */
+    body.dark-mode .text-dark,
+    body.dark-mode .text-muted,
+    body.dark-mode .text-secondary,
+    body.dark-mode .message-assistant *,
+    body.dark-mode .list-group-item *,
+    body.dark-mode .table *,
+    body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
+    body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
+    body.dark-mode p:not(.text-white):not([class*="text-danger"]):not([class*="text-success"]),
+    body.dark-mode span:not(.badge):not(.text-white):not([class*="text-danger"]):not([class*="text-success"]):not([class*="pulse-"]),
+    body.dark-mode i:not(.text-white):not(.text-danger):not(.text-success):not(.text-warning):not(.text-info),
+    body.dark-mode [style*="color: #102c59"],
+    body.dark-mode [style*="color: #1e293b"],
+    body.dark-mode [style*="color: #1a3a73"],
+    body.dark-mode [style*="color: #9dbbce"] {
+        color: var(--default-color) !important;
+    }
+
+    /* Specifically fix message assistant headers */
+    body.dark-mode .message-assistant .text-dark i {
+        color: #38bdf8 !important;
+    }
+
+    /* Form and Inputs Dark Mode */
+    body.dark-mode .form-control,
+    body.dark-mode .form-select,
+    body.dark-mode textarea {
+        background-color: #0f172a !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+    
+    body.dark-mode .border,
+    body.dark-mode .border-top,
+    body.dark-mode .border-bottom,
+    body.dark-mode .border-end,
+    body.dark-mode .border-start,
+    body.dark-mode [style*="border: 1px solid"] {
+        border-color: #334155 !important;
+    }
+
+    body.dark-mode .table>thead {
+        background-color: #0f172a !important;
+    }
+
+    body.dark-mode .table-hover>tbody>tr:hover>* {
+        background-color: #334155 !important;
+        color: var(--default-color) !important;
     }
 
     body.dark-mode .header {

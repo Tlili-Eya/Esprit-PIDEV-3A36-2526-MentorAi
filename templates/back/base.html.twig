@@ -33,6 +33,226 @@
 		<link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
 
 		<style>
+			/* Bridge User Preferences with Global CSS Variables */
+			:root {
+			  --main-font-size: 16px;
+			  --main-line-height: 1.5;
+			}
+		
+			body {
+			  font-size: var(--main-font-size);
+			  line-height: var(--main-line-height);
+			  transition: background-color 0.3s ease, color 0.3s ease;
+			}
+		
+			/* Dark Mode Implementation */
+			body.dark-mode {
+			  --background-color: #0c111d !important;
+			  --surface-color: #1e293b !important;
+			  --default-color: #f1f5f9 !important;
+			  --heading-color: #f8fafc !important;
+			}
+			
+			body.dark-mode {
+			  background-color: var(--background-color) !important;
+			  color: var(--default-color) !important;
+			}
+		
+			/* Complete Dark Mode Overrides for Back Office */
+			body.dark-mode .bg-white,
+			body.dark-mode .bg-light,
+            body.dark-mode .light-background,
+			body.dark-mode .card,
+			body.dark-mode .card-body,
+			body.dark-mode .alert,
+			body.dark-mode .modal-content,
+            body.dark-mode .toast,
+            body.dark-mode .main-content,
+            body.dark-mode .content-area,
+            body.dark-mode .section {
+				background-color: var(--surface-color) !important;
+				background: var(--surface-color) !important;
+				color: var(--default-color) !important;
+			}
+			body.dark-mode header, 
+            body.dark-mode .header,
+            body.dark-mode .page-title,
+            body.dark-mode .light-background,
+            body.dark-mode .bg-light,
+            body.dark-mode .bg-white {
+			    background-color: #070f1e !important;
+                background: #070f1e !important;
+			    border-bottom: 1px solid #1e293b !important;
+			}
+		
+			body.dark-mode .text-dark,
+			body.dark-mode .text-muted,
+            body.dark-mode .text-secondary,
+            body.dark-mode small,
+			body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
+			body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
+            body.dark-mode h1[style*="color: #102c59"],
+            body.dark-mode h2[style*="color: #102c59"],
+            body.dark-mode h3[style*="color: #102c59"],
+			body.dark-mode p:not(.text-white):not([class*="text-danger"]):not([class*="text-success"]),
+			body.dark-mode span:not(.badge):not(.text-white):not([class*="text-danger"]):not([class*="text-success"]),
+			body.dark-mode i:not(.text-white):not(.text-danger):not(.text-success):not(.text-warning):not(.text-info),
+			body.dark-mode th, body.dark-mode td {
+				color: var(--default-color) !important;
+			}
+
+            body.dark-mode .text-muted {
+                color: #94a3b8 !important;
+            }
+			
+			body.dark-mode .table,
+            body.dark-mode .table>thead,
+            body.dark-mode .table>thead>tr,
+            body.dark-mode .table>thead>tr>th,
+            body.dark-mode .table>thead>tr>td,
+            body.dark-mode .table>tbody,
+            body.dark-mode .table>tfoot,
+            body.dark-mode .table>thead>tr,
+            body.dark-mode .table>tbody>tr,
+            body.dark-mode .table>tfoot>tr,
+            body.dark-mode .table>thead>tr>th,
+            body.dark-mode .table>tbody>tr>td,
+            body.dark-mode .table>tfoot>tr>td {
+				background-color: transparent !important;
+				color: var(--default-color) !important;
+                border-color: #334155 !important;
+			}
+            
+            body.dark-mode .table-responsive,
+            body.dark-mode .card {
+                border-color: #334155 !important;
+            }
+
+            body.dark-mode .table>thead {
+				background-color: #0c111d !important;
+			}
+			
+			body.dark-mode .table-hover>tbody>tr:hover,
+            body.dark-mode .table-hover>tbody>tr:hover>* {
+				background-color: #334155 !important;
+				color: #ffffff !important;
+			}
+		
+			body.dark-mode .form-control,
+			body.dark-mode .form-select,
+			body.dark-mode textarea,
+            body.dark-mode .input-group-text,
+            body.dark-mode .bg-white {
+				background-color: #0c111d !important;
+				color: #f8fafc !important;
+				border-color: #334155 !important;
+			}
+			
+			body.dark-mode td, body.dark-mode th, body.dark-mode .border {
+				border-color: #334155 !important;
+			}
+            
+            body.dark-mode .text-primary {
+                color: #60a5fa !important;
+            }
+
+            body.dark-mode .btn-outline-secondary {
+                color: #f1f5f9 !important;
+                border-color: #334155 !important;
+                background-color: transparent !important;
+            }
+
+            body.dark-mode .btn-outline-secondary:hover {
+                background-color: #334155 !important;
+                color: #ffffff !important;
+            }
+            
+            body.dark-mode a:not(.btn):not(.badge):not(.nav-link) {
+                color: #60a5fa !important;
+            }
+
+            body.dark-mode .breadcrumb-item a,
+            body.dark-mode .breadcrumbs ol li a,
+            body.dark-mode .breadcrumbs ol li {
+                color: var(--default-color) !important;
+            }
+
+            body.dark-mode label,
+            body.dark-mode .form-label {
+                color: var(--default-color) !important;
+                font-weight: 500;
+            }
+
+            /* Targeting specific inline styles seen in templates */
+            body.dark-mode [style*="color: #102c59"] {
+                color: var(--default-color) !important;
+            }
+            body.dark-mode [style*="background-color: #9dbbce"] {
+                background-color: #1e293b !important;
+            }
+            body.dark-mode .card[style*="border: 1px solid #9dbbce"] {
+                border-color: #334155 !important;
+            }
+		
+
+            body.dark-mode .sidebar,
+            body.dark-mode .sidebar-auth {
+                background-color: #070f1e !important;
+                border: none !important;
+                border-right: 1px solid #1e293b !important;
+            }
+            
+            body.dark-mode .user-info .user-name {
+                color: #ffffff !important;
+            }
+            
+            body.dark-mode .user-info .user-role {
+                color: #9dbbce !important;
+            }
+
+            /* Dark Scrollbar */
+            body.dark-mode ::-webkit-scrollbar {
+                width: 12px;
+                background-color: #0c111d;
+            }
+            body.dark-mode ::-webkit-scrollbar-thumb {
+                background-color: #334155;
+                border-radius: 6px;
+                border: 3px solid #0c111d;
+            }
+            body.dark-mode ::-webkit-scrollbar-thumb:hover {
+                background-color: #475569;
+            }
+            
+            body.dark-mode {
+                scrollbar-color: #334155 #0c111d;
+                scrollbar-width: thin;
+            }
+            
+            body.dark-mode .sidebar-nav a {
+                color: #f1f5f9 !important;
+            }
+
+            body.dark-mode .sidebar-nav a:hover,
+            body.dark-mode .sidebar-nav a.active {
+                background-color: #1e293b !important;
+                color: #ffffff !important;
+            }
+
+            body.dark-mode [style*="background-color: #f8fafc"],
+            body.dark-mode [style*="background-color: #f1f5f9"] {
+                background-color: #0c111d !important;
+            }
+		
+			/* Dyslexic Mode */
+			body.dyslexic-mode {
+			  --default-font: 'OpenDyslexic', sans-serif !important;
+			}
+			
+			body.dyslexic-mode {
+				font-family: var(--default-font) !important;
+			}
+
 			/* Styles spécifiques pour la sidebar */
 			body {
 				margin: 0;
@@ -696,11 +916,46 @@ link.classList.add('active');
 }
 }) 
 
-
-
-
-
 });
+
+  // Preferences Application Script
+  // Preferences Application Script
+  (function() {
+    try {
+      const prefs = {{ app.user ? app.user.preferences|json_encode|raw : '{}' }};
+      if (prefs && Object.keys(prefs).length > 0) {
+        const root = document.documentElement;
+        
+        // Modes - Apply classes to both body and html
+        if (prefs.darkMode) {
+            document.body.classList.add('dark-mode');
+            root.classList.add('dark-mode');
+        }
+        if (prefs.dyslexicMode) {
+            document.body.classList.add('dyslexic-mode');
+            root.classList.add('dyslexic-mode');
+        }
+        
+        // Font Size
+        if (prefs.fontSize) {
+          const sizes = { 'small': '14px', 'medium': '16px', 'large': '18px', 'x-large': '20px' };
+          root.style.setProperty('--main-font-size', sizes[prefs.fontSize] || '16px');
+        }
+        
+        // Line Height
+        if (prefs.lineHeight) {
+          root.style.setProperty('--main-line-height', prefs.lineHeight);
+        }
+
+        // Zoom
+        if (prefs.zoom) {
+            document.body.style.zoom = prefs.zoom + '%';
+        }
+      }
+    } catch (e) {
+      console.error("Error applying user preferences:", e);
+    }
+  })();
 		</script>
 
 		{% block javascripts %}{% endblock %}
