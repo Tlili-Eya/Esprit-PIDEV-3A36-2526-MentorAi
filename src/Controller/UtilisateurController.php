@@ -150,9 +150,10 @@ final class UtilisateurController extends AbstractController
         \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface $tokenStorage
     ): Response
     {
+        /** @var \App\Entity\Utilisateur|null $user */
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof \App\Entity\Utilisateur) {
             return $this->redirectToRoute('app_login');
         }
 

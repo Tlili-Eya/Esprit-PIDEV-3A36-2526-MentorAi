@@ -17,6 +17,8 @@ class UtilisateurRepository extends ServiceEntityRepository
     }
     /**
      * Recherche et tri des utilisateurs
+     * 
+     * @return Utilisateur[]
      */
     public function searchAndSort(?string $search = null, ?string $sort = null): array
     {

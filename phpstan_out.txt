@@ -1,0 +1,28 @@
+﻿ ------ --------------- 
+  Line   Utilisateur.p  
+         hp             
+ ------ --------------- 
+  :17    No error with  
+         identifier     
+         property.unus  
+         edType is      
+         reported on    
+         line 17.       
+  :20    Property       
+         App\Entity\Ut  
+         ilisateur::$i  
+         d (int|null)   
+         is never       
+         assigned int   
+         so it can be   
+         removed from   
+         the property   
+         type.          
+         ­ƒ¬¬             
+         property.unus  
+         edType         
+ ------ --------------- 
+
+
+ [ERROR] Found 2 errors
+

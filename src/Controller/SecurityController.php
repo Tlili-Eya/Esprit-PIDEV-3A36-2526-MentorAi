@@ -102,7 +102,7 @@ class SecurityController extends AbstractController
     }
 
     #[Route('/connect/google/check', name: 'connect_google_check')]
-    public function connectGoogleCheck()
+    public function connectGoogleCheck(): void
     {
         // laissé vide car géré par le GoogleAuthenticator
     }

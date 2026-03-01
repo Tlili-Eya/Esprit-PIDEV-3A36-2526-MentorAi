@@ -16,7 +16,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 #[ORM\Entity(repositoryClass: PlanActionsRepository::class)]
 class PlanActions
 {
-  #[ORM\Id]
+    /** @var int|null */
+    #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
@@ -220,12 +221,12 @@ class PlanActions
 
     public function getCategorieNom(): string
     {
-        return $this->categorie?->value ?? '';
+        return ($this->categorie ? $this->categorie->value : '');
     }
     
     public function getStatutNom(): string
     {
-        return $this->statut?->value ?? '';
+        return ($this->statut ? $this->statut->value : '');
     }
   /**
      * @return Collection<int, ReferenceArticle>
