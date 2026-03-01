@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
@@ -39,10 +40,14 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $role = null;
 
+    // ✅ FIX SECURITY — exclus de la sérialisation JSON/API/logs
     #[ORM\Column(length: 255, nullable: true)]
+    #[Ignore]
     private ?string $resetToken = null;
 
+    // ✅ FIX SECURITY — exclus de la sérialisation JSON/API/logs
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Ignore]
     private ?\DateTimeInterface $resetTokenExpiresAt = null;
 
     #[ORM\Column(length: 20, options: ['default' => 'actif'])]
@@ -120,27 +125,22 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     // ==================== MÉTHODES POUR UserInterface ====================
-    
+
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * ✅ MÉTHODE CRITIQUE : Convertit le rôle string en tableau ROLE_XXX
-     */
     public function getRoles(): array
     {
         $roles = [];
-        
-        // Convertir le rôle en format Symfony (ROLE_XXX)
+
         if ($this->role) {
             $roles[] = 'ROLE_' . strtoupper($this->role);
         }
-        
-        // Garantir que chaque utilisateur a au moins ROLE_USER
+
         $roles[] = 'ROLE_USER';
-        
+
         return array_unique($roles);
     }
 
@@ -245,7 +245,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->resetToken;
     }
 
-    public function setResetToken(?string $resetToken): static
+    // ✅ FIX SECURITY — SensitiveParameter masque la valeur dans les stack traces
+    public function setResetToken(#[\SensitiveParameter] ?string $resetToken): static
     {
         $this->resetToken = $resetToken;
         return $this;
@@ -256,7 +257,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->resetTokenExpiresAt;
     }
 
-    public function setResetTokenExpiresAt(?\DateTimeInterface $resetTokenExpiresAt): static
+    // ✅ FIX SECURITY — SensitiveParameter masque la valeur dans les stack traces
+    public function setResetTokenExpiresAt(#[\SensitiveParameter] ?\DateTimeInterface $resetTokenExpiresAt): static
     {
         $this->resetTokenExpiresAt = $resetTokenExpiresAt;
         return $this;
@@ -278,7 +280,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStatus(string $status): static
     {
         $this->status = $status;
-
         return $this;
     }
 
