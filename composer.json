@@ -105,7 +105,7 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^4.3",
-        "phpstan/phpstan": "*",
+        "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^11.5",
         "rector/swiss-knife": "^2.3",
         "shipmonk/doctrine-entity-preloader": "^1.4",

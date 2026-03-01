@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\SortieAI;
 use App\Form\SortieAIType;
 use App\Repository\SortieAIRepository;
+use App\Service\ExcelExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

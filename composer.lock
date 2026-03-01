@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f3e13d6946cd909f5f0f2fe7904f614d",
+    "content-hash": "d1390e55237c72db05a566051ec92fd2",
     "packages": [
         {
             "name": "ahmed-bhs/doctrine-doctor",

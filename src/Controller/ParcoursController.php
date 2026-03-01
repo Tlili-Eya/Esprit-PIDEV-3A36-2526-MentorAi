@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Parcours;
+use App\Entity\Utilisateur;
 use App\Form\ParcoursType;
 use App\Repository\ParcoursRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -166,7 +167,7 @@ class ParcoursController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $newParcours->setDateCreation(new \DateTime());
             $user = $this->getUser();
-            if ($user) {
+            if ($user instanceof Utilisateur) {
                 $newParcours->setUtilisateur($user);
             }
             $entityManager->persist($newParcours);
