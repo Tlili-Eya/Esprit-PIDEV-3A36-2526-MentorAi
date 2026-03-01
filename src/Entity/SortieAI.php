@@ -15,6 +15,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SortieAIRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class SortieAI
 {
     /** @var int|null */
@@ -26,19 +27,19 @@ class SortieAI
     #[ORM\ManyToOne]
     private ?Utilisateur $etudiant = null;
 
-    #[ORM\Column(length: 20, enumType: StatutSortie::class, options: ["default" => 'Nouveau'])]
+    #[ORM\Column(type: 'string', length: 20, enumType: StatutSortie::class, options: ["default" => 'NOUVEAU'])]
     private StatutSortie $statut = StatutSortie::Nouveau;
 
-    #[ORM\Column(length: 20, enumType: Cible::class, nullable: false)]
+    #[ORM\Column(type: 'string', length: 20, enumType: Cible::class, nullable: false)]
     private Cible $cible;
 
-    #[ORM\Column(length: 20, enumType: TypeSortie::class, nullable: false)]
+    #[ORM\Column(type: 'string', length: 20, enumType: TypeSortie::class, nullable: false)]
     private TypeSortie $typeSortie;
 
-    #[ORM\Column(length: 20, enumType: Criticite::class, nullable: false)]
+    #[ORM\Column(type: 'string', length: 20, enumType: Criticite::class, nullable: false)]
     private Criticite $criticite;
 
-    #[ORM\Column(length: 20, enumType: CategorieSortie::class, nullable: false)]
+    #[ORM\Column(type: 'string', length: 20, enumType: CategorieSortie::class, nullable: false)]
     private CategorieSortie $categorieSortie;
 
     #[ORM\Column(type: Types::TEXT)]
@@ -88,7 +89,7 @@ class SortieAI
     public function setContenu(string $contenu): static { $this->contenu = $contenu; return $this; }
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTimeImmutable { return $this->updatedAt; }
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
+    protected function setUpdatedAt(?\DateTimeImmutable $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
     /**
      * @return Collection<int, PlanActions>
      */
@@ -125,6 +126,18 @@ class SortieAI
     {
         $this->articles->removeElement($article);
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function __toString(): string

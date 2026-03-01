@@ -98,7 +98,6 @@ public function new(
 ): Response
 {
     $planAction = new PlanActions();
-    $planAction->setDate(new \DateTime());
     
     // Pré-remplissage via SortieAI si présent en paramètre (Pont Opérationnel)
     if ($sortieId = $request->query->get('from_sortie')) {
@@ -117,8 +116,6 @@ public function new(
 
     if ($form->isSubmitted()) {
         if ($form->isValid()) {
-            $planAction->setUpdatedAt(new \DateTime());
-            
             try {
                 $planAction->setAuteur($this->getUser());
                 $entityManager->persist($planAction);
@@ -164,8 +161,6 @@ public function new(
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $planAction->setUpdatedAt(new \DateTime());
-            
             try {
                 $entityManager->flush();
 

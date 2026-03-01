@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: PlanActionsRepository::class)]
 #[ORM\Table(name: 'plan_actions')]
+#[ORM\HasLifecycleCallbacks]
 class PlanActions
 {
     /** @var int|null */
@@ -46,17 +47,17 @@ class PlanActions
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Assert\NotBlank(message: "La date est obligatoire")]
-    private ?\DateTimeInterface $date = null;
+    private ?\DateTimeImmutable $date = null;
 
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
+    private ?\DateTimeImmutable $updatedAt = null;
     
-    #[ORM\Column(enumType: Statut::class)]
+    #[ORM\Column(type: 'string', enumType: Statut::class)]
     #[Assert\NotNull(message: "Le statut est obligatoire")] 
     private ?Statut $statut = null;
 
-    #[ORM\Column(enumType: CategorieSortie::class, nullable: true)]
+    #[ORM\Column(type: 'string', enumType: CategorieSortie::class, nullable: true)]
     #[Assert\NotNull(message: "La catégorie est obligatoire")]
     private ?CategorieSortie $categorie = null;
 
@@ -68,7 +69,7 @@ class PlanActions
     private ?string $feedbackEnseignant = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?\DateTimeInterface $feedbackDate = null;
+    private ?\DateTimeImmutable $feedbackDate = null;
 
     #[ORM\ManyToOne]
     private ?Utilisateur $feedbackAuteur = null;
@@ -130,17 +131,17 @@ class PlanActions
     }
 
     // GETTER/SETTER POUR date (NOUVEAU)
-    public function getDate(): ?\DateTimeInterface
+    public function getDate(): ?\DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    protected function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
         return $this;
@@ -193,12 +194,12 @@ class PlanActions
         return $this;
     }
 
-    public function getFeedbackDate(): ?\DateTimeInterface
+    public function getFeedbackDate(): ?\DateTimeImmutable
     {
         return $this->feedbackDate;
     }
 
-    public function setFeedbackDate(?\DateTimeInterface $feedbackDate): static
+    protected function setFeedbackDate(?\DateTimeImmutable $feedbackDate): static
     {
         $this->feedbackDate = $feedbackDate;
         return $this;
@@ -257,6 +258,20 @@ class PlanActions
     {
         $this->auteur = $auteur;
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        if ($this->date === null) {
+            $this->date = new \DateTimeImmutable();
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function __toString(): string
