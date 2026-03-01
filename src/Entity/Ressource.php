@@ -112,17 +112,19 @@ class Ressource
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 50, enumType: TypeRessource::class)]
-    private TypeRessource $typeRessource;
+    #[ORM\Column(type: 'string', length: 50)]
+    private string $typeRessource = TypeRessource::OTHER->value;
 
     public function getTypeRessource(): TypeRessource
     {
-        return $this->typeRessource;
+        return TypeRessource::from($this->typeRessource);
     }
 
-    public function setTypeRessource(TypeRessource $typeRessource): static
+    public function setTypeRessource(TypeRessource|string $typeRessource): static
     {
-        $this->typeRessource = $typeRessource;
+        $this->typeRessource = $typeRessource instanceof TypeRessource
+            ? $typeRessource->value
+            : $typeRessource;
 
         return $this;
     }
