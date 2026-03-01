@@ -77,6 +77,245 @@
 					margin-top: 1rem;
 				}
 			}
+			/* Bridge User Preferences with Global CSS Variables */
+			:root {
+			  --main-font-size: 16px;
+			  --main-line-height: 1.5;
+			}
+		
+			body {
+			  font-size: var(--main-font-size);
+			  line-height: var(--main-line-height);
+			  transition: background-color 0.3s ease, color 0.3s ease;
+			}
+		
+			/* Dark Mode Implementation */
+			body.dark-mode {
+			  --background-color: #0c111d !important;
+			  --surface-color: #1e293b !important;
+			  --default-color: #f1f5f9 !important;
+			  --heading-color: #f8fafc !important;
+			}
+			
+			body.dark-mode {
+			  background-color: var(--background-color) !important;
+			  color: var(--default-color) !important;
+			}
+		
+			/* Complete Dark Mode Overrides for Front Office */
+			body.dark-mode .bg-white,
+			body.dark-mode .bg-light,
+            body.dark-mode .light-background,
+			body.dark-mode .card,
+			body.dark-mode .card-body,
+			body.dark-mode .alert,
+			body.dark-mode .modal-content,
+            body.dark-mode .navmenu ul,
+            body.dark-mode .navmenu ul ul,
+            body.dark-mode section,
+            body.dark-mode article,
+            body.dark-mode .main,
+            body.dark-mode .footer,
+            body.dark-mode .page-title,
+            body.dark-mode .stats-item,
+            body.dark-mode .action-card,
+            body.dark-mode .search-sort-bar,
+            body.dark-mode .admin-response-inline,
+            body.dark-mode .admin-response-modal-enhanced,
+            body.dark-mode .response-content-box,
+            body.dark-mode .bg-light,
+            body.dark-mode .bg-white,
+            body.dark-mode .card-header,
+            body.dark-mode .card-footer,
+            body.dark-mode div[class*="bg-light"],
+            body.dark-mode div[class*="bg-white"],
+            body.dark-mode .form-card,
+            body.dark-mode .form-card-header,
+            body.dark-mode .form-card-body,
+            body.dark-mode .sidebar-card,
+            body.dark-mode .sidebar-header,
+            body.dark-mode .tab-content-custom,
+            body.dark-mode .nav-tabs-custom,
+            body.dark-mode .resource-section,
+            body.dark-mode .locked-feature-overlay,
+            body.dark-mode .chatbot-window,
+            body.dark-mode .chatbot-messages,
+            body.dark-mode .chatbot-input,
+            body.dark-mode .chat-message.bot,
+            body.dark-mode .search-box,
+            body.dark-mode .stats-card,
+            body.dark-mode .card-objectif,
+            body.dark-mode .inner-circle,
+            body.dark-mode .action-buttons,
+            body.dark-mode div[style*="background-color: #f8faff"],
+            body.dark-mode div[style*="background-color: #f8fafc"],
+            body.dark-mode div[style*="background: #f8faff"],
+            body.dark-mode div[style*="background: #f8fafc"] {
+				background-color: var(--surface-color) !important;
+				background: var(--surface-color) !important;
+				color: var(--default-color) !important;
+			}
+		
+			body.dark-mode .text-dark,
+            body.dark-mode .text-muted,
+            body.dark-mode .text-secondary,
+            body.dark-mode .list-group-item-custom,
+            body.dark-mode .nav-link,
+            body.dark-mode small,
+			body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
+			body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
+			body.dark-mode p:not(.text-white):not([class*="text-danger"]):not([class*="text-success"]),
+			body.dark-mode span:not(.badge):not(.text-white):not([class*="text-danger"]):not([class*="text-success"]):not(.notification-bell-badge):not(.notification-badge-small),
+			body.dark-mode i:not(.text-white):not(.text-danger):not(.text-success):not(.text-warning):not(.text-info):not(.bi-star-fill),
+			body.dark-mode th, body.dark-mode td,
+            body.dark-mode .stats-item span,
+            body.dark-mode .action-card h3,
+            body.dark-mode .section-title h2,
+            body.dark-mode .breadcrumbs ol li,
+            body.dark-mode .breadcrumbs ol li a,
+            body.dark-mode label,
+            body.dark-mode .form-label,
+            body.dark-mode .courses-hero h1,
+            body.dark-mode .courses-hero p,
+            body.dark-mode .card h3,
+            body.dark-mode .card h5,
+            body.dark-mode .card h6,
+            body.dark-mode .card p,
+            body.dark-mode .form-card h4,
+            body.dark-mode .form-card p,
+            body.dark-mode .form-card i,
+            body.dark-mode .sidebar-header,
+            body.dark-mode .list-group-item-custom .fw-bold,
+            body.dark-mode .objectif-title,
+            body.dark-mode .stats-card h5,
+            body.dark-mode .stat-pie-circle span {
+				color: var(--default-color) !important;
+			}
+
+            body.dark-mode .list-group-item-custom:hover,
+            body.dark-mode .list-group-item-custom.active,
+            body.dark-mode .nav-tabs-custom .nav-link:hover {
+                background-color: rgba(255, 255, 255, 0.1) !important;
+                color: #fff !important;
+            }
+
+            body.dark-mode .nav-tabs-custom .nav-link.active {
+                background-color: var(--background-color) !important;
+                color: #60a5fa !important;
+                border-bottom: 3px solid var(--accent-color) !important;
+            }
+
+            body.dark-mode .nav-tabs-custom {
+                background-color: rgba(0,0,0,0.2) !important;
+            }
+
+            body.dark-mode .btn-program,
+            body.dark-mode .btn-view,
+            body.dark-mode .btn-edit {
+                background-color: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+
+            body.dark-mode .btn-program:hover,
+            body.dark-mode .btn-view:hover,
+            body.dark-mode .btn-edit:hover {
+                background-color: var(--primary-color) !important;
+                color: #fff !important;
+            }
+
+            body.dark-mode .form-control::placeholder,
+            body.dark-mode .form-select::placeholder,
+            body.dark-mode input::placeholder,
+            body.dark-mode textarea::placeholder {
+                color: #94a3b8 !important;
+                opacity: 1 !important;
+            }
+
+            body.dark-mode .header {
+                background-color: #070f1e !important;
+                border-bottom: 1px solid #1e293b !important;
+            }
+
+            body.dark-mode .navmenu a, body.dark-mode .navmenu a i {
+                color: #f1f5f9 !important;
+            }
+
+            body.dark-mode .navmenu a:hover, body.dark-mode .navmenu li:hover > a {
+                color: #5578ff !important;
+            }
+			
+			body.dark-mode .table,
+            body.dark-mode .table>thead,
+            body.dark-mode .table>tbody,
+            body.dark-mode .table>tfoot,
+            body.dark-mode .table>thead>tr,
+            body.dark-mode .table>tbody>tr,
+            body.dark-mode .table>tfoot>tr,
+            body.dark-mode .table>thead>tr>th,
+            body.dark-mode .table>tbody>tr>td,
+            body.dark-mode .table>tfoot>tr>td {
+				background-color: transparent !important;
+				color: var(--default-color) !important;
+                border-color: #334155 !important;
+			}
+
+            body.dark-mode .table-hover tbody tr:hover {
+                background-color: rgba(255, 255, 255, 0.05) !important;
+                color: #fff !important;
+            }
+            
+            body.dark-mode .form-control,
+			body.dark-mode .form-select {
+				background-color: #0c111d !important;
+				color: #f8fafc !important;
+				border-color: #334155 !important;
+			}
+
+            body.dark-mode .modal-header,
+            body.dark-mode .modal-footer {
+                border-color: #334155 !important;
+                background-color: #111827 !important;
+            }
+
+            body.dark-mode .btn-outline {
+                background: transparent !important;
+                border-color: #60a5fa !important;
+                color: #60a5fa !important;
+            }
+
+            body.dark-mode .user-info-badge {
+                background: rgba(16, 185, 129, 0.1) !important;
+                border-color: rgba(16, 185, 129, 0.3) !important;
+            }
+
+            /* Responsive Text Readability on Images */
+            body.dark-mode img {
+                filter: brightness(0.8);
+            }
+
+            body.dark-mode .nav-tabs .nav-link {
+                color: #9dbbce !important;
+                background-color: transparent !important;
+                border-color: #334155 !important;
+            }
+
+            body.dark-mode .nav-tabs .nav-link.active {
+                color: #60a5fa !important;
+                background-color: #0c111d !important;
+                border: 1px solid #334155 !important;
+                border-bottom-color: transparent !important;
+            }
+
+            body.dark-mode .nav-tabs {
+                border-bottom-color: #334155 !important;
+            }
+
+            body.dark-mode .courses-hero {
+                background-color: #070f1e !important;
+            }
+
+            /* Dyslexic Mode Override */
+            body.dyslexic-mode { font-family: 'OpenDyslexic', sans-serif !important; }
 		</style>
 	</head>
 
@@ -158,8 +397,10 @@
                 {% endif %}
               </a>
             </li>
+			<li><a href="{{ path('front_preferences') }}"><i class="bi bi-gear me-2"></i>Préférences</a></li>
           </ul>
         </li>
+		
 
 						<li>
 							<a href="{{ path('front_pricing') }}">Pricing</a>
@@ -248,5 +489,6 @@
 		<script src="{{ asset('assets/js/main.js') }}"></script>
 
 		{% block javascripts %}{% endblock %}
+		
 	</body>
 </html>
