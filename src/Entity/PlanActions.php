@@ -32,7 +32,7 @@ class PlanActions
         minMessage: "La décision doit contenir au moins {{ limit }} caractères",
         maxMessage: "La décision ne peut pas dépasser {{ limit }} caractères"
     )]
-    private ?string $decision = null;
+    private string $decision = '';
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "La description est obligatoire")]
@@ -42,30 +42,31 @@ class PlanActions
     )]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Assert\NotBlank(message: "La date est obligatoire")]
-    private ?\DateTimeInterface $date = null;
+    private \DateTimeImmutable $date;
 
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
     
-    #[ORM\Column(type: 'string', enumType: Statut::class)]
+    #[ORM\Column(enumType: Statut::class)]
     #[Assert\NotNull(message: "Le statut est obligatoire")] 
     private ?Statut $statut = null;
 
-    #[ORM\Column(type: 'string', enumType: CategorieSortie::class, nullable: true)]
+    #[ORM\Column(enumType: CategorieSortie::class, nullable: true)]
     #[Assert\NotNull(message: "La catégorie est obligatoire")]
     private ?CategorieSortie $categorie = null;
 
     #[ORM\ManyToOne(inversedBy: 'planActions')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?SortieAI $sortieAI = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $feedbackEnseignant = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $feedbackDate = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $feedbackDate = null;
 
     #[ORM\ManyToOne]
     private ?Utilisateur $feedbackAuteur = null;
@@ -82,7 +83,7 @@ class PlanActions
 
     public function __construct()
     {
-        $this->date = new \DateTime();
+        $this->date = new \DateTimeImmutable();
         $this->statut = null;
         $this->categorie = null;
         $this->articles = new ArrayCollection(); 
@@ -127,23 +128,23 @@ class PlanActions
     }
 
     // GETTER/SETTER POUR date (NOUVEAU)
-    public function getDate(): ?\DateTimeInterface
+    public function getDate(): ?\DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(\DateTimeInterface $date): static
+    public function setDate(\DateTimeImmutable $date): static
     {
         $this->date = $date;
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
         return $this;
@@ -191,17 +192,17 @@ class PlanActions
     {
         $this->feedbackEnseignant = $feedbackEnseignant;
         if ($feedbackEnseignant) {
-            $this->feedbackDate = new \DateTime();
+            $this->feedbackDate = new \DateTimeImmutable();
         }
         return $this;
     }
 
-    public function getFeedbackDate(): ?\DateTimeInterface
+    public function getFeedbackDate(): ?\DateTimeImmutable
     {
         return $this->feedbackDate;
     }
 
-    public function setFeedbackDate(?\DateTimeInterface $feedbackDate): static
+    public function setFeedbackDate(?\DateTimeImmutable $feedbackDate): static
     {
         $this->feedbackDate = $feedbackDate;
         return $this;
@@ -220,12 +221,12 @@ class PlanActions
 
     public function getCategorieNom(): string
     {
-        return $this->categorie?->value ?? '';
+        return $this->categorie->value ?? '';
     }
     
     public function getStatutNom(): string
     {
-        return $this->statut?->value ?? '';
+        return $this->statut->value ?? '';
     }
   /**
      * @return Collection<int, ReferenceArticle>

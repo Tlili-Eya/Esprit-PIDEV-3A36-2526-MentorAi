@@ -52,12 +52,12 @@ class PlanActionsController extends AbstractController
 
         if (!empty($dateDebut)) {
             $qb->andWhere('p.date >= :date_debut')
-               ->setParameter('date_debut', new \DateTime($dateDebut));
+               ->setParameter('date_debut', new \DateTimeImmutable($dateDebut));
         }
 
         if (!empty($dateFin)) {
             $qb->andWhere('p.date <= :date_fin')
-               ->setParameter('date_fin', new \DateTime($dateFin . ' 23:59:59'));
+               ->setParameter('date_fin', new \DateTimeImmutable($dateFin . ' 23:59:59'));
         }
 
         $validSorts = ['id', 'decision', 'date', 'statut'];
@@ -98,7 +98,7 @@ public function new(
 ): Response
 {
     $planAction = new PlanActions();
-    $planAction->setDate(new \DateTime());
+    $planAction->setDate(new \DateTimeImmutable());
     
     // Pré-remplissage via SortieAI si présent en paramètre (Pont Opérationnel)
     if ($sortieId = $request->query->get('from_sortie')) {
@@ -117,7 +117,7 @@ public function new(
 
     if ($form->isSubmitted()) {
         if ($form->isValid()) {
-            $planAction->setUpdatedAt(new \DateTime());
+            $planAction->setUpdatedAt(new \DateTimeImmutable());
             
             try {
                 $planAction->setAuteur($this->getUser());
@@ -164,7 +164,7 @@ public function new(
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $planAction->setUpdatedAt(new \DateTime());
+            $planAction->setUpdatedAt(new \DateTimeImmutable());
             
             try {
                 $entityManager->flush();
@@ -242,12 +242,12 @@ public function exportPdf(
 
     if (!empty($dateDebut)) {
         $qb->andWhere('p.date >= :date_debut')
-           ->setParameter('date_debut', new \DateTime($dateDebut));
+           ->setParameter('date_debut', new \DateTimeImmutable($dateDebut));
     }
 
     if (!empty($dateFin)) {
         $qb->andWhere('p.date <= :date_fin')
-           ->setParameter('date_fin', new \DateTime($dateFin . ' 23:59:59'));
+           ->setParameter('date_fin', new \DateTimeImmutable($dateFin . ' 23:59:59'));
     }
 
     $qb->orderBy('p.date', 'DESC');

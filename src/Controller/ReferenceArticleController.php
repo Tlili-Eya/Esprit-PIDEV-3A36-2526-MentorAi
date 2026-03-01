@@ -99,7 +99,7 @@ class ReferenceArticleController extends AbstractController
                 $article->setAuteur($user);
             }
             
-            $article->setCreatedAt(new \DateTime());
+            $article->setCreatedAt(new \DateTimeImmutable());
             
             $entityManager->persist($article);
             $entityManager->flush();
@@ -133,7 +133,7 @@ class ReferenceArticleController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $article->setUpdatedAt(new \DateTime());
+            $article->setUpdatedAt(new \DateTimeImmutable());
             
             $entityManager->flush();
 
@@ -180,7 +180,7 @@ class ReferenceArticleController extends AbstractController
 
         try {
             $article->setPublished(!$article->isPublished());
-            $article->setUpdatedAt(new \DateTime());
+            $article->setUpdatedAt(new \DateTimeImmutable());
             
             $entityManager->flush();
             

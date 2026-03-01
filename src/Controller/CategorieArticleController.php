@@ -67,7 +67,7 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
     // ICI : Vérifier si le formulaire est soumis ET VALIDE
     if ($form->isSubmitted() && $form->isValid()) {
         // Remplir les champs automatiques
-        $categorie->setCreatedAt(new \DateTime());
+        $categorie->setCreatedAt(new \DateTimeImmutable());
         
         // Persister et sauvegarder
         $entityManager->persist($categorie);
@@ -93,7 +93,7 @@ public function edit(Request $request, CategorieArticle $categorie, EntityManage
 
     if ($form->isSubmitted() && $form->isValid()) {
         // Mettre à jour la date de modification
-        $categorie->setUpdatedAt(new \DateTime());
+        $categorie->setUpdatedAt(new \DateTimeImmutable());
         
         $entityManager->flush();
 

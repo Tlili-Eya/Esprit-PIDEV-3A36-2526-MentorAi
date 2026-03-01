@@ -95,7 +95,7 @@ class SortieAIController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $sortieAI->setCreatedAt(new \DateTime());
+            $sortieAI->setCreatedAt(new \DateTimeImmutable());
             
             $entityManager->persist($sortieAI);
             $entityManager->flush();
@@ -139,7 +139,7 @@ class SortieAIController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $sortieAI->setUpdatedAt(new \DateTime());
+            $sortieAI->setUpdatedAt(new \DateTimeImmutable());
             
             $entityManager->flush();
 
