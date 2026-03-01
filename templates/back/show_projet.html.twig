@@ -94,9 +94,6 @@
 												<a href="{{ path('back_edit_ressource', {'id': ressource.id}) }}" class="btn btn-sm btn-outline-primary me-1" title="Modifier">
 													<i class="bi bi-pencil"></i>
 												</a>
-												<a href="{{ path('back_delete_ressource', {'id': ressource.id}) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette ressource ?');" title="Supprimer">
-													<i class="bi bi-trash"></i>
-												</a>
 											</div>
 										</div>
 									{% endfor %}
