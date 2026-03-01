@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Repository\UtilisateurRepository;
+use Stripe\Stripe;
+use Stripe\PaymentIntent;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,35 +36,42 @@ final class BackController extends AbstractController
         return $this->render('back/instructor-profile.html.twig');
     }
 
-    
-
     #[Route('/pricing', name: 'pricing')]
     public function pricing(): Response
     {
-        $stripeSecretKey = $this->getParameter('stripe_secret_key');
         $transactions = [];
 
-        if ($stripeSecretKey) {
-            \Stripe\Stripe::setApiKey($stripeSecretKey);
-            try {
-                // Fetch PaymentIntents as they represent modern transactions
-                $paymentIntents = \Stripe\PaymentIntent::all(['limit' => 100]);
-                foreach ($paymentIntents->data as $intent) {
-                    $transactions[] = [
-                        'id' => $intent->id,
-                        'amount' => $intent->amount / 100, // Stripe uses cents
-                        'currency' => strtoupper($intent->currency),
-                        'status' => $intent->status,
-                        'email' => $intent->receipt_email ?? ($intent->customer ? 'Customer ID: ' . $intent->customer : 'N/A'),
-                        'created' => (new \DateTime())->setTimestamp($intent->created)->format('d/m/Y H:i'),
-                        'description' => $intent->description ?? 'No description'
-                    ];
-                }
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Erreur Stripe: ' . $e->getMessage());
-            }
-        } else {
+        /** @var string|null $stripeSecretKey */
+        $stripeSecretKey = $this->getParameter('stripe_secret_key');
+
+        if (!$stripeSecretKey) {
             $this->addFlash('warning', 'Clé secrète Stripe non configurée.');
+            return $this->render('back/pricing.html.twig', [
+                'transactions' => $transactions,
+            ]);
+        }
+
+        try {
+            Stripe::setApiKey($stripeSecretKey);
+
+            $paymentIntents = PaymentIntent::all(['limit' => 100]);
+
+            foreach ($paymentIntents->data as $intent) {
+                $transactions[] = [
+                    'id' => $intent->id,
+                    'amount' => $intent->amount / 100,
+                    'currency' => strtoupper($intent->currency),
+                    'status' => $intent->status,
+                    'email' => $intent->receipt_email
+                        ?? ($intent->customer ? 'Customer ID: ' . $intent->customer : 'N/A'),
+                    'created' => (new \DateTimeImmutable())
+                        ->setTimestamp($intent->created)
+                        ->format('d/m/Y H:i'),
+                    'description' => $intent->description ?? 'No description',
+                ];
+            }
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Erreur Stripe : ' . $e->getMessage());
         }
 
         return $this->render('back/pricing.html.twig', [
