@@ -1,0 +1,7 @@
+parameters:
+    level: 8
+    paths:
+        - src
+    ignoreErrors:
+        - '#Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface::getProjets\(\)#'
+        - '#Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface::setMdp\(\)#'

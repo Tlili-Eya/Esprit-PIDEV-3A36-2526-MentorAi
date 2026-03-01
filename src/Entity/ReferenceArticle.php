@@ -26,7 +26,7 @@ class ReferenceArticle
         minMessage: "Le titre doit contenir au moins {{ limit }} caractères",
         maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères"
     )]
-    private ?string $titre = null;
+    private string $titre = '';
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Le contenu de l'article est obligatoire")]
@@ -34,7 +34,7 @@ class ReferenceArticle
         min: 20,
         minMessage: "Le contenu doit contenir au moins {{ limit }} caractères"
     )]
-    private ?string $contenu = null;
+    private string $contenu = '';
 
     #[ORM\ManyToOne(inversedBy: 'referenceArticles')]
     #[Assert\NotNull(message: "La catégorie est obligatoire")]
@@ -43,11 +43,11 @@ class ReferenceArticle
     #[ORM\ManyToOne(inversedBy: 'referenceArticles')]
     private ?Utilisateur $auteur = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $createdAt = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTime $updatedAt = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column]
     private bool $published = false;
@@ -67,7 +67,7 @@ class ReferenceArticle
     public function __construct()
     {
         $this->sortiesAI = new ArrayCollection();
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
         $this->published = false;
         $this->planActions = new ArrayCollection(); // AJOUT
     }
@@ -78,7 +78,7 @@ class ReferenceArticle
         return $this->id;
     }
 
-    public function getTitre(): ?string
+    public function getTitre(): string
     {
         return $this->titre;
     }
@@ -90,7 +90,7 @@ class ReferenceArticle
         return $this;
     }
 
-    public function getContenu(): ?string
+    public function getContenu(): string
     {
         return $this->contenu;
     }
@@ -126,24 +126,24 @@ class ReferenceArticle
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTime
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTime $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 

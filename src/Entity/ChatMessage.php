@@ -19,26 +19,27 @@ class ChatMessage
     private ?ProfilApprentissage $profilApprentissage = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $role = null; // 'user' or 'assistant'
+    private string $role = ''; // 'user' or 'assistant'
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $contenu = null;
+    private string $contenu = '';
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $metadata = null; // Store format, timestamp, learning time, etc.
 
-    #[ORM\Column]
-    private ?\DateTime $createdAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $startInteractionTime = null; // For tracking learning time
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $startInteractionTime = null; // For tracking learning time
 
     #[ORM\Column(nullable: true)]
     private ?int $learningDurationSeconds = null; // Time to understand content
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->startInteractionTime = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -57,7 +58,7 @@ class ChatMessage
         return $this;
     }
 
-    public function getRole(): ?string
+    public function getRole(): string
     {
         return $this->role;
     }
@@ -68,7 +69,7 @@ class ChatMessage
         return $this;
     }
 
-    public function getContenu(): ?string
+    public function getContenu(): string
     {
         return $this->contenu;
     }
@@ -90,23 +91,23 @@ class ChatMessage
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
         return $this;
     }
 
-    public function getStartInteractionTime(): ?\DateTime
+    public function getStartInteractionTime(): ?\DateTimeImmutable
     {
         return $this->startInteractionTime;
     }
 
-    public function setStartInteractionTime(?\DateTime $startInteractionTime): static
+    public function setStartInteractionTime(?\DateTimeImmutable $startInteractionTime): static
     {
         $this->startInteractionTime = $startInteractionTime;
         return $this;
