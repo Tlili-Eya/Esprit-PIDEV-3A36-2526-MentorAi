@@ -1,0 +1,16 @@
+parameters:
+    level: 8
+    reportUnmatchedIgnoredErrors: false
+    paths:
+        - src
+    ignoreErrors:
+        - '#Call to an undefined method#'
+        -
+            message: '#Property App\\Entity\\Projet::\$id \(int\|null\) is never assigned int so it can be removed from the property type\.#'
+            path: src/Entity/Projet.php
+        -
+            message: '#Property App\\Entity\\Parcours::\$id \(int\|null\) is never assigned int so it can be removed from the property type\.#'
+            path: src/Entity/Parcours.php
+        -
+            message: '#Property App\\Entity\\Ressource::\$id \(int\|null\) is never assigned int so it can be removed from the property type\.#'
+            path: src/Entity/Ressource.php
