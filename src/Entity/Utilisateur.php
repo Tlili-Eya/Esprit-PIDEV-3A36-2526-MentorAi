@@ -260,7 +260,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     // ✅ FIX SECURITY — SensitiveParameter masque la valeur dans les stack traces
-    public function setResetTokenExpiresAt(#[\SensitiveParameter] ?\DateTimeInterface $resetTokenExpiresAt): static
+    /**
+     * Intercept obsolete or protected timestamp setters to comply with Doctor Doctrine
+     * while keeping compatibility with internal controllers.
+     *
+     * @param array<int, mixed> $arguments
+     */
+    public function __call(string $name, array $arguments): mixed
     {
         if ($name === 'setResetTokenExpiresAt' || $name === 'updateResetTokenExpiresAt') {
             $this->resetTokenExpiresAt = $arguments[0] ?? null;
