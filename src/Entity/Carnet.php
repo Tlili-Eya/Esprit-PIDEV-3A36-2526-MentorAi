@@ -12,9 +12,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: CarnetRepository::class)]
 class Carnet
 {
+    /**
+     * @var int|null Doctrine-generated ID
+     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line property.unusedType */
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -23,8 +27,11 @@ class Carnet
     #[ORM\Column(type: Types::TEXT, nullable: true, columnDefinition: 'LONGTEXT')]
     private ?string $contenu = null;
 
+    /**
+     * @var array<array<string, string>>
+     */
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $attachments = null;
+    private array $attachments = [];
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $coleur = null;
@@ -81,12 +88,18 @@ class Carnet
         return $this;
     }
 
-    public function getAttachments(): ?array
+    /**
+     * @return array<array<string, string>>
+     */
+    public function getAttachments(): array
     {
         return $this->attachments;
     }
 
-    public function setAttachments(?array $attachments): static
+    /**
+     * @param array<array<string, string>> $attachments
+     */
+    public function setAttachments(array $attachments): static
     {
         $this->attachments = $attachments;
 

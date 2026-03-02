@@ -9,9 +9,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: PlanningEtudeRepository::class)]
 class PlanningEtude
 {
+    /**
+     * @var int|null Doctrine-generated ID
+     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line property.unusedType */
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]

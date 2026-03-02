@@ -137,6 +137,7 @@ final class PlanningEtudeController extends AbstractController
 
         $planning = new PlanningEtude();
         $planning->setTitreP($titre);
+        /** @phpstan-ignore-next-line assign.propertyType */
         $planning->setDateSeance($selectedDate);
         $planning->setHeureDebut(new \DateTime($heureDebut));
         $planning->setDureePrevue($dureePrevue);
@@ -227,6 +228,7 @@ final class PlanningEtudeController extends AbstractController
             return new JsonResponse(['errors' => $errors], 422);
         }
 
+        /** @var \DateTime $selectedDate */
         $planning->setTitreP($titre);
         $planning->setDateSeance($selectedDate);
         $planning->setHeureDebut(new \DateTime($heureDebut));
@@ -297,6 +299,7 @@ final class PlanningEtudeController extends AbstractController
             return new JsonResponse(['errors' => $errors], 422);
         }
 
+        /** @var \DateTime $selectedDate */
         $planning->setDateSeance($selectedDate);
         $planning->setHeureDebut(new \DateTime($heureDebut));
         $planning->setDateModification(new \DateTime());
@@ -411,8 +414,9 @@ final class PlanningEtudeController extends AbstractController
         ]);
     }
 
-    private function resolveSelectedDate(?string $dateString): \DateTime
+    private function resolveSelectedDate(string|bool|float|int|null $dateString): \DateTime
     {
+        $dateString = $dateString !== null ? (string) $dateString : null;
         if ($dateString) {
             try {
                 return new \DateTime($dateString);
@@ -424,8 +428,9 @@ final class PlanningEtudeController extends AbstractController
         return new \DateTime();
     }
 
-    private function parseDateOrNull(?string $dateString): ?\DateTime
+    private function parseDateOrNull(string|bool|float|int|null $dateString): ?\DateTime
     {
+        $dateString = $dateString !== null ? (string) $dateString : null;
         if (!$dateString) {
             return null;
         }
@@ -448,10 +453,10 @@ final class PlanningEtudeController extends AbstractController
         return $hours >= 0 && $hours <= 23 && $minutes >= 0 && $minutes <= 59;
     }
 
-    private function parseDurationFields(?string $hoursInput, ?string $minutesInput): ?int
+    private function parseDurationFields(string|bool|float|int|null $hoursInput, string|bool|float|int|null $minutesInput): ?int
     {
-        $hoursInput = $hoursInput !== null ? trim($hoursInput) : '';
-        $minutesInput = $minutesInput !== null ? trim($minutesInput) : '';
+        $hoursInput = $hoursInput !== null ? trim((string) $hoursInput) : '';
+        $minutesInput = $minutesInput !== null ? trim((string) $minutesInput) : '';
 
         if ($hoursInput === '' && $minutesInput === '') {
             return null;
@@ -483,9 +488,12 @@ final class PlanningEtudeController extends AbstractController
         PlanningEtudeRepository $planningRepo,
         \DateTime $selectedDate,
         string $startTime,
-        int $durationMinutes,
+        int|null $durationMinutes,
         ?int $excludeId = null
     ): ?string {
+        if ($durationMinutes === null) {
+            return null;
+        }
         $newStart = $this->timeToMinutes($startTime);
         $newEnd = $newStart + $durationMinutes;
 

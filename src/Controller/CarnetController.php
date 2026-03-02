@@ -143,12 +143,14 @@ final class CarnetController extends AbstractController
             $note = new Carnet();
             $note->setDateCreation($now);
             if ($user) {
+                /** @var \App\Entity\Utilisateur $user */
                 $note->setUtilisateurs($user);
             }
         }
 
         $attachmentsMeta = [];
         $projectDir = $this->getParameter('kernel.project_dir');
+        /** @var string $projectDir */
         $uploadDir = $projectDir . '/public/uploads/carnet';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0775, true);
@@ -224,6 +226,9 @@ final class CarnetController extends AbstractController
         return $this->redirectToRoute('front_blog');
     }
 
+    /**
+     * @param array<array<string, mixed>> $attachmentsMeta
+     */
     private function replaceDataUrlsWithFiles(string $html, string $uploadDir, array &$attachmentsMeta): string
     {
         if (trim($html) === '') {
@@ -244,9 +249,12 @@ final class CarnetController extends AbstractController
         $html = $dom->saveHTML();
         libxml_clear_errors();
 
-        return $html;
+        return $html === false ? '' : $html;
     }
 
+    /**
+     * @param array<array<string, mixed>> $attachmentsMeta
+     */
     private function replaceDataUrlInNodes(\DOMDocument $dom, string $tag, string $attr, string $uploadDir, array &$attachmentsMeta): void
     {
         $nodes = $dom->getElementsByTagName($tag);
@@ -273,6 +281,9 @@ final class CarnetController extends AbstractController
         }
     }
 
+    /**
+     * @return array<string, string>|null
+     */
     private function saveDataUrl(string $dataUrl, string $uploadDir): ?array
     {
         if (!preg_match('/^data:(.*?);base64,(.*)$/', $dataUrl, $matches)) {
@@ -341,6 +352,7 @@ final class CarnetController extends AbstractController
         }
 
         $projectDir = $this->getParameter('kernel.project_dir');
+        /** @var string $projectDir */
         $uploadDir = $projectDir . '/public/uploads/carnet';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0775, true);
@@ -381,6 +393,7 @@ final class CarnetController extends AbstractController
         }
 
         $projectDir = $this->getParameter('kernel.project_dir');
+        /** @var string $projectDir */
         $uploadDir = $projectDir . '/public/uploads/carnet';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0775, true);
@@ -395,6 +408,9 @@ final class CarnetController extends AbstractController
         ]);
     }
 
+    /**
+     * @return array<string, string>|null
+     */
     private function uploadFileToCloudinary(string $filePath, string $filename, string $mimeType): ?array
     {
         if (!$this->configureCloudinary()) {
@@ -402,6 +418,7 @@ final class CarnetController extends AbstractController
         }
 
         try {
+            /** @phpstan-ignore-next-line class.notFound */
             $response = Uploader::upload($filePath, [
                 'resource_type' => 'auto',
                 'folder' => 'mentorai/carnet',
@@ -424,6 +441,9 @@ final class CarnetController extends AbstractController
         }
     }
 
+    /**
+     * @return array<string, string>|null
+     */
     private function uploadDataUrlToCloudinary(string $dataUrl, string $mimeType): ?array
     {
         if (!$this->configureCloudinary()) {
@@ -431,6 +451,7 @@ final class CarnetController extends AbstractController
         }
 
         try {
+            /** @phpstan-ignore-next-line class.notFound */
             $response = Uploader::upload($dataUrl, [
                 'resource_type' => 'auto',
                 'folder' => 'mentorai/carnet',
@@ -460,9 +481,12 @@ final class CarnetController extends AbstractController
             return true;
         }
 
-        $cloudName = (string) $this->getParameter('cloudinary_cloud_name');
-        $apiKey = (string) $this->getParameter('cloudinary_api_key');
-        $apiSecret = (string) $this->getParameter('cloudinary_api_secret');
+        /** @phpstan-ignore-next-line cast.string */
+        $cloudName = (string) ($this->getParameter('cloudinary_cloud_name') ?? '');
+        /** @phpstan-ignore-next-line cast.string */
+        $apiKey = (string) ($this->getParameter('cloudinary_api_key') ?? '');
+        /** @phpstan-ignore-next-line cast.string */
+        $apiSecret = (string) ($this->getParameter('cloudinary_api_secret') ?? '');
 
         if ($cloudName === '' || $apiKey === '' || $apiSecret === '') {
             return false;
