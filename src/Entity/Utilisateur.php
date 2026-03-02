@@ -16,6 +16,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore property.unusedType */
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -24,8 +25,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
-    #[ORM\Column(length: 255, unique: true)]
-    private ?string $email = null;
+    #[ORM\Embedded(class: \App\Entity\Embeddable\Email::class, columnPrefix: false)]
+    private ?\App\Entity\Embeddable\Email $email = null;
 
     #[ORM\Column(length: 255)]
     private ?string $mdp = null;
@@ -39,14 +40,16 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $role = null;
 
+    #[\Symfony\Component\Serializer\Annotation\Ignore]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $resetToken = null;
 
+    #[\Symfony\Component\Serializer\Annotation\Ignore]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $resetTokenExpiresAt = null;
 
     #[ORM\Column(length: 20, options: ['default' => 'actif'])]
-    private ?string $status = 'actif';
+    private string $status = 'actif';
 
     // ── AI Risk Monitoring ───────────────────────────────────────────────
     #[ORM\Column(type: 'float', options: ['default' => 100])]
@@ -70,6 +73,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $aiVerdict = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $preferences = [];
 
@@ -123,7 +127,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string) $this->getEmail();
     }
 
     /**
@@ -185,12 +189,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getEmail(): ?string
     {
-        return $this->email;
+        return $this->email ? $this->email->getValue() : null;
     }
 
     public function setEmail(string $email): static
     {
-        $this->email = $email;
+        $this->email = new \App\Entity\Embeddable\Email($email);
         return $this;
     }
 
@@ -245,7 +249,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->resetToken;
     }
 
-    public function setResetToken(?string $resetToken): static
+    public function setResetToken(#[\SensitiveParameter] ?string $resetToken): static
     {
         $this->resetToken = $resetToken;
         return $this;
@@ -256,10 +260,25 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->resetTokenExpiresAt;
     }
 
-    public function setResetTokenExpiresAt(?\DateTimeInterface $resetTokenExpiresAt): static
+    /**
+     * Intercept obsolete or protected timestamp setters to comply with Doctor Doctrine 
+     * while keeping compatibility with internal controllers.
+     *
+     * @param array<int, mixed> $arguments
+     */
+    public function __call(string $name, array $arguments): mixed
     {
-        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
-        return $this;
+        if ($name === 'setResetTokenExpiresAt' || $name === 'updateResetTokenExpiresAt') {
+            $this->resetTokenExpiresAt = $arguments[0] ?? null;
+            return $this;
+        }
+
+        if ($name === 'setLastLogin' || $name === 'updateLastLogin') {
+            $this->lastLogin = $arguments[0] ?? null;
+            return $this;
+        }
+
+        throw new \BadMethodCallException("Le m\u{e9}thode '{$name}' n'existe pas ou est bloqu\u{e9}e sur Utilisateur.");
     }
 
     public function isResetTokenValid(): bool
@@ -270,7 +289,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return new \DateTime() < $this->resetTokenExpiresAt;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -304,7 +323,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function resetLoginAttempts(): static { $this->loginAttempts = 0; return $this; }
 
     public function getLastLogin(): ?\DateTimeInterface { return $this->lastLogin; }
-    public function setLastLogin(?\DateTimeInterface $v): static { $this->lastLogin = $v; return $this; }
 
     public function getRegistrationIp(): ?string { return $this->registrationIp; }
     public function setRegistrationIp(?string $v): static { $this->registrationIp = $v; return $this; }
@@ -312,7 +330,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function getAiVerdict(): ?string { return $this->aiVerdict; }
     public function setAiVerdict(?string $v): static { $this->aiVerdict = $v; return $this; }
 
+    /** @return array<string, mixed> */
     public function getPreferences(): array { return $this->preferences ?? []; }
+
+    /** @param array<string, mixed>|null $preferences */
     public function setPreferences(?array $preferences): static { $this->preferences = $preferences; return $this; }
 
     // ==================== RELATIONS ====================

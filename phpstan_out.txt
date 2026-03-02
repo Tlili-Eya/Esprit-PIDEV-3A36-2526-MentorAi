@@ -2,25 +2,37 @@
   Line   Utilisateur.p  
          hp             
  ------ --------------- 
-  :17    No error with  
-         identifier     
-         property.unus  
-         edType is      
-         reported on    
-         line 17.       
-  :20    Property       
+  :267   Method         
          App\Entity\Ut  
-         ilisateur::$i  
-         d (int|null)   
-         is never       
-         assigned int   
-         so it can be   
-         removed from   
-         the property   
-         type.          
+         ilisateur::__  
+         call() has no  
+         return type    
+         specified.     
          ­ƒ¬¬             
-         property.unus  
-         edType         
+         missingType.r  
+         eturn          
+  :267   Method         
+         App\Entity\Ut  
+         ilisateur::__  
+         call() has     
+         parameter      
+         $arguments     
+         with no value  
+         type           
+         specified in   
+         iterable type  
+         array.         
+         ­ƒ¬¬             
+         missingType.i  
+         terableValue   
+         ­ƒÆí  See:       
+         https://phpst  
+         an.org/blog/s  
+         olving-phpsta  
+         n-no-value-ty  
+         pe-specified-  
+         in-iterable-t  
+         ype            
  ------ --------------- 
 
 

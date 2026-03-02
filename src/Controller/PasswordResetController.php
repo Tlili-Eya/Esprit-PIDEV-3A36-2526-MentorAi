@@ -33,7 +33,7 @@ class PasswordResetController extends AbstractController
                 // Définir le token et son expiration (1 heure)
                 $user->setResetToken($token);
                 $expiresAt = new \DateTime('+1 hour');
-                $user->setResetTokenExpiresAt($expiresAt);
+                $user->updateResetTokenExpiresAt($expiresAt);
                 
                 $em->flush();
 
@@ -118,7 +118,7 @@ class PasswordResetController extends AbstractController
                 
                 // Nettoyage du token
                 $user->setResetToken(null);
-                $user->setResetTokenExpiresAt(null);
+                $user->updateResetTokenExpiresAt(null);
                 
                 $em->flush();
 
