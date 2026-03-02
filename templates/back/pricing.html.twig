@@ -99,6 +99,12 @@
 			color: #2d3748;
 		}
 
+		.client-text {
+			font-weight: 600;
+			color: #102c59;
+			margin-bottom: 2px;
+		}
+
 		.date-text {
 			color: #718096;
 			font-size: 0.85rem;
@@ -221,6 +227,7 @@
 								<tr>
 									<td class="text-muted small">{{ t.id }}</td>
 									<td>
+										<div class="client-text">{{ t.client|default('Client Stripe') }}</div>
 										<div class="email-text">{{ t.email }}</div>
 									</td>
 									<td>

@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Repository\UtilisateurRepository;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
+use Stripe\Customer;
+use Stripe\Charge;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -54,16 +56,57 @@ final class BackController extends AbstractController
         try {
             Stripe::setApiKey($stripeSecretKey);
 
-            $paymentIntents = PaymentIntent::all(['limit' => 100]);
+            $paymentIntents = PaymentIntent::all([
+                'limit' => 100,
+                'expand' => ['data.customer', 'data.latest_charge'],
+            ]);
 
             foreach ($paymentIntents->data as $intent) {
+                $customerName = null;
+                $customerEmail = null;
+
+                if ($intent->customer instanceof Customer) {
+                    $customerName = $intent->customer->name;
+                    $customerEmail = $intent->customer->email;
+                }
+
+                $latestCharge = $intent->latest_charge;
+                if (!$latestCharge && !empty($intent->charges?->data[0])) {
+                    $latestCharge = $intent->charges->data[0];
+                }
+
+                if (is_string($latestCharge)) {
+                    $latestCharge = Charge::retrieve($latestCharge);
+                }
+
+                if ($latestCharge instanceof Charge) {
+                    if (!$customerName && !empty($latestCharge->billing_details?->name)) {
+                        $customerName = $latestCharge->billing_details->name;
+                    }
+                    if (!$customerEmail && !empty($latestCharge->billing_details?->email)) {
+                        $customerEmail = $latestCharge->billing_details->email;
+                    }
+                }
+
+                if (!$customerEmail && $intent->receipt_email) {
+                    $customerEmail = $intent->receipt_email;
+                }
+
+                if (!$customerName && !empty($intent->description)) {
+                    $customerName = $intent->description;
+                }
+
+                if (!$customerName && $intent->customer && !$intent->customer instanceof Customer) {
+                    $customerName = 'Customer ID: ' . $intent->customer;
+                }
+
                 $transactions[] = [
                     'id' => $intent->id,
                     'amount' => $intent->amount / 100,
                     'currency' => strtoupper($intent->currency),
                     'status' => $intent->status,
-                    'email' => $intent->receipt_email
-                        ?? ($intent->customer ? 'Customer ID: ' . $intent->customer : 'N/A'),
+                    'client' => $customerName ?? 'Client Stripe',
+                    'email' => $customerEmail ?? 'N/A',
                     'created' => (new \DateTimeImmutable())
                         ->setTimestamp($intent->created)
                         ->format('d/m/Y H:i'),

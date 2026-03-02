@@ -178,7 +178,7 @@ class ParcoursController extends AbstractController
         }
 
         return $this->render('front/parcours.html.twig', [
-            'parcoursList' => $parcoursRepository->findBy([], ['id' => 'DESC']),
+            'parcoursList' => $parcoursRepository->findBy([], ['id' => 'DESC'], 20),
             'form' => $form->createView(),
         ]);
     }

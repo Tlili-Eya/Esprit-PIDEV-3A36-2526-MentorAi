@@ -1,0 +1,68 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}À propos | Back Office MentorAI{% endblock %}
+
+{% block body %}
+<main class="main py-4">
+    <div class="container-fluid">
+        <div class="mb-4">
+            <h1 class="h3 mb-2">À propos du Back Office MentorAI</h1>
+            <p class="text-muted mb-0">Résumé fonctionnel de la partie administration du projet.</p>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h2 class="h5">Vision du projet</h2>
+                <p class="mb-0">
+                    MentorAI est une plateforme d’accompagnement pédagogique qui centralise le suivi des apprenants,
+                    la création de parcours et l’exploitation d’outils IA. Le back-office permet à l’équipe
+                    administrative et pédagogique de piloter les données clés depuis une interface unique.
+                </p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <h3 class="h6 text-uppercase text-muted">Modules Back principaux</h3>
+                        <ul class="mb-0">
+                            <li>Gestion des utilisateurs (rôles, accès, supervision).</li>
+                            <li>Gestion des parcours, projets, objectifs et ressources.</li>
+                            <li>Suivi des feedbacks et des interactions pédagogiques.</li>
+                            <li>Tableaux de bord de pilotage et indicateurs globaux.</li>
+                            <li>Suivi des transactions Stripe pour la partie revenus.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <h3 class="h6 text-uppercase text-muted">Qualité, sécurité et architecture</h3>
+                        <ul class="mb-0">
+                            <li>Architecture Symfony avec séparation Controller / Service / Repository.</li>
+                            <li>Authentification et contrôle d’accès par rôles côté administration.</li>
+                            <li>Migrations Doctrine pour faire évoluer le schéma de données proprement.</li>
+                            <li>Validation et fiabilisation continue via lint et contrôles de cohérence.</li>
+                            <li>Interface orientée productivité pour les opérations quotidiennes.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body p-4">
+                <h2 class="h5">Objectif opérationnel</h2>
+                <p class="mb-3">
+                    Le back-office a pour but de simplifier la gouvernance de la plateforme :
+                    administrer les contenus, surveiller l’activité, améliorer la qualité des suivis
+                    et faciliter les décisions pédagogiques et métiers.
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
