@@ -45,12 +45,12 @@ class CourController extends AbstractController
         ProfilApprentissageRepository $profilRepo,
         ChatMessageRepository $chatMessageRepo,
         PlanningEtudeRepository $planningRepo,
-        string $groqApiKey,
-        string $groqModel,
-        string $elevenLabsApiKey,
-        string $cloudName,
-        string $cloudApiKey,
-        string $cloudApiSecret
+        string $groqApiKey = '',
+        string $groqModel = '',
+        string $elevenLabsApiKey = '',
+        string $cloudName = '',
+        string $cloudApiKey = '',
+        string $cloudApiSecret = ''
     ) {
         $this->httpClient = $httpClient;
         $this->entityManager = $entityManager;
@@ -62,17 +62,18 @@ class CourController extends AbstractController
         $this->groqModel = $groqModel;
         $this->elevenLabsApiKey = $elevenLabsApiKey;
 
-        // Initialize Cloudinary
-        Configuration::instance([
-            'cloud' => [
-                'cloud_name' => $cloudName,
-                'api_key'    => $cloudApiKey,
-                'api_secret' => $cloudApiSecret,
-            ],
-            'url' => [
-                'secure' => true
-            ]
-        ]);
+        if ($cloudName !== '' && $cloudApiKey !== '' && $cloudApiSecret !== '') {
+            Configuration::instance([
+                'cloud' => [
+                    'cloud_name' => $cloudName,
+                    'api_key'    => $cloudApiKey,
+                    'api_secret' => $cloudApiSecret,
+                ],
+                'url' => [
+                    'secure' => true
+                ]
+            ]);
+        }
     }
 
     /**

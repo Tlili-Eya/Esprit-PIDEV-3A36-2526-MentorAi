@@ -154,16 +154,16 @@ class FrontController extends AbstractController
         return $this->render('front/terms.html.twig');
     }
 
-    #[Route('blog', name: 'blog')]
+    #[Route('blog-static', name: 'blog_static')]
     public function blog(): Response
     {
-        return $this->render('front/blog.html.twig');
+        return $this->redirectToRoute('front_blog');
     }
 
-    #[Route('blog-details', name: 'blog_details')]
+    #[Route('blog-details-static', name: 'blog_details_static')]
     public function blogDetails(): Response
     {
-        return $this->render('front/blog-details.html.twig');
+        return $this->redirectToRoute('front_blog_details');
     }
 
     #[Route('contact', name: 'contact')]

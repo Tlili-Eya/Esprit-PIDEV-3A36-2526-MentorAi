@@ -48,7 +48,7 @@ class Objectif
     )]
     private ?\DateTime $datefin = null;
 
-    #[ORM\Column(enumType: Statutobj::class)]
+    #[ORM\Column(type: Types::STRING, enumType: Statutobj::class, length: 20)]
     private Statutobj $statut = Statutobj::Atteint;
 
     #[ORM\OneToOne(inversedBy: 'objectif', cascade: ['persist', 'remove'])]
@@ -57,7 +57,7 @@ class Objectif
 
     // ✅ FIX — nullable: false force INNER JOIN au lieu de LEFT JOIN (+20-30% perf)
     #[ORM\ManyToOne(inversedBy: 'objectifs')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Utilisateur $utilisateur = null;
 
     public function getId(): ?int

@@ -35,9 +35,9 @@ class Carnet
     private ?\DateTime $dateModification = null;
 
     /**
-     * @var Collection<int, planningEtude>
+     * @var Collection<int, PlanningEtude>
      */
-    #[ORM\ManyToMany(targetEntity: planningEtude::class)]
+    #[ORM\ManyToMany(targetEntity: PlanningEtude::class)]
     private Collection $planningEtude;
 
     #[ORM\ManyToOne]
@@ -126,14 +126,14 @@ class Carnet
     }
 
     /**
-     * @return Collection<int, planningEtude>
+     * @return Collection<int, PlanningEtude>
      */
     public function getPlanningEtude(): Collection
     {
         return $this->planningEtude;
     }
 
-    public function addPlanningEtude(planningEtude $planningEtude): static
+    public function addPlanningEtude(PlanningEtude $planningEtude): static
     {
         if (!$this->planningEtude->contains($planningEtude)) {
             $this->planningEtude->add($planningEtude);
@@ -142,7 +142,7 @@ class Carnet
         return $this;
     }
 
-    public function removePlanningEtude(planningEtude $planningEtude): static
+    public function removePlanningEtude(PlanningEtude $planningEtude): static
     {
         $this->planningEtude->removeElement($planningEtude);
 

@@ -680,22 +680,23 @@ const msgsContainer = document.getElementById('chatMessages');
 const loadingMsg = msgsContainer.lastChild;
 
 try {
-const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+const response = await fetch('{{ path('front_projets_ai') }}', {
 method: 'POST',
 headers: {
-'Content-Type': 'application/json',
-'Authorization': 'Bearer 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'
+'Content-Type': 'application/json'
 },
-body: JSON.stringify(
-{model: "llama-3.1-8b-instant", messages: chatHistory}
-)
+body: JSON.stringify({
+message,
+history: chatHistory.filter(m => m.role === 'user' || m.role === 'assistant'),
+systemPrompt: chatHistory[0] && chatHistory[0].role === 'system' ? chatHistory[0].content : ''
+})
 });
 
 const data = await response.json();
 msgsContainer.removeChild(loadingMsg);
 
-if (data.choices && data.choices.length > 0) {
-const aiMessage = data.choices[0].message.content;
+if (data.success && data.response) {
+const aiMessage = data.response;
 chatHistory.push({role: "assistant", content: aiMessage});
 
 // Parse json block
@@ -721,7 +722,7 @@ displayMessage = displayMessage.replace(/\n/g, '<br>');
 
 appendMessage('bot', displayMessage);
 } else {
-const errorMsg = data.error && data.error.message ? data.error.message : "Je n'ai pas pu générer de réponse.";
+const errorMsg = data.error || data.details || "Je n'ai pas pu générer de réponse.";
 appendMessage('bot', "Erreur API : " + errorMsg);
 }
 } catch (error) {

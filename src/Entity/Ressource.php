@@ -33,6 +33,7 @@ class Ressource
     private ?\DateTime $dateModification = null;
 
     #[ORM\ManyToOne(inversedBy: 'ressources')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Projet $projet = null;
 
     public function getId(): ?int

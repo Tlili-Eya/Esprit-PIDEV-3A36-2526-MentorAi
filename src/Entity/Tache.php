@@ -39,6 +39,7 @@ class Tache
     private ?Etat $etat = null;
 
     #[ORM\ManyToOne(inversedBy: 'tache')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Programme $programme = null;
 
     public function getId(): ?int

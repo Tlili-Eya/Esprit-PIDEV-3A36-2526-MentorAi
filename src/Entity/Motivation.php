@@ -22,6 +22,7 @@ class Motivation
     private ?string $messagemotivant = null;
 
     #[ORM\ManyToOne(inversedBy: 'motivation')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Programme $programme = null;
 
     public function getId(): ?int

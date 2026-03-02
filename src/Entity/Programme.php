@@ -36,13 +36,13 @@ private int $scorePourcentage = 0;
     /**
      * @var Collection<int, Motivation>
      */
-    #[ORM\OneToMany(targetEntity: Motivation::class, mappedBy: 'programme', orphanRemoval:true)]
+    #[ORM\OneToMany(targetEntity: Motivation::class, mappedBy: 'programme', orphanRemoval:true, cascade: ['persist'])]
     private Collection $motivation;
 
     /**
      * @var Collection<int, Tache>
      */
-    #[ORM\OneToMany(targetEntity: Tache::class, mappedBy: 'programme', orphanRemoval:true)]
+    #[ORM\OneToMany(targetEntity: Tache::class, mappedBy: 'programme', orphanRemoval:true, cascade: ['persist'])]
     private Collection $tache;
 
     public function __construct()

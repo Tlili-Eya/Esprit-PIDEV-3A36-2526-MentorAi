@@ -8,11 +8,13 @@ use App\Form\ProjetType;
 use App\Form\RessourceType;
 use App\Repository\ProjetRepository;
 use App\Repository\RessourceRepository;
+use App\Service\GroqService;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -127,6 +129,36 @@ class ProjetController extends AbstractController
             'projectForm' => $projectForm->createView(),
             'resourceForm' => $resourceForm->createView(),
         ]);
+    }
+
+    #[Route('/projets/assistant-message', name: 'front_projets_ai', methods: ['POST'])]
+    public function assistantMessage(Request $request, GroqService $groq): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['success' => false, 'error' => 'Authentification requise'], 401);
+        }
+
+        $payload = json_decode($request->getContent(), true);
+        $message = is_array($payload) ? trim((string) ($payload['message'] ?? '')) : '';
+        $history = is_array($payload['history'] ?? null) ? $payload['history'] : [];
+        $systemPrompt = is_array($payload) ? trim((string) ($payload['systemPrompt'] ?? '')) : '';
+
+        if ($message === '') {
+            return $this->json(['success' => false, 'error' => 'Message vide'], 400);
+        }
+
+        if ($systemPrompt !== '') {
+            $message = "Consignes système à respecter strictement :\n" . $systemPrompt . "\n\nMessage utilisateur :\n" . $message;
+        }
+
+        $result = $groq->sendMessage($message, $history, 'ROLE_USER');
+
+        if (($result['success'] ?? false) !== true) {
+            return $this->json($result, 500);
+        }
+
+        return $this->json($result);
     }
 
     #[Route('/projets/delete/{id}', name: 'front_delete_project')]

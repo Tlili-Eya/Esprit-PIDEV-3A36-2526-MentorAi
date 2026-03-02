@@ -30,9 +30,11 @@ class Feedback
     private ?string $etatfeedback = null;
 
     #[ORM\OneToOne(inversedBy: 'feedback', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Traitement $traitement = null;
 
     #[ORM\ManyToOne(inversedBy: 'feedback')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Utilisateur $utilisateur = null;
 
     public function getId(): ?int

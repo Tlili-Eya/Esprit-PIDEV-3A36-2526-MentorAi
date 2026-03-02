@@ -105,13 +105,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Feedback>
      */
-    #[ORM\OneToMany(targetEntity: Feedback::class, mappedBy: 'utilisateur', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Feedback::class, mappedBy: 'utilisateur', orphanRemoval: true, cascade: ['persist'])]
     private Collection $feedback;
 
     /**
      * @var Collection<int, Objectif>
      */
-    #[ORM\OneToMany(targetEntity: Objectif::class, mappedBy: 'utilisateur', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Objectif::class, mappedBy: 'utilisateur', orphanRemoval: true, cascade: ['persist'])]
     private Collection $objectifs;
 
     public function __construct()

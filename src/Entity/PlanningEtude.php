@@ -32,6 +32,9 @@ class PlanningEtude
     #[ORM\Column(length: 255)]
     private ?string $type_activite = null;
 
+    #[ORM\Column(length: 7, nullable: true)]
+    private ?string $couleur_activite = null;
+
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
@@ -129,6 +132,18 @@ class PlanningEtude
     public function setTypeActivite(string $type_activite): static
     {
         $this->type_activite = $type_activite;
+
+        return $this;
+    }
+
+    public function getCouleurActivite(): ?string
+    {
+        return $this->couleur_activite;
+    }
+
+    public function setCouleurActivite(?string $couleur_activite): static
+    {
+        $this->couleur_activite = $couleur_activite;
 
         return $this;
     }

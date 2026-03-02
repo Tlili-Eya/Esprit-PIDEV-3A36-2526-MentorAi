@@ -53,7 +53,7 @@ class Projet
     /**
      * @var Collection<int, Ressource>
      */
-    #[ORM\OneToMany(targetEntity: Ressource::class, mappedBy: 'projet', cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Ressource::class, mappedBy: 'projet', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $ressources;
 
     #[ORM\ManyToOne(inversedBy: 'projets')]

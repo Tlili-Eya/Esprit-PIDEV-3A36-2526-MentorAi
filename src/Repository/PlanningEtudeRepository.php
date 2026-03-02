@@ -16,6 +16,75 @@ class PlanningEtudeRepository extends ServiceEntityRepository
         parent::__construct($registry, PlanningEtude::class);
     }
 
+    /**
+     * @return PlanningEtude[]
+     */
+    public function findByDateRange(\DateTimeInterface $start, \DateTimeInterface $end): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.date_seance >= :start')
+            ->andWhere('p.date_seance <= :end')
+            ->setParameter('start', $start->format('Y-m-d'))
+            ->setParameter('end', $end->format('Y-m-d'))
+            ->orderBy('p.date_seance', 'ASC')
+            ->addOrderBy('p.heure_debut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return array<int, array{type: string, color: ?string}>
+     */
+    public function findDistinctTypesWithColor(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p.type_activite AS type', 'MAX(p.couleur_activite) AS color')
+            ->andWhere('p.type_activite IS NOT NULL')
+            ->groupBy('p.type_activite')
+            ->orderBy('p.type_activite', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+    }
+
+    public function findColorForType(string $type): ?string
+    {
+        $result = $this->createQueryBuilder('p')
+            ->select('p.couleur_activite AS color')
+            ->andWhere('p.type_activite = :type')
+            ->setParameter('type', $type)
+            ->andWhere('p.couleur_activite IS NOT NULL')
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result['color'] ?? null;
+    }
+
+    public function findLastByTitle(string $title): ?PlanningEtude
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('LOWER(p.titre_p) = :title')
+            ->setParameter('title', mb_strtolower($title))
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @return PlanningEtude[]
+     */
+    public function findByDate(\DateTimeInterface $date): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.date_seance = :date')
+            ->setParameter('date', $date->format('Y-m-d'))
+            ->orderBy('p.heure_debut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return PlanningEtude[] Returns an array of PlanningEtude objects
     //     */
