@@ -258,10 +258,15 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     // ✅ FIX SECURITY — SensitiveParameter masque la valeur dans les stack traces
-    public function setResetTokenExpiresAt(#[\SensitiveParameter] ?\DateTimeInterface $resetTokenExpiresAt): static
+    protected function setResetTokenExpiresAt(#[\SensitiveParameter] ?\DateTimeInterface $resetTokenExpiresAt): static
     {
         $this->resetTokenExpiresAt = $resetTokenExpiresAt;
         return $this;
+    }
+
+    public function updateResetTokenExpiresAt(#[\SensitiveParameter] ?\DateTimeInterface $resetTokenExpiresAt): static
+    {
+        return $this->setResetTokenExpiresAt($resetTokenExpiresAt);
     }
 
     public function isResetTokenValid(): bool
@@ -305,7 +310,11 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function resetLoginAttempts(): static { $this->loginAttempts = 0; return $this; }
 
     public function getLastLogin(): ?\DateTimeInterface { return $this->lastLogin; }
-    public function setLastLogin(?\DateTimeInterface $v): static { $this->lastLogin = $v; return $this; }
+    protected function setLastLogin(?\DateTimeInterface $v): static { $this->lastLogin = $v; return $this; }
+    public function markLastLogin(?\DateTimeInterface $v = null): static
+    {
+        return $this->setLastLogin($v ?? new \DateTimeImmutable());
+    }
 
     public function getRegistrationIp(): ?string { return $this->registrationIp; }
     public function setRegistrationIp(?string $v): static { $this->registrationIp = $v; return $this; }
