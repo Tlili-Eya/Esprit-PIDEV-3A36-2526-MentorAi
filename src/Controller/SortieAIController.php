@@ -96,8 +96,6 @@ class SortieAIController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $sortieAI->setCreatedAt(new \DateTime());
-            
             $entityManager->persist($sortieAI);
             $entityManager->flush();
 
@@ -140,8 +138,6 @@ class SortieAIController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $sortieAI->setUpdatedAt(new \DateTime());
-            
             $entityManager->flush();
 
             $this->addFlash('success', 'La sortie IA a été modifiée avec succès!');

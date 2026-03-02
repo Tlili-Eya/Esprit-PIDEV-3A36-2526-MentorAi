@@ -99,8 +99,6 @@ class ReferenceArticleController extends AbstractController
                 $article->setAuteur($user);
             }
             
-            $article->setCreatedAt(new \DateTime());
-            
             $entityManager->persist($article);
             $entityManager->flush();
 
@@ -133,8 +131,6 @@ class ReferenceArticleController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $article->setUpdatedAt(new \DateTime());
-            
             $entityManager->flush();
 
             $this->addFlash('success', 'L\'article a été modifié avec succès!');
@@ -180,7 +176,6 @@ class ReferenceArticleController extends AbstractController
 
         try {
             $article->setPublished(!$article->isPublished());
-            $article->setUpdatedAt(new \DateTime());
             
             $entityManager->flush();
             

@@ -151,8 +151,6 @@ class ChatController extends AbstractController
                                 $plan->setDescription($decisionData['details'] ?? 'Consulter l\'analyse AI');
                                 $plan->setAuteur($user);
                                 $plan->setStatut(\App\Enum\Statut::EnAttente);
-                                $plan->setDate(new \DateTime());
-                                $plan->setUpdatedAt(new \DateTime());
                                 $plan->setSortieAI($sortie);
                                 $plan->setCategorie($sortie->getCategorieSortie());
                                 $entityManager->persist($plan);
