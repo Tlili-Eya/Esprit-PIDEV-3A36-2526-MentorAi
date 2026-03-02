@@ -3,9 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Carnet;
+use App\Entity\Utilisateur;
 use App\Repository\CarnetRepository;
-use Cloudinary\Configuration\Configuration;
-use Cloudinary\Uploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,7 +21,7 @@ final class CarnetController extends AbstractController
     {
         $user = $this->getUser();
         $criteria = [];
-        if ($user) {
+        if ($user instanceof Utilisateur) {
             $criteria = ['Utilisateurs' => $user];
         }
 
@@ -92,7 +91,7 @@ final class CarnetController extends AbstractController
         if (!empty($errors)) {
             $user = $this->getUser();
             $criteria = [];
-            if ($user) {
+            if ($user instanceof Utilisateur) {
                 $criteria = ['Utilisateurs' => $user];
             }
 
@@ -142,7 +141,7 @@ final class CarnetController extends AbstractController
         if (!$note) {
             $note = new Carnet();
             $note->setDateCreation($now);
-            if ($user) {
+            if ($user instanceof Utilisateur) {
                 $note->setUtilisateurs($user);
             }
         }
@@ -197,10 +196,6 @@ final class CarnetController extends AbstractController
 
         $note->setTitre($titre);
         $note->setContenu($contenu);
-
-        if (!empty($attachmentsMeta)) {
-            $note->setAttachments($attachmentsMeta);
-        }
         $note->setDateModification($now);
 
         $em->persist($note);
@@ -224,6 +219,9 @@ final class CarnetController extends AbstractController
         return $this->redirectToRoute('front_blog');
     }
 
+    /**
+     * @param array<int, array{name: string, mime: string, path: string}> $attachmentsMeta
+     */
     private function replaceDataUrlsWithFiles(string $html, string $uploadDir, array &$attachmentsMeta): string
     {
         if (trim($html) === '') {
@@ -247,6 +245,9 @@ final class CarnetController extends AbstractController
         return $html;
     }
 
+    /**
+     * @param array<int, array{name: string, mime: string, path: string}> $attachmentsMeta
+     */
     private function replaceDataUrlInNodes(\DOMDocument $dom, string $tag, string $attr, string $uploadDir, array &$attachmentsMeta): void
     {
         $nodes = $dom->getElementsByTagName($tag);
@@ -273,6 +274,9 @@ final class CarnetController extends AbstractController
         }
     }
 
+    /**
+     * @return array{name: string, mime: string, path: string}|null
+     */
     private function saveDataUrl(string $dataUrl, string $uploadDir): ?array
     {
         if (!preg_match('/^data:(.*?);base64,(.*)$/', $dataUrl, $matches)) {
@@ -395,14 +399,22 @@ final class CarnetController extends AbstractController
         ]);
     }
 
+    /**
+     * @return array{name: string, mime: string, path: string}|null
+     */
     private function uploadFileToCloudinary(string $filePath, string $filename, string $mimeType): ?array
     {
+        $uploaderClass = 'Cloudinary\\Uploader';
+        if (!class_exists($uploaderClass)) {
+            return null;
+        }
+
         if (!$this->configureCloudinary()) {
             return null;
         }
 
         try {
-            $response = Uploader::upload($filePath, [
+            $response = $uploaderClass::upload($filePath, [
                 'resource_type' => 'auto',
                 'folder' => 'mentorai/carnet',
                 'public_id' => pathinfo($filename, PATHINFO_FILENAME) . '_' . uniqid(),
@@ -424,14 +436,22 @@ final class CarnetController extends AbstractController
         }
     }
 
+    /**
+     * @return array{name: string, mime: string, path: string}|null
+     */
     private function uploadDataUrlToCloudinary(string $dataUrl, string $mimeType): ?array
     {
+        $uploaderClass = 'Cloudinary\\Uploader';
+        if (!class_exists($uploaderClass)) {
+            return null;
+        }
+
         if (!$this->configureCloudinary()) {
             return null;
         }
 
         try {
-            $response = Uploader::upload($dataUrl, [
+            $response = $uploaderClass::upload($dataUrl, [
                 'resource_type' => 'auto',
                 'folder' => 'mentorai/carnet',
                 'public_id' => 'carnet_inline_' . uniqid(),
@@ -456,6 +476,11 @@ final class CarnetController extends AbstractController
 
     private function configureCloudinary(): bool
     {
+        $configurationClass = 'Cloudinary\\Configuration\\Configuration';
+        if (!class_exists($configurationClass)) {
+            return false;
+        }
+
         if ($this->cloudinaryConfigured) {
             return true;
         }
@@ -468,7 +493,7 @@ final class CarnetController extends AbstractController
             return false;
         }
 
-        Configuration::instance([
+        $configurationClass::instance([
             'cloud' => [
                 'cloud_name' => $cloudName,
                 'api_key' => $apiKey,
