@@ -1,0 +1,902 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Notes{% endblock %}
+
+{% block stylesheets %}
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap');
+
+    :root {
+      --color-deep-navy: #102c59;
+      --color-steel-blue: #324b74ff;
+      --color-accent-red: #d52e28;
+      --primary-gradient: linear-gradient(135deg, var(--color-deep-navy) 0%, #1a3c78 100%);
+      --accent-gradient: linear-gradient(135deg, var(--color-accent-red) 0%, #a0231e 100%);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    .notes-layout {
+      background: radial-gradient(circle at top right, rgba(213, 46, 40, 0.08), transparent),
+                  radial-gradient(circle at bottom left, rgba(16, 44, 89, 0.25), transparent),
+                  #324b74ff;
+      padding: 48px 0 64px;
+    }
+
+    .notes-shell {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      border-radius: 22px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
+      padding: 32px;
+    }
+
+    .notes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .notes-header h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: 'Fraunces', 'Georgia', serif;
+    }
+
+    .notes-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .notes-list li {
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(50, 75, 116, 0.2);
+      font-weight: 600;
+      color: var(--color-deep-navy);
+      background: rgba(157, 187, 206, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .notes-list li:hover {
+      background: rgba(157, 187, 206, 0.2);
+      border-color: var(--color-steel-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(50, 75, 116, 0.15);
+    }
+
+    .notes-empty {
+      padding: 16px;
+      border-radius: 14px;
+      background: #f8fafc;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .notes-editor {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .notes-editor.is-active {
+      display: flex;
+    }
+
+    .notes-list-view.is-hidden {
+      display: none;
+    }
+
+    .notes-title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      border: none;
+      border-bottom: 2px solid var(--color-steel-blue);
+      padding: 8px 4px;
+      outline: none;
+      width: 100%;
+      font-family: 'Fraunces', 'Georgia', serif;
+      color: var(--color-deep-navy);
+    }
+
+    .notes-list button {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 0;
+      color: inherit;
+    }
+
+    .notes-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .notes-list-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .notes-delete {
+      border: 1px solid rgba(213, 46, 40, 0.3);
+      background: rgba(213, 46, 40, 0.1);
+      color: var(--color-accent-red);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .notes-delete:hover {
+      background: var(--accent-gradient);
+      color: white;
+      border-color: transparent;
+    }
+
+    .notes-list-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .notes-list-date {
+      font-size: 0.85rem;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    .notes-editor textarea {
+      min-height: 520px;
+    }
+
+    .notes-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .notes-actions button {
+      padding: 10px 18px;
+      border-radius: 12px;
+    }
+
+    .notes-error {
+      display: none;
+      color: #b91c1c;
+      background: #fee2e2;
+      padding: 8px 12px;
+      border-radius: 10px;
+    }
+
+    .notes-error.is-visible {
+      display: block;
+    }
+
+    .notes-editor-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    .notes-media-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .notes-media-actions input[type="file"] {
+      border-radius: 10px;
+      border: 1px solid #cbd5f5;
+      background: #ffffff;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    .notes-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      position: sticky;
+      top: 12px;
+      background: rgba(157, 187, 206, 0.15);
+      border: 1px solid rgba(50, 75, 116, 0.2);
+      padding: 12px;
+      border-radius: 12px;
+      z-index: 10;
+    }
+
+    .notes-toolbar button,
+    .notes-toolbar select {
+      border-radius: 10px;
+      border: 1px solid rgba(50, 75, 116, 0.3);
+      background: #ffffff;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .notes-toolbar button:hover {
+      background: var(--primary-gradient);
+      color: white;
+      border-color: transparent;
+    }
+
+    .notes-editor-surface {
+      min-height: 520px;
+      border-radius: 16px;
+      border: 1px solid rgba(50, 75, 116, 0.2);
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.8);
+      outline: none;
+    }
+
+    .drag-block {
+      border: 1px dashed rgba(50, 75, 116, 0.3);
+      padding: 8px;
+      margin: 8px 0;
+      border-radius: 10px;
+      background: #ffffff;
+      cursor: grab;
+    }
+
+    .drag-block img,
+    .drag-block audio,
+    .drag-block video {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .notes-editor.is-readonly .notes-toolbar,
+    .notes-editor.is-readonly .notes-media-actions {
+      display: none;
+    }
+
+    .notes-editor.is-readonly .notes-title,
+    .notes-editor.is-readonly .notes-actions button,
+    .notes-editor.is-readonly textarea {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .note-attachment {
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      border: 1px dashed #cbd5f5;
+    }
+
+    .note-attachment a {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .pdf-block {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .pdf-block.is-collapsed iframe {
+      display: none;
+    }
+
+    .pdf-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+      color: #475569;
+      cursor: pointer;
+    }
+
+    .pdf-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .pdf-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pdf-close,
+    .pdf-download {
+      border: 1px solid #cbd5f5;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      color: #0f172a;
+    }
+
+    .audio-block {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #ffffff;
+    }
+
+    .confirm-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1055;
+    }
+
+    .confirm-modal.is-open {
+      display: flex;
+    }
+
+    .confirm-modal-content {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 26px 28px;
+      width: min(620px, 100%);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+    }
+
+    .confirm-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .confirm-modal-title {
+      font-size: 26px;
+      font-weight: 600;
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .confirm-modal-close {
+      border: 1px solid #cbd5f5;
+      background: #ffffff;
+      color: #475569;
+      border-radius: 8px;
+      padding: 6px 16px;
+      font-weight: 500;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .confirm-modal-close:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .confirm-modal-meta {
+      color: #64748b;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .confirm-modal-text {
+      font-size: 17px;
+      color: #3b82f6;
+      margin: 0 0 6px;
+    }
+
+    .confirm-modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .confirm-modal-delete {
+      border: 1px solid #ef4444;
+      color: #ef4444;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-weight: 600;
+    }
+
+    .confirm-modal-cancel {
+      border: 1px solid #cbd5f5;
+      color: #64748b;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-weight: 600;
+    }
+     .notes-editor.is-readonly .note-content {
+      pointer-events: auto;
+    }
+    
+  </style>
+{% endblock %}
+
+{% block body %}
+  <div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+      <h1 class="mb-2 mb-lg-0">Notes</h1>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li class="current">Notes</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <section class="notes-layout">
+    <div class="container">
+      <div class="notes-shell" data-save-url="{{ path('front_blog_save') }}">
+        <div class="notes-list-view{% if mode != 'list' %} is-hidden{% endif %}" id="notes-list-view">
+          <div class="notes-header">
+            <h1>Mes notes</h1>
+            <a class="btn btn-primary" href="{{ path('front_blog', { mode: 'edit' }) }}">Ajouter une note</a>
+          </div>
+
+          {% if notes is empty %}
+            <div class="notes-empty">Aucune note pour le moment.</div>
+          {% else %}
+            {% set currentId = selected_note.id ?? null %}
+            <ul class="notes-list" id="notes-list">
+              {% for note in notes %}
+                {% set targetMode = (mode == 'read' and currentId == note.id) ? 'edit' : 'read' %}
+                <li>
+                  <div class="notes-list-item">
+                    <a class="notes-list-title" href="{{ path('front_blog', { id: note.id, mode: targetMode }) }}">
+                      {{ note.titre }}
+                    </a>
+                    <div class="notes-list-actions">
+                      <span class="notes-list-date">{{ note.date_affichee }}</span>
+                      <form method="post" action="{{ path('front_blog_delete') }}" data-delete-form data-note-title="{{ note.titre }}" data-note-date="{{ note.date_affichee }}">
+                        <input type="hidden" name="id" value="{{ note.id }}">
+                        <button type="button" class="notes-delete" aria-label="Supprimer">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+
+        {% if mode != 'list' %}
+          <div class="notes-editor is-active {% if mode == 'read' %}is-readonly{% endif %}" id="notes-editor">
+            {% if errors is not empty %}
+              <div class="notes-error is-visible">
+                {% for error in errors %}
+                  <div>{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            {% if mode == 'read' %}
+              <input class="notes-title" value="{{ selected_note.titre ?? '' }}" readonly>
+              <div class="note-content" id="note-content" data-edit-url="{{ path('front_blog', { id: selected_note.id, mode: 'edit' }) }}">
+                {{ selected_note.contenu|raw }}
+              </div>
+            {% else %}
+              <form method="post" action="{{ path('front_blog_save') }}" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="{{ selected_note.id ?? '' }}">
+                <input class="notes-title" name="titre" placeholder="Titre de la note" value="{{ selected_note.titre ?? '' }}" required>
+
+                <div class="notes-editor-status">
+                  <span>{{ selected_note ? 'Edition' : 'Nouveau' }}</span>
+                  <span>Ajoutez du contenu et joignez des fichiers.</span>
+                </div>
+
+                <div class="notes-toolbar" id="notes-toolbar">
+                  <button type="button" data-cmd="undo">Undo</button>
+                  <button type="button" data-cmd="redo">Redo</button>
+                  <select data-cmd="formatBlock">
+                    <option value="P">Paragraphe</option>
+                    <option value="H1">H1</option>
+                    <option value="H2">H2</option>
+                    <option value="H3">H3</option>
+                    <option value="H4">H4</option>
+                    <option value="H5">H5</option>
+                    <option value="H6">H6</option>
+                  </select>
+                  <select data-cmd="fontName">
+                    <option value="Arial">Arial</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Courier New">Courier</option>
+                    <option value="Times New Roman">Times</option>
+                    <option value="Trebuchet MS">Trebuchet</option>
+                    <option value="Verdana">Verdana</option>
+                  </select>
+                  <select data-cmd="fontSize">
+                    <option value="2">12</option>
+                    <option value="3" selected>14</option>
+                    <option value="4">18</option>
+                    <option value="5">24</option>
+                    <option value="6">32</option>
+                  </select>
+                  <button type="button" data-cmd="bold">Gras</button>
+                  <button type="button" data-cmd="italic">Italique</button>
+                  <button type="button" data-cmd="underline">Souligne</button>
+                  <button type="button" data-cmd="insertUnorderedList">Liste</button>
+                  <button type="button" data-cmd="insertOrderedList">Liste numerotee</button>
+                  <button type="button" data-cmd="justifyLeft">Gauche</button>
+                  <button type="button" data-cmd="justifyCenter">Centre</button>
+                  <button type="button" data-cmd="justifyRight">Droite</button>
+                  <button type="button" id="insert-quote">Citation</button>
+                  <button type="button" id="insert-code">Code</button>
+                  <button type="button" id="insert-divider">Separateur</button>
+                </div>
+
+                <div class="notes-media-actions">
+                  <input type="file" id="media-input" name="attachments[]" multiple>
+                  <button type="button" id="record-audio">Enregistrer audio</button>
+                  <button type="button" id="stop-audio" disabled>Stop</button>
+                </div>
+
+                <input type="hidden" name="contenu" id="contenu-input">
+                <div class="notes-editor-surface" id="editor-surface" contenteditable="true">{{ selected_note.contenu ?? '' }}</div>
+
+                <div class="notes-actions">
+                  <a class="btn btn-outline-secondary" href="{{ path('front_blog') }}">Retour</a>
+                  <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+              </form>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <div class="confirm-modal" id="confirm-modal" aria-hidden="true">
+    <div class="confirm-modal-content" role="dialog" aria-modal="true">
+      <div class="confirm-modal-header">
+        <h2 class="confirm-modal-title">Supprimer</h2>
+        <button type="button" class="confirm-modal-close" id="confirm-close">Fermer</button>
+      </div>
+      <div class="confirm-modal-meta" id="confirm-meta">Date prevue : -</div>
+      <p class="confirm-modal-text" id="confirm-message">Etes-vous sur de vouloir supprimer cette note ?</p>
+      <div class="confirm-modal-actions">
+        <button type="button" class="confirm-modal-delete" id="confirm-ok">Supprimer</button>
+        <button type="button" class="confirm-modal-cancel" id="confirm-cancel">Annuler</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="https://cdn.ckeditor.com/ckeditor5/40.2.0/classic/ckeditor.js"></script>
+  <script>
+    (function () {
+      const editorSurface = document.getElementById('editor-surface');
+      const contenuInput = document.getElementById('contenu-input');
+      const mediaInput = document.getElementById('media-input');
+      const recordBtn = document.getElementById('record-audio');
+      const stopBtn = document.getElementById('stop-audio');
+      let mediaRecorder = null;
+      let audioChunks = [];
+      let recordingStartTime = null;
+      let recordingTimer = null;
+      const MAX_RECORDING_TIME = 300000; // 5 minutes
+      let ckEditorInstance = null;
+      let autosaveTimeout = null;
+
+      const readContent = document.getElementById('note-content');
+      if (readContent) {
+        readContent.addEventListener('click', (event) => {
+          if (
+            event.target.closest('iframe') ||
+            event.target.closest('audio') ||
+            event.target.closest('video') ||
+            event.target.closest('a') ||
+            event.target.closest('.pdf-block')
+          ) {
+            return;
+          }
+
+          const url = readContent.dataset.editUrl;
+          if (url) {
+            window.location.href = url;
+          }
+        });
+      }
+
+      function ensureAudioControls(root) {
+        if (!root) {
+          return;
+        }
+        root.querySelectorAll('audio').forEach((audio) => {
+          audio.setAttribute('controls', 'controls');
+          audio.controls = true;
+        });
+      }
+
+      ensureAudioControls(readContent);
+      ensureAudioControls(editorSurface);
+
+      const confirmModal = document.getElementById('confirm-modal');
+      const confirmCancel = document.getElementById('confirm-cancel');
+      const confirmClose = document.getElementById('confirm-close');
+      const confirmOk = document.getElementById('confirm-ok');
+      const confirmMeta = document.getElementById('confirm-meta');
+      let pendingDeleteForm = null;
+
+      document.addEventListener('click', (event) => {
+        const deleteBtn = event.target.closest('form[data-delete-form] .notes-delete');
+        if (!deleteBtn || !confirmModal) {
+          return;
+        }
+        event.preventDefault();
+        pendingDeleteForm = deleteBtn.closest('form');
+        const dateText = pendingDeleteForm?.dataset.noteDate || '-';
+        if (confirmMeta) {
+          confirmMeta.textContent = `Date prevue : ${dateText}`;
+        }
+        confirmModal.classList.add('is-open');
+      });
+
+      confirmCancel?.addEventListener('click', () => {
+        confirmModal.classList.remove('is-open');
+        pendingDeleteForm = null;
+      });
+
+      confirmClose?.addEventListener('click', () => {
+        confirmModal.classList.remove('is-open');
+        pendingDeleteForm = null;
+      });
+
+      confirmModal?.addEventListener('click', (event) => {
+        if (event.target === confirmModal) {
+          confirmModal.classList.remove('is-open');
+          pendingDeleteForm = null;
+        }
+      });
+
+      confirmOk?.addEventListener('click', () => {
+        if (pendingDeleteForm) {
+          pendingDeleteForm.submit();
+        }
+      });
+
+      // Initialize CKEditor 5
+      if (editorSurface) {
+        const form = editorSurface.closest('form');
+        const initialContent = editorSurface.innerHTML;
+        
+        ClassicEditor
+          .create(editorSurface, {
+            toolbar: {
+              items: [
+                'undo', 'redo', '|',
+                'heading', '|',
+                'fontSize', 'fontFamily', '|',
+                'bold', 'italic', 'underline', '|',
+                'bulletedList', 'numberedList', '|',
+                'alignment', '|',
+                'blockQuote', 'codeBlock', '|',
+                'insertTable', 'horizontalLine'
+              ]
+            },
+            language: 'fr',
+            heading: {
+              options: [
+                { model: 'paragraph', title: 'Paragraphe', class: 'ck-heading_paragraph' },
+                { model: 'heading1', view: 'h1', title: 'Titre 1', class: 'ck-heading_heading1' },
+                { model: 'heading2', view: 'h2', title: 'Titre 2', class: 'ck-heading_heading2' },
+                { model: 'heading3', view: 'h3', title: 'Titre 3', class: 'ck-heading_heading3' }
+              ]
+            }
+          })
+          .then(editor => {
+            ckEditorInstance = editor;
+            editor.setData(initialContent);
+            
+            // Autosave every 30 seconds
+            editor.model.document.on('change:data', () => {
+              clearTimeout(autosaveTimeout);
+              autosaveTimeout = setTimeout(() => {
+                saveToLocalStorage();
+              }, 30000);
+            });
+
+            // Form submission
+            if (form) {
+              form.addEventListener('submit', (e) => {
+                contenuInput.value = editor.getData();
+                localStorage.removeItem('carnet_autosave_' + (form.querySelector('[name="id"]')?.value || 'new'));
+              });
+            }
+
+            // Restore autosave if exists
+            const noteId = form?.querySelector('[name="id"]')?.value || 'new';
+            const autosaved = localStorage.getItem('carnet_autosave_' + noteId);
+            if (autosaved && confirm('Une sauvegarde automatique existe. Voulez-vous la restaurer ?')) {
+              editor.setData(autosaved);
+            }
+          })
+          .catch(error => {
+            console.error('Erreur CKEditor:', error);
+            // Fallback: keep contenteditable working
+          });
+
+        function saveToLocalStorage() {
+          if (ckEditorInstance) {
+            const noteId = form?.querySelector('[name="id"]')?.value || 'new';
+            localStorage.setItem('carnet_autosave_' + noteId, ckEditorInstance.getData());
+            showAutosaveIndicator();
+          }
+        }
+
+        function showAutosaveIndicator() {
+          const indicator = document.createElement('div');
+          indicator.textContent = 'Sauvegarde automatique...';
+          indicator.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#28a745;color:white;padding:8px 16px;border-radius:8px;font-size:14px;z-index:9999;';
+          document.body.appendChild(indicator);
+          setTimeout(() => indicator.remove(), 2000);
+        }
+      }
+
+      mediaInput?.addEventListener('change', async (event) => {
+        const files = Array.from(event.target.files || []);
+        if (!ckEditorInstance) return;
+        
+        for (const file of files) {
+          const dataUrl = await readFileAsDataUrl(file);
+          let htmlContent = '';
+          
+          if (file.type.startsWith('image/')) {
+            htmlContent = `<figure class="image"><img src="${dataUrl}" alt="${file.name}"></figure>`;
+          } else if (file.type.startsWith('audio/')) {
+            htmlContent = `<p>🎵 <a href="${dataUrl}" download="${file.name}">${file.name}</a></p>`;
+          } else if (file.type.startsWith('video/')) {
+            htmlContent = `<p>🎬 <a href="${dataUrl}" download="${file.name}">${file.name}</a></p>`;
+          } else if (file.type === 'application/pdf') {
+            htmlContent = `<p>📄 <a href="${dataUrl}" download="${file.name}">${file.name}</a></p>`;
+          } else {
+            htmlContent = `<p>📎 <a href="${dataUrl}" download="${file.name}">${file.name}</a></p>`;
+          }
+          
+          const viewFragment = ckEditorInstance.data.processor.toView(htmlContent);
+          const modelFragment = ckEditorInstance.data.toModel(viewFragment);
+          ckEditorInstance.model.insertContent(modelFragment);
+        }
+        mediaInput.value = '';
+      });
+
+      // Paste image handling is natively supported by CKEditor 5
+
+      recordBtn?.addEventListener('click', async () => {
+        try {
+          // Check permission first
+          const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
+          
+          if (permissionStatus.state === 'denied') {
+            alert('Permission micro refusée. Veuillez autoriser l\'accès au microphone dans les paramètres de votre navigateur.');
+            return;
+          }
+
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+          recordingStartTime = Date.now();
+          
+          // Visual indicator
+          recordBtn.textContent = '🔴 Enregistrement...';
+          recordBtn.style.background = '#dc3545';
+          recordBtn.style.color = 'white';
+          
+          // Timer display
+          updateRecordingTimer();
+          recordingTimer = setInterval(updateRecordingTimer, 1000);
+          
+          // Auto-stop after MAX_RECORDING_TIME
+          const autoStopTimeout = setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+              stopBtn.click();
+              alert('Enregistrement arrêté automatiquement après 5 minutes.');
+            }
+          }, MAX_RECORDING_TIME);
+          
+          mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
+          mediaRecorder.onstop = async () => {
+            clearInterval(recordingTimer);
+            clearTimeout(autoStopTimeout);
+            recordBtn.textContent = 'Enregistrer audio';
+            recordBtn.style.background = '';
+            recordBtn.style.color = '';
+            
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('audio', blob, 'voice.webm');
+
+            try {
+              const response = await fetch('{{ path('front_blog_upload_audio') }}', {
+                method: 'POST',
+                body: formData
+              });
+
+              if (!response.ok) {
+                alert('Erreur lors de l\'upload audio.');
+                return;
+              }
+
+              const result = await response.json();
+              if (result.url && ckEditorInstance) {
+                const audioHtml = `<figure class="media"><oembed url="${result.url}"></oembed></figure>`;
+                const viewFragment = ckEditorInstance.data.processor.toView(audioHtml);
+                const modelFragment = ckEditorInstance.data.toModel(viewFragment);
+                ckEditorInstance.model.insertContent(modelFragment);
+              }
+            } catch (error) {
+              alert('Erreur réseau lors de l\'upload audio.');
+              console.error(error);
+            }
+          };
+
+          mediaRecorder.start();
+          recordBtn.disabled = true;
+          stopBtn.disabled = false;
+        } catch (error) {
+          if (error.name === 'NotAllowedError') {
+            alert('Permission micro refusée. Veuillez autoriser l\'accès au microphone.');
+          } else if (error.name === 'NotFoundError') {
+            alert('Aucun microphone détecté sur votre appareil.');
+          } else {
+            alert('Erreur microphone: ' + error.message);
+          }
+          console.error('Erreur audio:', error);
+        }
+      });
+
+      stopBtn?.addEventListener('click', () => {
+        if (!mediaRecorder) {
+          return;
+        }
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+        clearInterval(recordingTimer);
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+      });
+
+      function updateRecordingTimer() {
+        if (!recordingStartTime) return;
+        const elapsed = Date.now() - recordingStartTime;
+        const seconds = Math.floor(elapsed / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSecs = seconds % 60;
+        stopBtn.textContent = `Stop (${minutes}:${remainingSecs.toString().padStart(2, '0')})`;
+      }
+
+      // Drag and drop is natively supported by CKEditor 5
+
+      function readFileAsDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('Erreur de lecture'));
+          reader.readAsDataURL(file);
+        });
+      }
+    })();
+  </script>
+{% endblock %}
