@@ -27,7 +27,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $prenom = null;
 
     #[ORM\Embedded(class: \App\Entity\Embeddable\Email::class, columnPrefix: false)]
-    private ?\App\Entity\Embeddable\Email $email = null;
+    private \App\Entity\Embeddable\Email|string|null $email = null;
 
     #[ORM\Column(length: 255)]
     private ?string $mdp = null;
@@ -187,7 +187,16 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getEmail(): ?string
     {
-        return $this->email ? $this->email->getValue() : null;
+        if ($this->email instanceof \App\Entity\Embeddable\Email) {
+            return $this->email->getValue();
+        }
+
+        if (is_string($this->email) && $this->email !== '') {
+            $this->email = new \App\Entity\Embeddable\Email($this->email);
+            return $this->email->getValue();
+        }
+
+        return null;
     }
 
     public function setEmail(string $email): static
