@@ -26,7 +26,7 @@ class CategorieArticle
         minMessage: "Le nom doit contenir au moins {{ limit }} caractères",
         maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères"
     )]
-    private ?string $nomCategorie = null;
+    private string $nomCategorie = '';
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
@@ -39,11 +39,11 @@ class CategorieArticle
     #[ORM\ManyToOne(inversedBy: 'categorieArticles')]
     private ?Utilisateur $auteur = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $createdAt = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTime $updatedAt = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     /**
      * @var Collection<int, ReferenceArticle>
@@ -54,6 +54,7 @@ class CategorieArticle
     public function __construct()
     {
         $this->referenceArticles = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -61,7 +62,7 @@ class CategorieArticle
         return $this->id;
     }
 
-    public function getNomCategorie(): ?string
+    public function getNomCategorie(): string
     {
         return $this->nomCategorie;
     }
@@ -97,24 +98,24 @@ class CategorieArticle
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTime
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTime $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 

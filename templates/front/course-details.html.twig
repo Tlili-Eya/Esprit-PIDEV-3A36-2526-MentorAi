@@ -1,12 +1,62 @@
 {% extends 'front/base.html.twig' %}
 
+{% block stylesheets %}
+<style>
+:root {
+    --color-deep-navy: #102c59;
+    --color-steel-blue: #324b74ff;
+    --color-accent-red: #d52e28;
+    --primary-gradient: linear-gradient(135deg, var(--color-deep-navy) 0%, #1a3c78 100%);
+    --accent-gradient: linear-gradient(135deg, var(--color-accent-red) 0%, #a0231e 100%);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+body {
+    background: radial-gradient(circle at top right, rgba(213, 46, 40, 0.08), transparent),
+                radial-gradient(circle at bottom left, rgba(16, 44, 89, 0.25), transparent),
+                #324b74ff;
+}
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+.bg-steel {
+    background: var(--primary-gradient) !important;
+    color: white !important;
+}
+.bg-steel-light {
+    background: rgba(50, 75, 116, 0.1);
+    border: 1px solid rgba(50, 75, 116, 0.2);
+}
+.btn-steel {
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+}
+.btn-steel:hover {
+    background: var(--accent-gradient);
+    color: white;
+}
+.btn-outline-steel {
+    border: 2px solid var(--color-steel-blue);
+    color: var(--color-steel-blue);
+    background: transparent;
+}
+.btn-outline-steel:hover {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+}
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="container-fluid py-4">
     <div class="row h-100 g-4">
         <!-- MAIN CHAT AREA -->
         <div class="col-lg-8">
             <div class="card h-100 shadow-sm">
-                <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center">
+                <div class="card-header bg-steel text-white d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="mb-0">🎓 Assistant d'étude Personnalisé</h5>
                         {% if needsPersonalityTest is defined and needsPersonalityTest %}
@@ -21,10 +71,10 @@
                 </div>
 
                 <!-- Chat History -->
-                <div id="chat-box" class="card-body flex-grow-1" style="overflow-y: auto; max-height: 60vh; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                <div id="chat-box" class="card-body flex-grow-1" style="overflow-y: auto; max-height: 60vh; background: linear-gradient(135deg, #f8f9fa 0%, #e3e8ef 100%);">
                     {% for msg in history %}
                         <div class="mb-3 d-flex {% if msg.role == 'user' %}justify-content-end{% else %}justify-content-start{% endif %}">
-                            <div class="{% if msg.role == 'user' %}bg-primary text-white{% else %}bg-light text-dark{% endif %} rounded-lg p-3" style="max-width: 75%; word-wrap: break-word;">
+                            <div class="{% if msg.role == 'user' %}bg-steel text-white{% else %}bg-light text-dark{% endif %} rounded-lg p-3" style="max-width: 75%; word-wrap: break-word;">
                                 <small class="d-block fw-bold mb-1">{{ msg.role == 'user' ? '👤 Vous' : '🤖 Assistant' }}</small>
                                 <p class="mb-0">{{ msg.content|nl2br }}</p>
                             </div>
@@ -36,88 +86,81 @@
                 <div class="card-footer bg-light border-top">
                     <form id="chat-form" class="d-flex gap-2">
                         <input type="text" id="message-input" class="form-control" placeholder="Posez votre question..." autocomplete="off">
-                        <button type="submit" class="btn btn-primary" id="send-btn">
+                        <button type="button" class="btn btn-outline-steel" id="audio-btn" disabled title="Enregistrement audio désactivé">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button type="submit" class="btn btn-steel" id="send-btn">
                             <i class="fas fa-paper-plane"></i> Envoyer
                         </button>
                     </form>
+                    <div id="recording-indicator" class="mt-2" style="display: none;">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-record-vinyl fa-spin"></i> Enregistrement en cours...
+                            <button type="button" class="btn btn-sm btn-danger ms-2" id="stop-recording">Arrêter</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- SIDEBAR CONTROLS -->
         <div class="col-lg-4">
-            <!-- Document Upload -->
+            <!-- Unified Document Upload (ChatGPT-style) -->
             <div class="card shadow-sm mb-3">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0">📚 Importer un Document</h6>
+                <div class="card-header bg-steel text-white">
+                    <h6 class="mb-0">📚 Ajouter un document</h6>
                 </div>
                 <div class="card-body">
                     <form id="upload-form" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="pdf-file" class="form-label fw-bold">📄 PDF, Image ou Lien</label>
-                            <input type="file" class="form-control form-control-sm" id="pdf-file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp">
-                            <small class="text-muted d-block mt-2">Formats: PDF, JPG, PNG, WebP</small>
-                            <small class="text-muted d-block">─ OU ─</small>
-                            <input type="url" class="form-control form-control-sm mt-2" id="youtube-link" name="link" placeholder="Ex: https://youtube.com/watch?v=...">
-                        </div>
-                        <button type="submit" class="btn btn-info w-100 btn-sm">
-                            <i class="fas fa-upload"></i> Charger Document
+                        <input type="file"
+                               id="unified-file-input"
+                               name="document"
+                               accept=".pdf,.jpg,.jpeg,.png,.webp,.mp3,.wav,.webm,.ogg"
+                               style="display:none;">
+
+                        <button type="button" id="unified-upload-btn" class="btn btn-steel w-100 mb-2">
+                            <i class="fas fa-paperclip"></i> Ajouter un PDF, une image ou un audio
                         </button>
+
+                        <input type="url"
+                               class="form-control form-control-sm"
+                               id="youtube-link"
+                               name="link"
+                               placeholder="Coller un lien YouTube ou une URL de cours">
                     </form>
-                    <div id="document-status" class="mt-3 p-2 rounded" style="display:none;">
-                        <!-- Status message will appear here -->
-                    </div>
-                </div>
-            </div>
 
-            <!-- Format Selection -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-header bg-success text-white">
-                    <h6 class="mb-0">📋 Format Préféré</h6>
-                </div>
-                <div class="card-body">
-                    <div class="btn-group w-100 flex-wrap" role="group">
-                        <input type="radio" class="btn-check format-toggle" name="format" id="format-text" value="text" checked>
-                        <label class="btn btn-outline-success" for="format-text">📝 Texte</label>
+                    <small class="text-muted d-block mt-2">
+                        Vous pouvez aussi coller directement une capture d'écran dans la zone de chat.
+                    </small>
 
-                        <input type="radio" class="btn-check format-toggle" name="format" id="format-audio" value="audio">
-                        <label class="btn btn-outline-success" for="format-audio">🎵 Audio</label>
-
-                        <input type="radio" class="btn-check format-toggle" name="format" id="format-mindmap" value="mindmap">
-                        <label class="btn btn-outline-success" for="format-mindmap">🧠 Mindmap</label>
-
-                        <input type="radio" class="btn-check format-toggle" name="format" id="format-quiz" value="quiz">
-                        <label class="btn btn-outline-success" for="format-quiz">❓ Quiz</label>
-                    </div>
-                    {% if profil is defined and profil %}
-                        <p class="text-muted small mt-2" id="format-hint">Votre format préféré : {{ profil.getFormatPréféré() ?? 'Non défini' }}</p>
-                    {% else %}
-                        <p class="text-muted small mt-2" id="format-hint">Votre format préféré : Non défini</p>
-                    {% endif %}
+                    <div id="document-status" class="mt-3 p-2 rounded" style="display:none;"></div>
                 </div>
             </div>
 
             <!-- Content Generation -->
             <div class="card shadow-sm mb-3">
-                <div class="card-header bg-warning text-dark">
-                    <h6 class="mb-0">⚡ Générer du Contenu</h6>
+                <div class="card-header" style="background: var(--accent-gradient); color: white;">
+                    <h6 class="mb-0">⚡ Outils d'Apprentissage</h6>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <button id="summarize-btn" class="btn btn-outline-warning btn-sm" disabled>
+                        <button id="summarize-btn" class="btn btn-steel btn-sm" disabled title="Générer un résumé du document">
                             <i class="fas fa-compress"></i> Résumé
                         </button>
-                        <button id="flashcard-btn" class="btn btn-outline-warning btn-sm" disabled>
-                            <i class="fas fa-layer-group"></i> Flashcards
+                        <button id="audio-resume-btn" class="btn btn-steel btn-sm" disabled title="Écouter un résumé audio">
+                            <i class="fas fa-volume-up"></i> Audio Résumé
                         </button>
-                        <button id="quiz-btn" class="btn btn-outline-warning btn-sm" disabled>
+                        <button id="quiz-btn" class="btn btn-steel btn-sm" disabled title="Lancer un quiz interactif">
                             <i class="fas fa-question-circle"></i> Quiz
+                        </button>
+                        <button id="flashcard-btn" class="btn btn-steel btn-sm" disabled title="Créer des cartes mémoire">
+                            <i class="fas fa-layer-group"></i> Flashcards
                         </button>
                     </div>
                     <div class="form-check mt-3">
                         <input class="form-check-input" type="checkbox" id="save-to-carnet" checked>
-                        <label class="form-check-label" for="save-to-carnet">
-                            Enregistrer dans mes notes
+                        <label class="form-check-label small" for="save-to-carnet">
+                            Enregistrer les résultats
                         </label>
                     </div>
                 </div>
@@ -146,7 +189,7 @@
 
             <!-- Audio Player (when generated) -->
             <div id="audio-player-container" class="card shadow-sm mb-3" style="display:none;">
-                <div class="card-header bg-danger text-white">
+                <div class="card-header" style="background: var(--accent-gradient); color: white;">
                     <h6 class="mb-0">🎧 Écouter</h6>
                 </div>
                 <div class="card-body">
@@ -160,14 +203,52 @@
 </div>
 
 <style>
-.bg-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
 .rounded-lg {
     border-radius: 0.75rem;
 }
 #chat-box {
     scroll-behavior: smooth;
+}
+.bg-steel-light {
+    background-color: rgba(50, 75, 116, 0.1);
+}
+.bg-success-light {
+    background-color: rgba(22, 163, 74, 0.1);
+    color: #16a34a;
+}
+.bg-danger-light {
+    background-color: rgba(213, 46, 40, 0.1);
+    color: #d52e28;
+}
+.flashcard-wrap {
+    perspective: 1000px;
+}
+.study-flashcard {
+    position: relative;
+    width: 100%;
+    min-height: 220px;
+    transform-style: preserve-3d;
+    transition: transform 0.45s ease;
+    cursor: pointer;
+}
+.study-flashcard.flipped {
+    transform: rotateY(180deg);
+}
+.study-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(50, 75, 116, 0.2);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(16, 44, 89, 0.08);
+}
+.study-back {
+    transform: rotateY(180deg);
 }
 </style>
 
@@ -175,8 +256,6 @@
     const chatBox = document.getElementById('chat-box');
     const form = document.getElementById('chat-form');
     const input = document.getElementById('message-input');
-    const formatButtons = document.querySelectorAll('.format-toggle');
-    let currentFormat = 'text';
     let documentLoaded = false;
 
     // Message sending
@@ -189,33 +268,34 @@
         input.value = '';
 
         try {
-            const response = await fetch('{{ path('app_chat_message') }}', {
+            const res = await fetch('{{ path('app_chat_message') }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, format: currentFormat })
+                body: JSON.stringify({ message, format: 'text', responseFormat: 'text' })
             });
-            const data = await response.json();
-            if (data.response) {
-                appendMessage('assistant', data.response);
+            const data = await res.json().catch(() => ({}));
+
+            const msg = data.response || data.error || "Désolé, je n'ai pas pu répondre. Vérifiez GROQ_API_KEY dans .env et réessayez.";
+
+            if (data.format === 'audio' && data.audioUrl) {
+                appendMessage('assistant', '🎵 Réponse audio générée');
+                displayAudioPlayer(data.audioUrl);
+            } else {
+                appendMessage('assistant', msg);
             }
         } catch (error) {
-            appendMessage('assistant', '❌ Erreur de communication. Réessayez.');
+            console.error('Chat error:', error);
+            appendMessage('assistant', "Erreur de connexion. Vérifiez votre réseau et que le serveur est démarré, puis réessayez.");
         }
     });
 
-    // Format selection
-    formatButtons.forEach(btn => {
-        btn.addEventListener('change', (e) => {
-            currentFormat = e.target.value;
-        });
-    });
+    // ===== Unified document upload (button + paste) =====
+    const uploadForm = document.getElementById('upload-form');
+    const unifiedFileInput = document.getElementById('unified-file-input');
+    const uploadButton = document.getElementById('unified-upload-btn');
+    const documentStatus = document.getElementById('document-status');
 
-    // Document upload
-    document.getElementById('upload-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const statusEl = document.getElementById('document-status');
-
+    async function uploadFormData(formData) {
         try {
             const response = await fetch('{{ path('app_chat_upload') }}', {
                 method: 'POST',
@@ -224,22 +304,74 @@
             const data = await response.json();
             if (data.success) {
                 documentLoaded = true;
-                document.querySelectorAll('#summarize-btn, #flashcard-btn, #quiz-btn').forEach(btn => {
-                    btn.disabled = false;
-                });
-                statusEl.style.display = 'block';
-                statusEl.className = 'p-2 rounded bg-success-light text-success';
-                statusEl.textContent = '✓ Document chargé !';
-                appendMessage('assistant', data.message);
+                enableDocumentButtons();
+                documentStatus.style.display = 'block';
+                documentStatus.className = 'p-2 rounded bg-success-light text-success';
+                documentStatus.textContent = '✓ Document chargé. ' + (data.message || '');
+                appendMessage('assistant', data.message || 'Votre document est prêt, quel format préférez-vous (texte, audio, carte mentale, quiz) ?');
+                return { success: true };
+            } else if (data.error) {
+                documentStatus.style.display = 'block';
+                documentStatus.className = 'p-2 rounded bg-danger-light text-danger';
+                documentStatus.textContent = '✗ ' + data.error;
+                return { success: false, error: data.error };
             }
         } catch (error) {
-            statusEl.style.display = 'block';
-            statusEl.className = 'p-2 rounded bg-danger-light text-danger';
-            statusEl.textContent = '✗ Erreur lors du chargement';
+            console.error('Upload error:', error);
+            documentStatus.style.display = 'block';
+            documentStatus.className = 'p-2 rounded bg-danger-light text-danger';
+            documentStatus.textContent = '✗ Erreur lors du chargement';
+            return { success: false, error: 'Erreur lors du chargement' };
+        }
+    }
+
+    uploadButton.addEventListener('click', () => {
+        unifiedFileInput.click();
+    });
+
+    unifiedFileInput.addEventListener('change', async (e) => {
+        if (!e.target.files || !e.target.files[0]) return;
+        const formData = new FormData();
+        formData.append('document', e.target.files[0]);
+        await uploadFormData(formData);
+        unifiedFileInput.value = '';
+    });
+
+    // Submit URL-only uploads when leaving the URL field (Enter key)
+    const youtubeInput = document.getElementById('youtube-link');
+    youtubeInput.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const link = youtubeInput.value.trim();
+            if (!link) return;
+            const formData = new FormData();
+            formData.append('link', link);
+            const result = await uploadFormData(formData);
+            // Clear input field only after successful upload
+            if (result && result.success) {
+                youtubeInput.value = '';
+            }
         }
     });
 
-    // Summarize button
+    // Paste handler for screenshots/images directly into the page
+    document.addEventListener('paste', async (event) => {
+        const items = event.clipboardData?.items;
+        if (!items) return;
+
+        for (const item of items) {
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                if (!file) continue;
+                const formData = new FormData();
+                formData.append('document', file, file.name || 'capture.png');
+                await uploadFormData(formData);
+                break;
+            }
+        }
+    });
+
+    // Summarize button (text summary)
     document.getElementById('summarize-btn').addEventListener('click', async () => {
         if (!documentLoaded) return;
         const save = document.getElementById('save-to-carnet').checked;
@@ -247,43 +379,361 @@
             const response = await fetch('{{ path('app_chat_summarize') }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ format: currentFormat, saveToCarnet: save })
+                body: JSON.stringify({ format: 'text', saveToCarnet: save })
             });
             const data = await response.json();
-            if (data.format === 'audio' && data.audio_url) {
-                document.getElementById('audio-src').src = data.audio_url;
-                document.getElementById('audio-player-container').style.display = 'block';
-                appendMessage('assistant', `🎵 Résumé audio généré. Format: ${currentFormat}`);
-            } else if (data.text) {
-                appendMessage('assistant', `📄 **Résumé (${currentFormat}):** \n${data.text}`);
+            if (data.text) {
+                appendMessage('assistant', `📄 **Résumé:** \n${data.text}`);
             }
         } catch (error) {
             appendMessage('assistant', '❌ Erreur lors de la génération du résumé.');
         }
     });
 
-    // Quiz button
+    // Audio Resume button (audio summary)
+    document.getElementById('audio-resume-btn').addEventListener('click', async () => {
+        if (!documentLoaded) return;
+        const save = document.getElementById('save-to-carnet').checked;
+        
+        appendMessage('assistant', '🎵 Génération du résumé audio en cours...');
+        
+        try {
+            const response = await fetch('{{ path('app_chat_summarize') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ format: 'audio', saveToCarnet: save })
+            });
+            const data = await response.json();
+            if (data.format === 'audio' && data.audio_url) {
+                appendMessage('assistant', '🎵 Résumé audio généré avec succès!');
+                displayAudioPlayer(data.audio_url);
+            } else if (data.text) {
+                appendMessage('assistant', '⚠️ Audio non disponible. Voici le résumé texte: \n' + data.text);
+            }
+        } catch (error) {
+            appendMessage('assistant', '❌ Erreur lors de la génération du résumé audio.');
+        }
+    });
+
+    // Quiz button - Launch interactive modal
     document.getElementById('quiz-btn').addEventListener('click', async () => {
         if (!documentLoaded) return;
+        const quizModal = new bootstrap.Modal(document.getElementById('quizModal'));
+        quizModal.show();
+        await loadQuiz();
+    });
+
+    // Flashcards button - Launch interactive modal
+    document.getElementById('flashcard-btn').addEventListener('click', async () => {
+        if (!documentLoaded) return;
+        const flashModal = new bootstrap.Modal(document.getElementById('flashcardModal'));
+        flashModal.show();
+        await loadFlashcards();
+    });
+
+    // Quiz state
+    let quizData = [];
+    let currentQuestionIndex = 0;
+    let quizScore = 0;
+
+    // Flashcards state
+    let flashcardsData = [];
+    let currentFlashcardIndex = 0;
+    let isFlashcardFlipped = false;
+
+    async function loadQuiz() {
+        document.getElementById('quiz-score-display').style.display = 'none';
+        document.getElementById('quiz-finish-btn').style.display = 'none';
+        document.getElementById('quiz-loading').style.display = 'block';
+        document.getElementById('quiz-container').innerHTML = '<div id="quiz-loading" class="text-center py-5"><div class="spinner-border text-steel mb-3" role="status"><span class="visually-hidden">Chargement...</span></div><p>Génération du quiz en cours...</p></div>';
+
         try {
             const response = await fetch('{{ path('app_generate_quiz') }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
             });
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
             if (data.quiz && data.quiz.length > 0) {
-                appendMessage('assistant', `📝 ${data.quiz.length} questions générées. Quiz prêt à commencer!`);
+                quizData = data.quiz;
+                quizScore = 0;
+                currentQuestionIndex = 0;
+                displayQuestion();
+            } else {
+                document.getElementById('quiz-container').innerHTML = '<div class="alert alert-warning">Impossible de générer le quiz. Veuillez réessayer.</div>';
             }
         } catch (error) {
-            appendMessage('assistant', '❌ Erreur lors de la génération du quiz.');
+            console.error('Quiz error:', error);
+            document.getElementById('quiz-container').innerHTML = '<div class="alert alert-danger">❌ Erreur lors du chargement du quiz.</div>';
         }
-    });
+    }
+
+    function displayQuestion() {
+        if (currentQuestionIndex >= quizData.length) {
+            showQuizResults();
+            return;
+        }
+
+        const question = quizData[currentQuestionIndex];
+        const progress = currentQuestionIndex + 1;
+        const total = quizData.length;
+
+        document.getElementById('quiz-progress').textContent = `${progress} / ${total}`;
+        document.getElementById('quiz-progress-bar').style.width = `${(progress / total) * 100}%`;
+
+        let html = `
+            <div class="question-card p-4 border rounded mb-3" style="border-color: rgba(50, 75, 116, 0.2);">
+                <h6 class="mb-3 text-dark">Question ${progress} sur ${total}</h6>
+                <h5 class="mb-4 fw-bold">${escapeHtml(question.question || '')}</h5>
+                <div class="options space-y-2">
+        `;
+
+        if (question.options && Array.isArray(question.options)) {
+            question.options.forEach((option, index) => {
+                const optionId = `option-${currentQuestionIndex}-${index}`;
+                html += `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input quiz-option" type="radio" name="answer" id="${optionId}" value="${index}">
+                        <label class="form-check-label cursor-pointer w-100 p-2 rounded" for="${optionId}" style="background: rgba(50, 75, 116, 0.05); transition: all 0.2s;">
+                            ${escapeHtml(option)}
+                        </label>
+                    </div>
+                `;
+            });
+        }
+
+        html += `
+                </div>
+                <div class="d-grid gap-2 mt-4">
+                    <button id="submit-answer-btn" class="btn btn-steel">
+                        <i class="fas fa-arrow-right"></i> Répondre
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('quiz-container').innerHTML = html;
+
+        document.getElementById('submit-answer-btn').addEventListener('click', submitAnswer);
+
+        document.querySelectorAll('.form-check-label').forEach(label => {
+            label.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(50, 75, 116, 0.15)';
+            });
+            label.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(50, 75, 116, 0.05)';
+            });
+        });
+    }
+
+    function submitAnswer() {
+        const selectedOption = document.querySelector('input[name="answer"]:checked');
+        if (!selectedOption) {
+            alert('Veuillez sélectionner une réponse');
+            return;
+        }
+
+        const question = quizData[currentQuestionIndex];
+        const selectedIndex = Number(selectedOption.value);
+        const correctIndex = Number.isInteger(question.correct) ? question.correct : parseInt(question.correct, 10);
+        const safeCorrectIndex = Number.isInteger(correctIndex) && correctIndex >= 0 && correctIndex < (question.options || []).length ? correctIndex : 0;
+        const correctAnswerText = question.options && question.options[safeCorrectIndex] ? question.options[safeCorrectIndex] : 'Réponse non disponible';
+
+        const isCorrect = selectedIndex === safeCorrectIndex;
+        if (isCorrect) quizScore++;
+
+        const feedbackClass = isCorrect ? 'alert-success' : 'alert-danger';
+        const feedbackText = isCorrect ? '✅ Correct !' : '❌ Incorrect';
+
+        document.querySelector('.question-card').innerHTML = `
+            <div class="${feedbackClass} p-4 rounded">
+                <h6 class="mb-2">${feedbackText}</h6>
+                <p class="mb-3 small"><strong>Bonne réponse :</strong> ${escapeHtml(correctAnswerText)}</p>
+                ${question.explanation ? `<p class="small mb-0"><strong>Explication :</strong> ${escapeHtml(question.explanation)}</p>` : ''}
+            </div>
+            <div class="d-grid gap-2 mt-3">
+                <button id="next-question-btn" class="btn btn-steel">
+                    <i class="fas fa-arrow-right"></i> ${currentQuestionIndex + 1 >= quizData.length ? 'Voir les résultats' : 'Question suivante'}
+                </button>
+            </div>
+        `;
+
+        document.getElementById('next-question-btn').addEventListener('click', () => {
+            currentQuestionIndex++;
+            displayQuestion();
+        });
+    }
+
+    function showQuizResults() {
+        const total = quizData.length || 1;
+        const percentage = Math.round((quizScore / total) * 100);
+        let message = '';
+        let color = 'info';
+
+        if (percentage >= 85) {
+            message = 'Excellent travail 👏 Continuez comme ça.';
+            color = 'success';
+        } else if (percentage >= 60) {
+            message = 'Bon niveau 👍 Quelques points sont à revoir.';
+            color = 'info';
+        } else {
+            message = 'À retravailler 📚 Reprenez le résumé puis refaites le quiz.';
+            color = 'warning';
+        }
+
+        document.getElementById('quiz-score-display').className = `alert alert-${color} mb-3`;
+        document.getElementById('quiz-score-display').style.display = 'block';
+        document.getElementById('quiz-final-score').textContent = quizScore;
+        document.getElementById('quiz-total-questions').textContent = quizData.length;
+        document.getElementById('quiz-final-message').textContent = message;
+        document.getElementById('quiz-container').innerHTML = '';
+        document.getElementById('quiz-finish-btn').style.display = 'inline-block';
+    }
+
+    async function loadFlashcards() {
+        document.getElementById('flashcard-content').innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-steel mb-3" role="status"></div>
+                <p>Génération des flashcards en cours...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('{{ path('app_generate_flashcards') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const data = await response.json().catch(() => ({}));
+
+            if (data.flashcards && Array.isArray(data.flashcards) && data.flashcards.length > 0) {
+                flashcardsData = data.flashcards;
+                currentFlashcardIndex = 0;
+                isFlashcardFlipped = false;
+                renderFlashcard();
+            } else {
+                document.getElementById('flashcard-content').innerHTML = '<div class="alert alert-warning">Impossible de générer les flashcards. Veuillez réessayer.</div>';
+            }
+        } catch (error) {
+            console.error('Flashcards error:', error);
+            document.getElementById('flashcard-content').innerHTML = '<div class="alert alert-danger">❌ Erreur lors du chargement des flashcards.</div>';
+        }
+    }
+
+    function renderFlashcard() {
+        if (!flashcardsData.length) {
+            return;
+        }
+
+        const card = flashcardsData[currentFlashcardIndex];
+        const total = flashcardsData.length;
+        const indexLabel = `${currentFlashcardIndex + 1} / ${total}`;
+
+        document.getElementById('flashcard-progress').textContent = indexLabel;
+        document.getElementById('flashcard-content').innerHTML = `
+            <div class="flashcard-wrap mx-auto" style="max-width: 540px;">
+                <div id="study-flashcard" class="study-flashcard ${isFlashcardFlipped ? 'flipped' : ''}">
+                    <div class="study-face study-front">
+                        <small class="text-muted d-block mb-2">Recto</small>
+                        <h5 class="mb-0">${escapeHtml(card.front || '')}</h5>
+                    </div>
+                    <div class="study-face study-back">
+                        <small class="text-muted d-block mb-2">Verso</small>
+                        <p class="mb-0">${escapeHtml(card.back || '')}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-3 gap-2">
+                <button id="flash-prev-btn" class="btn btn-outline-steel btn-sm" ${currentFlashcardIndex === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-arrow-left"></i> Précédente
+                </button>
+                <button id="flash-flip-btn" class="btn btn-steel btn-sm">
+                    <i class="fas fa-sync-alt"></i> Retourner
+                </button>
+                <button id="flash-next-btn" class="btn btn-outline-steel btn-sm" ${currentFlashcardIndex === total - 1 ? 'disabled' : ''}>
+                    Suivante <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            <p class="text-muted small text-center mt-2 mb-0">Astuce: cliquez la carte ou glissez gauche/droite</p>
+        `;
+
+        const flashcardElement = document.getElementById('study-flashcard');
+        let touchStartX = 0;
+
+        flashcardElement.addEventListener('click', () => {
+            isFlashcardFlipped = !isFlashcardFlipped;
+            renderFlashcard();
+        });
+
+        flashcardElement.addEventListener('touchstart', (event) => {
+            touchStartX = event.changedTouches[0].clientX;
+        }, { passive: true });
+
+        flashcardElement.addEventListener('touchend', (event) => {
+            const touchEndX = event.changedTouches[0].clientX;
+            const deltaX = touchEndX - touchStartX;
+            if (Math.abs(deltaX) < 40) {
+                return;
+            }
+
+            if (deltaX < 0 && currentFlashcardIndex < flashcardsData.length - 1) {
+                currentFlashcardIndex++;
+                isFlashcardFlipped = false;
+                renderFlashcard();
+            } else if (deltaX > 0 && currentFlashcardIndex > 0) {
+                currentFlashcardIndex--;
+                isFlashcardFlipped = false;
+                renderFlashcard();
+            }
+        }, { passive: true });
+
+        document.getElementById('flash-flip-btn').addEventListener('click', () => {
+            isFlashcardFlipped = !isFlashcardFlipped;
+            renderFlashcard();
+        });
+
+        document.getElementById('flash-prev-btn').addEventListener('click', () => {
+            if (currentFlashcardIndex > 0) {
+                currentFlashcardIndex--;
+                isFlashcardFlipped = false;
+                renderFlashcard();
+            }
+        });
+
+        document.getElementById('flash-next-btn').addEventListener('click', () => {
+            if (currentFlashcardIndex < flashcardsData.length - 1) {
+                currentFlashcardIndex++;
+                isFlashcardFlipped = false;
+                renderFlashcard();
+            }
+        });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text || '';
+        return div.innerHTML;
+    }
+
+    // Enable/disable buttons based on document status
+    function enableDocumentButtons() {
+        document.getElementById('summarize-btn').disabled = false;
+        document.getElementById('audio-resume-btn').disabled = false;
+        document.getElementById('flashcard-btn').disabled = false;
+        document.getElementById('quiz-btn').disabled = false;
+    }
+    function disableDocumentButtons() {
+        document.getElementById('summarize-btn').disabled = true;
+        document.getElementById('audio-resume-btn').disabled = true;
+        document.getElementById('flashcard-btn').disabled = true;
+        document.getElementById('quiz-btn').disabled = true;
+    }
+    disableDocumentButtons();
 
     function appendMessage(role, content) {
         const div = document.createElement('div');
         div.className = `mb-3 d-flex ${role === 'user' ? 'justify-content-end' : 'justify-content-start'}`;
-        const msgClass = role === 'user' ? 'bg-primary text-white' : 'bg-light text-dark';
+        const msgClass = role === 'user' ? 'bg-steel text-white' : 'bg-light text-dark';
         div.innerHTML = `
             <div class="${msgClass} rounded-lg p-3" style="max-width: 75%; word-wrap: break-word;">
                 <small class="d-block fw-bold mb-1">${role === 'user' ? '👤 Vous' : '🤖 Assistant'}</small>
@@ -296,5 +746,200 @@
 
     // Init scroll
     chatBox.scrollTop = chatBox.scrollHeight;
+
+    // ===== Web Audio API - Audio Recording =====
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+
+    document.getElementById('audio-btn').addEventListener('click', async () => {
+        if (isRecording) {
+            // Stop recording
+            mediaRecorder.stop();
+            isRecording = false;
+            return;
+        }
+
+        try {
+            // Start recording
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+
+            audioChunks = [];
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                
+                reader.onloadend = async () => {
+                    const audioBase64 = reader.result.split(',')[1]; // Remove data:audio/webm;base64, prefix
+                    
+                    // Send audio message to backend
+                    try {
+                        const res = await fetch('{{ path('app_chat_message') }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                audioBase64: audioBase64,
+                                responseFormat: 'text'
+                            })
+                        });
+
+                        const data = await res.json().catch(() => ({}));
+                        const msg = data.response || data.error || "Désolé, je n'ai pas pu répondre. Vérifiez GROQ_API_KEY dans .env.";
+
+                        appendMessage('user', '🎤 [Message audio]');
+
+                        if (data.format === 'audio' && data.audioUrl) {
+                            appendMessage('assistant', '🎵 Réponse audio générée');
+                            displayAudioPlayer(data.audioUrl);
+                        } else {
+                            appendMessage('assistant', msg);
+                        }
+
+                        document.getElementById('recording-indicator').style.display = 'none';
+                    } catch (error) {
+                        console.error('Error sending audio:', error);
+                        appendMessage('assistant', "Erreur de connexion. Vérifiez votre réseau et réessayez.");
+                        document.getElementById('recording-indicator').style.display = 'none';
+                    }
+                };
+
+                reader.readAsDataURL(audioBlob);
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+            document.getElementById('recording-indicator').style.display = 'block';
+            document.getElementById('audio-btn').innerHTML = '<i class="fas fa-stop"></i>';
+            
+        } catch (error) {
+            console.error('Microphone access denied:', error);
+            appendMessage('assistant', '❌ Accès au microphone refusé. Veuillez autoriser l\'accès.');
+        }
+    });
+
+    // Stop recording button
+    document.getElementById('stop-recording').addEventListener('click', () => {
+        if (isRecording && mediaRecorder) {
+            mediaRecorder.stop();
+            isRecording = false;
+            document.getElementById('audio-btn').innerHTML = '<i class="fas fa-microphone"></i>';
+        }
+    });
+
+    // ===== Audio Response Playback =====
+    function displayAudioPlayer(audioUrl) {
+        const div = document.createElement('div');
+        div.className = 'mb-3';
+        const audioId = `assistant-audio-${Date.now()}`;
+        div.innerHTML = `
+            <div class="d-flex justify-content-start">
+                <div class="bg-light rounded-lg p-3" style="max-width: 75%;">
+                    <audio id="${audioId}" controls class="w-100" autoplay style="max-width: 100%;">
+                        <source src="${audioUrl}" type="audio/mpeg">
+                        Votre navigateur ne supporte pas l'élément audio.
+                    </audio>
+                    <small class="text-muted d-block mt-2">Si la lecture auto est bloquée, cliquez sur ▶.</small>
+                </div>
+            </div>
+        `;
+        chatBox.appendChild(div);
+
+        const player = div.querySelector(`#${audioId}`);
+        if (player) {
+            player.load();
+            const playPromise = player.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(() => {
+                    // Autoplay can be blocked by browser policy; user can click play.
+                });
+            }
+        }
+
+        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+    }
+
+
+
 </script>
+
+    <!-- Quiz Modal -->
+    <div class="modal fade" id="quizModal" tabindex="-1" role="dialog" aria-labelledby="quizTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" style="background: rgba(255,255,255,0.98); backdrop-filter: blur(10px);">
+                <div class="modal-header" style="background: var(--primary-gradient); color: white; border: none;">
+                    <h5 class="modal-title" id="quizTitle">📝 Quiz Interactif</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">Progression</span>
+                            <span id="quiz-progress" class="text-muted">0 / 0</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div id="quiz-progress-bar" class="progress-bar" style="background: var(--primary-gradient); width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Score Display -->
+                    <div id="quiz-score-display" class="alert alert-info mb-3" style="display: none;">
+                        <h6 class="mb-0">📊 Votre Score: <span id="quiz-final-score">0</span> / <span id="quiz-total-questions">0</span></h6>
+                        <small id="quiz-final-message"></small>
+                    </div>
+
+                    <!-- Question Container -->
+                    <div id="quiz-container">
+                        <div id="quiz-loading" class="text-center py-5">
+                            <div class="spinner-border text-steel mb-3" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <p>Génération du quiz en cours...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(50, 75, 116, 0.1);">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" id="quiz-finish-btn" class="btn btn-steel" style="display: none;" data-bs-dismiss="modal">
+                        <i class="fas fa-flag-checkered"></i> Terminer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flashcards Modal -->
+    <div class="modal fade" id="flashcardModal" tabindex="-1" role="dialog" aria-labelledby="flashcardTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" style="background: rgba(255,255,255,0.98); backdrop-filter: blur(10px);">
+                <div class="modal-header" style="background: var(--primary-gradient); color: white; border: none;">
+                    <h5 class="modal-title" id="flashcardTitle">🧠 Flashcards Interactives</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold">Progression</span>
+                        <span id="flashcard-progress" class="text-muted">0 / 0</span>
+                    </div>
+                    <div id="flashcard-content"></div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(50, 75, 116, 0.1);">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

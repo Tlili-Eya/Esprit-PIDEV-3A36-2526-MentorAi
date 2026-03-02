@@ -224,4 +224,9 @@ class FrontController extends AbstractController
 
 
 
+    #[Route('preferences', name: 'preferences')]
+    public function preferences(): Response
+    {
+        return $this->render('front/preferences.html.twig');
+    }
 }

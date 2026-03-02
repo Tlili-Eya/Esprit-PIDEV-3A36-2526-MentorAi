@@ -630,7 +630,9 @@
 	                addMessage(data.response, false);
 	                loadStats(); // Update stats after message
 	            } else {
-	                MentorUI.toast('danger', 'Execution Error', 'System failed to process the request.');
+	                const errorMsg = data.error || 'System failed to process the request.';
+	                const details = data.details ? `<br><small>${data.details}</small>` : '';
+	                MentorUI.toast('danger', 'Execution Error', errorMsg + details);
 	            }
 	        } catch (error) {
 	            document.getElementById(loadingId)?.remove();

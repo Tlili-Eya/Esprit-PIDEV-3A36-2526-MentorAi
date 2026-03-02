@@ -6,15 +6,28 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap');
 
+    :root {
+      --color-deep-navy: #102c59;
+      --color-steel-blue: #324b74ff;
+      --color-accent-red: #d52e28;
+      --primary-gradient: linear-gradient(135deg, var(--color-deep-navy) 0%, #1a3c78 100%);
+      --accent-gradient: linear-gradient(135deg, var(--color-accent-red) 0%, #a0231e 100%);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
     .notes-layout {
-      background: radial-gradient(circle at top, #fff4da 0%, #f7f3ea 55%, #f2efe6 100%);
+      background: radial-gradient(circle at top right, rgba(213, 46, 40, 0.08), transparent),
+                  radial-gradient(circle at bottom left, rgba(16, 44, 89, 0.25), transparent),
+                  #324b74ff;
       padding: 48px 0 64px;
     }
 
     .notes-shell {
-      background: #ffffff;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
       border-radius: 22px;
-      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
       padding: 32px;
     }
 
@@ -44,10 +57,18 @@
     .notes-list li {
       padding: 14px 18px;
       border-radius: 14px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid rgba(50, 75, 116, 0.2);
       font-weight: 600;
-      color: #0f172a;
-      background: #fdfcf8;
+      color: var(--color-deep-navy);
+      background: rgba(157, 187, 206, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .notes-list li:hover {
+      background: rgba(157, 187, 206, 0.2);
+      border-color: var(--color-steel-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(50, 75, 116, 0.15);
     }
 
     .notes-empty {
@@ -76,11 +97,12 @@
       font-size: 1.6rem;
       font-weight: 600;
       border: none;
-      border-bottom: 2px solid #0f172a;
+      border-bottom: 2px solid var(--color-steel-blue);
       padding: 8px 4px;
       outline: none;
       width: 100%;
       font-family: 'Fraunces', 'Georgia', serif;
+      color: var(--color-deep-navy);
     }
 
     .notes-list button {
@@ -106,12 +128,19 @@
     }
 
     .notes-delete {
-      border: 1px solid #fecaca;
-      background: #fee2e2;
-      color: #b91c1c;
+      border: 1px solid rgba(213, 46, 40, 0.3);
+      background: rgba(213, 46, 40, 0.1);
+      color: var(--color-accent-red);
       border-radius: 8px;
       padding: 4px 10px;
       font-size: 0.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .notes-delete:hover {
+      background: var(--accent-gradient);
+      color: white;
+      border-color: transparent;
     }
 
     .notes-list-title {
@@ -181,7 +210,8 @@
       gap: 8px;
       position: sticky;
       top: 12px;
-      background: #f8f4ea;
+      background: rgba(157, 187, 206, 0.15);
+      border: 1px solid rgba(50, 75, 116, 0.2);
       padding: 12px;
       border-radius: 12px;
       z-index: 10;
@@ -190,23 +220,30 @@
     .notes-toolbar button,
     .notes-toolbar select {
       border-radius: 10px;
-      border: 1px solid #cbd5f5;
+      border: 1px solid rgba(50, 75, 116, 0.3);
       background: #ffffff;
       padding: 6px 10px;
       font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .notes-toolbar button:hover {
+      background: var(--primary-gradient);
+      color: white;
+      border-color: transparent;
     }
 
     .notes-editor-surface {
       min-height: 520px;
       border-radius: 16px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid rgba(50, 75, 116, 0.2);
       padding: 18px;
-      background: #fbfaf7;
+      background: rgba(255, 255, 255, 0.8);
       outline: none;
     }
 
     .drag-block {
-      border: 1px dashed #cbd5f5;
+      border: 1px dashed rgba(50, 75, 116, 0.3);
       padding: 8px;
       margin: 8px 0;
       border-radius: 10px;
@@ -547,16 +584,21 @@
 {% endblock %}
 
 {% block javascripts %}
+  <script src="https://cdn.ckeditor.com/ckeditor5/40.2.0/classic/ckeditor.js"></script>
   <script>
     (function () {
       const editorSurface = document.getElementById('editor-surface');
       const contenuInput = document.getElementById('contenu-input');
-      const toolbar = document.getElementById('notes-toolbar');
       const mediaInput = document.getElementById('media-input');
       const recordBtn = document.getElementById('record-audio');
       const stopBtn = document.getElementById('stop-audio');
       let mediaRecorder = null;
       let audioChunks = [];
+      let recordingStartTime = null;
+      let recordingTimer = null;
+      const MAX_RECORDING_TIME = 300000; // 5 minutes
+      let ckEditorInstance = null;
+      let autosaveTimeout = null;
 
       const readContent = document.getElementById('note-content');
       if (readContent) {
@@ -635,116 +677,178 @@
         }
       });
 
-      if (!editorSurface) {
-        return;
-      }
+      // Initialize CKEditor 5
+      if (editorSurface) {
+        const form = editorSurface.closest('form');
+        const initialContent = editorSurface.innerHTML;
+        
+        ClassicEditor
+          .create(editorSurface, {
+            toolbar: {
+              items: [
+                'undo', 'redo', '|',
+                'heading', '|',
+                'fontSize', 'fontFamily', '|',
+                'bold', 'italic', 'underline', '|',
+                'bulletedList', 'numberedList', '|',
+                'alignment', '|',
+                'blockQuote', 'codeBlock', '|',
+                'insertTable', 'horizontalLine'
+              ]
+            },
+            language: 'fr',
+            heading: {
+              options: [
+                { model: 'paragraph', title: 'Paragraphe', class: 'ck-heading_paragraph' },
+                { model: 'heading1', view: 'h1', title: 'Titre 1', class: 'ck-heading_heading1' },
+                { model: 'heading2', view: 'h2', title: 'Titre 2', class: 'ck-heading_heading2' },
+                { model: 'heading3', view: 'h3', title: 'Titre 3', class: 'ck-heading_heading3' }
+              ]
+            }
+          })
+          .then(editor => {
+            ckEditorInstance = editor;
+            editor.setData(initialContent);
+            
+            // Autosave every 30 seconds
+            editor.model.document.on('change:data', () => {
+              clearTimeout(autosaveTimeout);
+              autosaveTimeout = setTimeout(() => {
+                saveToLocalStorage();
+              }, 30000);
+            });
 
-      const form = editorSurface.closest('form');
-      form.addEventListener('submit', () => {
-        contenuInput.value = editorSurface.innerHTML;
-      });
+            // Form submission
+            if (form) {
+              form.addEventListener('submit', (e) => {
+                contenuInput.value = editor.getData();
+                localStorage.removeItem('carnet_autosave_' + (form.querySelector('[name="id"]')?.value || 'new'));
+              });
+            }
 
-      editorSurface.addEventListener('blur', () => {
-        contenuInput.value = editorSurface.innerHTML;
-      });
+            // Restore autosave if exists
+            const noteId = form?.querySelector('[name="id"]')?.value || 'new';
+            const autosaved = localStorage.getItem('carnet_autosave_' + noteId);
+            if (autosaved && confirm('Une sauvegarde automatique existe. Voulez-vous la restaurer ?')) {
+              editor.setData(autosaved);
+            }
+          })
+          .catch(error => {
+            console.error('Erreur CKEditor:', error);
+            // Fallback: keep contenteditable working
+          });
 
-      editorSurface.addEventListener('input', () => {
-        contenuInput.value = editorSurface.innerHTML;
-      });
-
-      if (toolbar) {
-        toolbar.addEventListener('click', (event) => {
-          const button = event.target.closest('button[data-cmd]');
-          if (!button) {
-            return;
+        function saveToLocalStorage() {
+          if (ckEditorInstance) {
+            const noteId = form?.querySelector('[name="id"]')?.value || 'new';
+            localStorage.setItem('carnet_autosave_' + noteId, ckEditorInstance.getData());
+            showAutosaveIndicator();
           }
-          const cmd = button.dataset.cmd;
-          document.execCommand(cmd, false, null);
-          editorSurface.focus();
-        });
+        }
 
-        toolbar.addEventListener('change', (event) => {
-          const select = event.target.closest('select[data-cmd]');
-          if (!select) {
-            return;
-          }
-          const cmd = select.dataset.cmd;
-          const value = select.value;
-          document.execCommand(cmd, false, value);
-          editorSurface.focus();
-        });
+        function showAutosaveIndicator() {
+          const indicator = document.createElement('div');
+          indicator.textContent = 'Sauvegarde automatique...';
+          indicator.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#28a745;color:white;padding:8px 16px;border-radius:8px;font-size:14px;z-index:9999;';
+          document.body.appendChild(indicator);
+          setTimeout(() => indicator.remove(), 2000);
+        }
       }
-
-      document.getElementById('insert-quote')?.addEventListener('click', () => {
-        document.execCommand('formatBlock', false, 'blockquote');
-      });
-
-      document.getElementById('insert-code')?.addEventListener('click', () => {
-        document.execCommand('insertHTML', false, '<pre class="drag-block"><code>Code...</code></pre>');
-      });
-
-      document.getElementById('insert-divider')?.addEventListener('click', () => {
-        document.execCommand('insertHTML', false, '<hr class="drag-block">');
-      });
 
       mediaInput?.addEventListener('change', async (event) => {
         const files = Array.from(event.target.files || []);
+        if (!ckEditorInstance) return;
+        
         for (const file of files) {
           const dataUrl = await readFileAsDataUrl(file);
+          let htmlContent = '';
+          
           if (file.type.startsWith('image/')) {
-            insertHtml(`<div class="drag-block" draggable="true" contenteditable="false"><img src="${dataUrl}" alt="${file.name}"></div><p><br></p>`);
+            htmlContent = `<figure class="image"><img src="${dataUrl}" alt="${file.name}"></figure>`;
           } else if (file.type.startsWith('audio/')) {
-            insertHtml(`<div class="drag-block audio-block" draggable="true" contenteditable="false"><audio controls src="${dataUrl}"><source src="${dataUrl}" type="${file.type}"></audio></div><p><br></p>`);
+            htmlContent = `<p>🎵 <a href="${dataUrl}" download="${file.name}">${file.name}</a></p>`;
           } else if (file.type.startsWith('video/')) {
-            insertHtml(`<div class="drag-block" draggable="true" contenteditable="false"><video controls src="${dataUrl}"></video></div><p><br></p>`);
+            htmlContent = `<p>🎬 <a href="${dataUrl}" download="${file.name}">${file.name}</a></p>`;
           } else if (file.type === 'application/pdf') {
-            insertHtml(`<div class="drag-block pdf-block" draggable="true" contenteditable="false"><div class="pdf-bar"><div class="pdf-meta"><i class="bi bi-chevron-down"></i><span>${file.name}</span></div><div class="pdf-actions"><a class="pdf-download" href="${dataUrl}" download="${file.name}"><i class="bi bi-download"></i></a><button type="button" class="pdf-close">Fermer</button></div></div><iframe src="${dataUrl}" width="100%" height="480" title="${file.name}"></iframe></div><p><br></p>`);
+            htmlContent = `<p>📄 <a href="${dataUrl}" download="${file.name}">${file.name}</a></p>`;
           } else {
-            insertHtml(`<div class="note-attachment"><a href="${dataUrl}" download="${file.name}">${file.name}</a></div><p><br></p>`);
+            htmlContent = `<p>📎 <a href="${dataUrl}" download="${file.name}">${file.name}</a></p>`;
           }
+          
+          const viewFragment = ckEditorInstance.data.processor.toView(htmlContent);
+          const modelFragment = ckEditorInstance.data.toModel(viewFragment);
+          ckEditorInstance.model.insertContent(modelFragment);
         }
         mediaInput.value = '';
       });
 
-      editorSurface.addEventListener('paste', async (event) => {
-        const items = Array.from(event.clipboardData?.items || []);
-        const imageItem = items.find((item) => item.type.startsWith('image/'));
-        if (!imageItem) {
-          return;
-        }
-        event.preventDefault();
-        const file = imageItem.getAsFile();
-        if (!file) {
-          return;
-        }
-        const dataUrl = await readFileAsDataUrl(file);
-        insertHtml(`<div class="drag-block" draggable="true" contenteditable="false"><img src="${dataUrl}" alt="Image"></div><p><br></p>`);
-      });
+      // Paste image handling is natively supported by CKEditor 5
 
       recordBtn?.addEventListener('click', async () => {
         try {
+          // Check permission first
+          const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
+          
+          if (permissionStatus.state === 'denied') {
+            alert('Permission micro refusée. Veuillez autoriser l\'accès au microphone dans les paramètres de votre navigateur.');
+            return;
+          }
+
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           mediaRecorder = new MediaRecorder(stream);
           audioChunks = [];
+          recordingStartTime = Date.now();
+          
+          // Visual indicator
+          recordBtn.textContent = '🔴 Enregistrement...';
+          recordBtn.style.background = '#dc3545';
+          recordBtn.style.color = 'white';
+          
+          // Timer display
+          updateRecordingTimer();
+          recordingTimer = setInterval(updateRecordingTimer, 1000);
+          
+          // Auto-stop after MAX_RECORDING_TIME
+          const autoStopTimeout = setTimeout(() => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+              stopBtn.click();
+              alert('Enregistrement arrêté automatiquement après 5 minutes.');
+            }
+          }, MAX_RECORDING_TIME);
+          
           mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
           mediaRecorder.onstop = async () => {
+            clearInterval(recordingTimer);
+            clearTimeout(autoStopTimeout);
+            recordBtn.textContent = 'Enregistrer audio';
+            recordBtn.style.background = '';
+            recordBtn.style.color = '';
+            
             const blob = new Blob(audioChunks, { type: 'audio/webm' });
             const formData = new FormData();
             formData.append('audio', blob, 'voice.webm');
 
-            const response = await fetch('{{ path('front_blog_upload_audio') }}', {
-              method: 'POST',
-              body: formData
-            });
+            try {
+              const response = await fetch('{{ path('front_blog_upload_audio') }}', {
+                method: 'POST',
+                body: formData
+              });
 
-            if (!response.ok) {
-              return;
-            }
+              if (!response.ok) {
+                alert('Erreur lors de l\'upload audio.');
+                return;
+              }
 
-            const result = await response.json();
-            if (result.url) {
-              const mime = result.mime || 'audio/webm';
-              insertHtml(`<div class="drag-block audio-block" draggable="true" contenteditable="false"><audio controls src="${result.url}"><source src="${result.url}" type="${mime}"></audio></div><p><br></p>`);
+              const result = await response.json();
+              if (result.url && ckEditorInstance) {
+                const audioHtml = `<figure class="media"><oembed url="${result.url}"></oembed></figure>`;
+                const viewFragment = ckEditorInstance.data.processor.toView(audioHtml);
+                const modelFragment = ckEditorInstance.data.toModel(viewFragment);
+                ckEditorInstance.model.insertContent(modelFragment);
+              }
+            } catch (error) {
+              alert('Erreur réseau lors de l\'upload audio.');
+              console.error(error);
             }
           };
 
@@ -752,7 +856,14 @@
           recordBtn.disabled = true;
           stopBtn.disabled = false;
         } catch (error) {
-          // no-op
+          if (error.name === 'NotAllowedError') {
+            alert('Permission micro refusée. Veuillez autoriser l\'accès au microphone.');
+          } else if (error.name === 'NotFoundError') {
+            alert('Aucun microphone détecté sur votre appareil.');
+          } else {
+            alert('Erreur microphone: ' + error.message);
+          }
+          console.error('Erreur audio:', error);
         }
       });
 
@@ -762,90 +873,21 @@
         }
         mediaRecorder.stop();
         mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+        clearInterval(recordingTimer);
         recordBtn.disabled = false;
         stopBtn.disabled = true;
       });
 
-      editorSurface.addEventListener('dragstart', (event) => {
-        const block = event.target.closest('.drag-block');
-        if (!block) {
-          return;
-        }
-        event.dataTransfer.setData('text/plain', 'drag');
-        editorSurface._dragBlock = block;
-      });
-
-      editorSurface.addEventListener('dragover', (event) => {
-        if (!editorSurface._dragBlock) {
-          return;
-        }
-        event.preventDefault();
-      });
-
-      editorSurface.addEventListener('drop', (event) => {
-        const block = editorSurface._dragBlock;
-        if (!block) {
-          return;
-        }
-        event.preventDefault();
-        const range = document.caretRangeFromPoint(event.clientX, event.clientY);
-        if (range) {
-          range.insertNode(block);
-        }
-        editorSurface._dragBlock = null;
-      });
-
-      editorSurface.addEventListener('click', (event) => {
-        const bar = event.target.closest('.pdf-bar');
-        const download = event.target.closest('.pdf-download');
-        if (!bar || download) {
-          return;
-        }
-        const block = bar.closest('.pdf-block');
-        if (!block) {
-          return;
-        }
-        block.classList.toggle('is-collapsed');
-        const icon = block.querySelector('.pdf-meta i');
-        if (icon) {
-          icon.classList.toggle('bi-chevron-down');
-          icon.classList.toggle('bi-chevron-right');
-        }
-      });
-
-      function insertHtml(html) {
-        if (!editorSurface) {
-          return;
-        }
-
-        editorSurface.focus();
-        const selection = window.getSelection();
-        let range = null;
-        if (selection && selection.rangeCount > 0) {
-          range = selection.getRangeAt(0);
-        } else {
-          range = document.createRange();
-          range.selectNodeContents(editorSurface);
-          range.collapse(false);
-        }
-
-        const template = document.createElement('template');
-        template.innerHTML = html.trim();
-        const fragment = template.content;
-        range.deleteContents();
-        range.insertNode(fragment);
-
-        if (selection) {
-          selection.removeAllRanges();
-          const newRange = document.createRange();
-          newRange.selectNodeContents(editorSurface);
-          newRange.collapse(false);
-          selection.addRange(newRange);
-        }
-
-        ensureAudioControls(editorSurface);
-        contenuInput.value = editorSurface.innerHTML;
+      function updateRecordingTimer() {
+        if (!recordingStartTime) return;
+        const elapsed = Date.now() - recordingStartTime;
+        const seconds = Math.floor(elapsed / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSecs = seconds % 60;
+        stopBtn.textContent = `Stop (${minutes}:${remainingSecs.toString().padStart(2, '0')})`;
       }
+
+      // Drag and drop is natively supported by CKEditor 5
 
       function readFileAsDataUrl(file) {
         return new Promise((resolve, reject) => {

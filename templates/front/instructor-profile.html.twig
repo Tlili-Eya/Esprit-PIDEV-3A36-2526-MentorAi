@@ -7,15 +7,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            --bg-primary: #F4F7FF;
+            --bg-primary: #324b74ff;
             --text-primary: #1A1F36;
-            --text-secondary: #8F95B2;
-            --primary-blue: #4F6EF7;
-            --card-bg: #FFFFFF;
-            --shadow: 0 4px 20px rgba(79, 110, 247, 0.08);
-            --shadow-hover: 0 8px 30px rgba(79, 110, 247, 0.15);
+            --text-secondary: #64748b;
+            --primary-blue: #324b74ff;
+            --color-steel-blue: #324b74ff;
+            --color-accent-red: #d52e28;
+            --primary-gradient: linear-gradient(135deg, #102c59 0%, #1a3c78 100%);
+            --accent-gradient: linear-gradient(135deg, #d52e28 0%, #a0231e 100%);
+            --card-bg: rgba(255, 255, 255, 0.98);
+            --shadow: 0 4px 20px rgba(50, 75, 116, 0.12);
+            --shadow-hover: 0 8px 30px rgba(50, 75, 116, 0.2);
         }
 
         * {
@@ -26,7 +31,9 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
+            background: radial-gradient(circle at top right, rgba(213, 46, 40, 0.08), transparent),
+                        radial-gradient(circle at bottom left, rgba(16, 44, 89, 0.25), transparent),
+                        var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             padding: 2rem 1rem;
@@ -41,7 +48,7 @@
 
         .greeting {
             font-size: 0.9rem;
-            color: var(--primary-blue);
+            color: white;
             font-weight: 500;
             margin-bottom: 0.5rem;
         }
@@ -49,18 +56,18 @@
         .hero-title {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--text-primary);
+            color: white;
             margin-bottom: 0.5rem;
         }
 
         .hero-date {
             font-size: 0.95rem;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.8);
             margin-bottom: 2rem;
         }
 
         .primary-action-btn {
-            background: var(--primary-blue);
+            background: var(--accent-gradient);
             color: white;
             border: none;
             padding: 1rem 2.5rem;
@@ -69,12 +76,12 @@
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(79, 110, 247, 0.3);
+            box-shadow: 0 4px 15px rgba(213, 46, 40, 0.3);
         }
 
         .primary-action-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 110, 247, 0.4);
+            box-shadow: 0 6px 20px rgba(213, 46, 40, 0.5);
         }
 
         /* Main Container */
@@ -94,6 +101,8 @@
         /* Card Styles */
         .card {
             background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(50, 75, 116, 0.1);
             border-radius: 16px;
             padding: 1.5rem;
             box-shadow: var(--shadow);
@@ -209,8 +218,8 @@
         }
 
         .mood-tag {
-            background: rgba(79, 110, 247, 0.1);
-            color: var(--primary-blue);
+            background: rgba(50, 75, 116, 0.15);
+            color: var(--color-steel-blue);
             padding: 0.4rem 1rem;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -359,13 +368,13 @@
 
         .progress-bar {
             height: 4px;
-            background: rgba(79, 110, 247, 0.1);
+            background: rgba(50, 75, 116, 0.15);
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: var(--primary-blue);
+            background: var(--primary-gradient);
             transition: width 0.3s ease;
         }
 
@@ -421,8 +430,8 @@
         }
 
         .mood-option.selected {
-            border-color: var(--primary-blue);
-            background: rgba(79, 110, 247, 0.05);
+            border-color: var(--color-steel-blue);
+            background: rgba(50, 75, 116, 0.1);
             position: relative;
         }
 
@@ -430,7 +439,7 @@
             content: "✓";
             position: absolute;
             right: 1.5rem;
-            color: var(--primary-blue);
+            color: var(--color-steel-blue);
             font-weight: 700;
             font-size: 1.2rem;
         }
@@ -466,12 +475,12 @@
         }
 
         .tag-option:hover {
-            border-color: var(--primary-blue);
+            border-color: var(--color-steel-blue);
         }
 
         .tag-option.selected {
-            border-color: var(--primary-blue);
-            background: var(--primary-blue);
+            border-color: var(--color-steel-blue);
+            background: var(--primary-gradient);
             color: white;
         }
 
@@ -490,7 +499,7 @@
 
         .journal-textarea:focus {
             outline: none;
-            border-color: var(--primary-blue);
+            border-color: var(--color-steel-blue);
         }
 
         .journal-textarea.error {
@@ -537,8 +546,8 @@
         }
 
         .sleep-option.selected {
-            border-color: var(--primary-blue);
-            background: rgba(79, 110, 247, 0.05);
+            border-color: var(--color-steel-blue);
+            background: rgba(50, 75, 116, 0.1);
         }
 
         /* Modal Footer */
@@ -570,13 +579,14 @@
         }
 
         .btn-primary {
-            background: var(--primary-blue);
+            background: var(--primary-gradient);
             color: white;
         }
 
         .btn-primary:hover:not(:disabled) {
-            background: #3d5ce5;
+            background: var(--accent-gradient);
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(50, 75, 116, 0.3);
         }
 
         .btn-primary:disabled {
@@ -692,20 +702,9 @@
             <!-- Trend Chart -->
             <div class="card trend-chart-card">
                 <div class="card-title">Tendances de l'humeur et du sommeil</div>
-                <div class="chart-container">
+                <div class="chart-container" style="height: 350px; padding: 20px;">
                     {% if moods is not empty %}
-                        <div class="chart-bars" id="chartBars">
-                            {% for mood in moods %}
-                                <div class="chart-bar-wrapper">
-                                    <div class="chart-bar" 
-                                         style="--bar-height: {{ (mood.valeurHumeur / 5 * 100) }}%; 
-                                                --bar-color: {{ moodColors[mood.valeurHumeur] }}; 
-                                                --bar-color-light: {{ moodColors[mood.valeurHumeur] }}80;">
-                                    </div>
-                                    <div class="chart-label">{{ mood.creeLe|date('d M') }}</div>
-                                </div>
-                            {% endfor %}
-                        </div>
+                        <canvas id="moodChart"></canvas>
                     {% else %}
                         <div class="empty-state">
                             <div class="empty-state-icon">📊</div>

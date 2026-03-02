@@ -15,29 +15,24 @@ class Message
     private ?int $id = null;
 
     #[ORM\Column(length: 20)]
-    private string $role = '';
+    private ?string $role = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    private string $content = '';
+    private ?string $content = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private \DateTimeImmutable $createdAt;
+    #[ORM\Column]
+    private ?\DateTime $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Conversation $conversation = null;
-
-    public function __construct()
-    {
-        $this->createdAt = new \DateTimeImmutable();
-    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getRole(): string
+    public function getRole(): ?string
     {
         return $this->role;
     }
@@ -49,7 +44,7 @@ class Message
         return $this;
     }
 
-    public function getContent(): string
+    public function getContent(): ?string
     {
         return $this->content;
     }
@@ -61,12 +56,12 @@ class Message
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
