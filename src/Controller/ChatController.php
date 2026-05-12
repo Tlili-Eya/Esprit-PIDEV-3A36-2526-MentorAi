@@ -79,7 +79,7 @@ class ChatController extends AbstractController
             $userMessage->setConversation($conversation);
             $userMessage->setRole('user');
             $userMessage->setContent($messageContent);
-            $userMessage->setCreatedAt(new \DateTime());
+            $userMessage->setCreatedAt(new \DateTimeImmutable());
             $entityManager->persist($userMessage);
 
             $userRole = $this->isGranted('ROLE_ADMINM') ? 'ROLE_ADMINM' : 'ROLE_ENSEIGNANT';
@@ -115,7 +115,7 @@ class ChatController extends AbstractController
                 $assistantMessage->setConversation($conversation);
                 $assistantMessage->setRole('assistant');
                 $assistantMessage->setContent($result['response']);
-                $assistantMessage->setCreatedAt(new \DateTime());
+                $assistantMessage->setCreatedAt(new \DateTimeImmutable());
                 $entityManager->persist($assistantMessage);
                 
                 // Analyse et persistance automatisée

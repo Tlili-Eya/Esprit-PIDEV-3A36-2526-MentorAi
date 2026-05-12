@@ -79,6 +79,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?array $preferences = [];
 
     /**
+     * @var Collection<int, Conversation>
+     */
+    #[ORM\OneToMany(targetEntity: Conversation::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $conversations;
+
+    /**
+     * @var Collection<int, PlanActions>
+     */
+    #[ORM\OneToMany(targetEntity: PlanActions::class, mappedBy: 'auteur')]
+    private Collection $plansCrees;
+
+    /**
      * @var Collection<int, CategorieArticle>
      */
     #[ORM\OneToMany(targetEntity: CategorieArticle::class, mappedBy: 'auteur')]
@@ -122,6 +134,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->parcours = new ArrayCollection();
         $this->feedback = new ArrayCollection();
         $this->objectifs = new ArrayCollection();
+        $this->conversations = new ArrayCollection();
+        $this->plansCrees = new ArrayCollection();
     }
 
     // ==================== MÉTHODES POUR UserInterface ====================
@@ -484,6 +498,59 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->objectifs->removeElement($objectif)) {
             if ($objectif->getUtilisateur() === $this) {
                 $objectif->setUtilisateur(null);
+            }
+        }
+        return $this;
+    }
+    /**
+     * @return Collection<int, Conversation>
+     */
+    public function getConversations(): Collection
+    {
+        return $this->conversations;
+    }
+
+    public function addConversation(Conversation $conversation): static
+    {
+        if (!$this->conversations->contains($conversation)) {
+            $this->conversations->add($conversation);
+            $conversation->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeConversation(Conversation $conversation): static
+    {
+        if ($this->conversations->removeElement($conversation)) {
+            if ($conversation->getUser() === $this) {
+                $conversation->setUser(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PlanActions>
+     */
+    public function getPlansCrees(): Collection
+    {
+        return $this->plansCrees;
+    }
+
+    public function addPlansCree(PlanActions $plansCree): static
+    {
+        if (!$this->plansCrees->contains($plansCree)) {
+            $this->plansCrees->add($plansCree);
+            $plansCree->setAuteur($this);
+        }
+        return $this;
+    }
+
+    public function removePlansCree(PlanActions $plansCree): static
+    {
+        if ($this->plansCrees->removeElement($plansCree)) {
+            if ($plansCree->getAuteur() === $this) {
+                $plansCree->setAuteur(null);
             }
         }
         return $this;
