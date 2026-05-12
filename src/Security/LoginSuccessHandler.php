@@ -22,6 +22,11 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
         // Get user roles
         $roles = $token->getUser()->getRoles();
 
+        // Specific redirection for prof1@esprit.tn
+        if ($token->getUser()->getUserIdentifier() === 'prof1@esprit.tn') {
+            return new RedirectResponse($this->router->generate('app_enseignant_dashboard'));
+        }
+
         // Check roles and redirect accordingly
         
         // ROLE_ADMIN -> back_home

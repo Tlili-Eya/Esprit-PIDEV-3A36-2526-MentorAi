@@ -46,13 +46,13 @@ class EnseignantFrontController extends AbstractController
             'total_articles' => (int) $conn->executeQuery("SELECT COUNT(*) FROM reference_article WHERE published = 1")->fetchOne(),
             'alertes_ia' => $aiRepository->count(['typeSortie' => \App\Enum\TypeSortie::Alerte, 'statut' => \App\Enum\StatutSortie::Nouveau, 'cible' => \App\Enum\Cible::Enseignant]),
             'plans_pedagogiques' => (int) $conn->executeQuery(
-                "SELECT COUNT(DISTINCT p.id) FROM plan_actions p LEFT JOIN sortie_ai s ON p.sortie_ai_id = s.id 
-                 WHERE s.categorie_sortie = 'PEDAGOGIQUE' AND (p.auteur_id = :userId OR p.auteur_id IS NULL)",
+                "SELECT COUNT(DISTINCT p.id) FROM plan_actions p 
+                 WHERE p.categorie = 'PEDAGOGIQUE' AND (p.auteur_id = :userId OR p.auteur_id IS NULL)",
                 ['userId' => $user->getId()]
             )->fetchOne(),
             'plans_administratifs' => (int) $conn->executeQuery(
-                "SELECT COUNT(DISTINCT p.id) FROM plan_actions p LEFT JOIN sortie_ai s ON p.sortie_ai_id = s.id 
-                 WHERE s.categorie_sortie = 'ADMINISTRATIVE' AND (p.auteur_id = :userId OR p.auteur_id IS NULL)",
+                "SELECT COUNT(DISTINCT p.id) FROM plan_actions p 
+                 WHERE p.categorie = 'ADMINISTRATIVE' AND (p.auteur_id = :userId OR p.auteur_id IS NULL)",
                 ['userId' => $user->getId()]
             )->fetchOne(),
         ];
@@ -63,16 +63,20 @@ class EnseignantFrontController extends AbstractController
             ->leftJoin('p.sortieAI', 's')
             ->where('p.auteur IS NULL OR p.auteur != :user')
             ->andWhere('p.feedbackEnseignant IS NULL')
-            ->andWhere('s.categorieSortie IN (:cats)')
             ->setParameter('user', $user)
-            ->setParameter('cats', [\App\Enum\CategorieSortie::Pedagogique, \App\Enum\CategorieSortie::Administrative])
             ->orderBy('p.date', 'DESC')
             ->setMaxResults(3)
             ->getQuery()
             ->getResult();
         
-        // Plans récents de l'enseignant
-        $recentPlans = $planRepository->findBy(['auteur' => $user], ['date' => 'DESC'], 5);
+        // Plans récents : ceux créés par l'enseignant OU ceux où il a donné son expertise
+        $recentPlans = $planRepository->createQueryBuilder('p')
+            ->where('p.auteur = :user OR p.feedbackAuteur = :user')
+            ->setParameter('user', $user)
+            ->orderBy('p.date', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
         
         return $this->render('front/enseignant/dashboard.html.twig', [
             'stats' => $stats,
@@ -380,7 +384,7 @@ public function plans(
             if ($feedback) {
                 $plan->setFeedbackEnseignant($feedback);
                 $plan->setFeedbackAuteur($this->getUser());
-                $plan->setFeedbackDate(new \DateTime());
+                $plan->setFeedbackDate(new \DateTimeImmutable());
                 
                 if ($statut) {
                     $plan->setStatut(\App\Enum\Statut::from($statut));

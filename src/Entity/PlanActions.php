@@ -62,7 +62,7 @@ class PlanActions
     private ?CategorieSortie $categorie = null;
 
     #[ORM\ManyToOne(inversedBy: 'planActions')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?SortieAI $sortieAI = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -141,7 +141,7 @@ class PlanActions
         return $this->updatedAt;
     }
 
-    protected function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
         return $this;
@@ -199,7 +199,7 @@ class PlanActions
         return $this->feedbackDate;
     }
 
-    protected function setFeedbackDate(?\DateTimeImmutable $feedbackDate): static
+    public function setFeedbackDate(?\DateTimeImmutable $feedbackDate): static
     {
         $this->feedbackDate = $feedbackDate;
         return $this;

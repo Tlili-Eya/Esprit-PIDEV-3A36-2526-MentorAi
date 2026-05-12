@@ -98,6 +98,11 @@ class GroqService
             if ($statusCode !== 200) {
                 $content = $response->getContent(false);
                 $this->logger->error("❌ Groq API Error ($statusCode)", ['content' => $content]);
+                
+                if ($statusCode === 429) {
+                    throw new \Exception("Limite de requêtes atteinte (Rate Limit). Veuillez patienter quelques instants avant de réessayer.");
+                }
+                
                 throw new \Exception("Erreur API Groq ($statusCode): " . $content);
             }
 
