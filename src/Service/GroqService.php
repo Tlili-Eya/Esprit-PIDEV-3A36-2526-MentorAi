@@ -119,7 +119,7 @@ class GroqService
             return [
                 'success' => false,
                 'error' => "Une erreur est survenue lors de la communication avec l'assistant.",
-                'details' => $e->getMessage() // À retirer en prod si nécessaire, mais utile pour le debug
+                'details' => $e->getMessage()
             ];
         }
     }

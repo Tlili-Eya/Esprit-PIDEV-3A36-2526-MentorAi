@@ -55,6 +55,20 @@ class UtilisateurRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * Trouve un utilisateur par son nom ou son prénom
+     */
+    public function findOneByNameOrPrenom(string $name): ?Utilisateur
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.nom LIKE :name')
+            ->orWhere('u.prenom LIKE :name')
+            ->setParameter('name', '%' . $name . '%')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
 
     //    /**
     //     * @return Utilisateur[] Returns an array of Utilisateur objects

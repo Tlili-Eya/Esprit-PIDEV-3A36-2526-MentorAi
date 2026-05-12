@@ -84,8 +84,8 @@ class ChatController extends AbstractController
 
             $userRole = $this->isGranted('ROLE_ADMINM') ? 'ROLE_ADMINM' : 'ROLE_ENSEIGNANT';
             
-            // Liste des étudiants pour le contexte
-            $students = $entityManager->getRepository(\App\Entity\Utilisateur::class)->findBy(['role' => 'ETUDIANT']);
+            // Liste des étudiants (limité à 20 pour éviter de dépasser les limites de tokens)
+            $students = $entityManager->getRepository(\App\Entity\Utilisateur::class)->findBy(['role' => 'ETUDIANT'], [], 20);
             $studentList = "";
             foreach ($students as $s) {
                 $studentList .= "- " . $s->getPrenom() . " " . $s->getNom() . " (ID: " . $s->getId() . ")\n";
