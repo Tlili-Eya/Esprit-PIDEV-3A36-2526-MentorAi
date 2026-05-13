@@ -23,8 +23,8 @@ class Carnet
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $contenu = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $coleur = null;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $couleur = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $visibilite = null;
@@ -78,16 +78,27 @@ class Carnet
         return $this;
     }
 
+    public function getCouleur(): ?string
+    {
+        return $this->couleur;
+    }
+
+    public function setCouleur(?string $couleur): static
+    {
+        $this->couleur = $couleur;
+
+        return $this;
+    }
+
+    // Backwards-compatible aliases (previously named "coleur")
     public function getColeur(): ?string
     {
-        return $this->coleur;
+        return $this->getCouleur();
     }
 
     public function setColeur(?string $coleur): static
     {
-        $this->coleur = $coleur;
-
-        return $this;
+        return $this->setCouleur($coleur);
     }
 
     public function getVisibilite(): ?string
